@@ -9,6 +9,7 @@ import { Docs } from "./components/Docs";
 import { Overview } from "./components/Overview";
 import { Search } from "./components/Search";
 import { Timeline } from "./components/Timeline";
+import { useTheme } from "./hooks/useTheme";
 import {
   IconBell,
   IconClock,
@@ -35,6 +36,7 @@ export function App() {
   const [dataset, setDataset] = useState<string>("");
   const [highlight, setHighlight] = useState<string | undefined>(undefined);
   const [showDocs, setShowDocs] = useState(false);
+  const { theme, toggle } = useTheme();
 
   function selectCase(c: Case) {
     setSelected(c);
@@ -60,6 +62,13 @@ export function App() {
           <span className="tagline">macOS DFIR triage</span>
         </div>
         <div className="topbar-actions">
+          <button
+            className="btn-change"
+            aria-label="toggle theme"
+            onClick={toggle}
+          >
+            {theme === "dark" ? "☀" : "☾"}
+          </button>
           <button className="btn-change" onClick={() => setShowDocs(true)}>
             Docs
           </button>

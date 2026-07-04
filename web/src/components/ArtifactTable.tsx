@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import type { Doc } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
 import { cell, dig } from "../util/dig";
+import { buildCsv, download } from "../util/tabular";
 import { columnsFor } from "./columns";
+import { DetailDrawer } from "./DetailDrawer";
+
+const MONO = new Set(["file.path", "process.executable"]);
+
+function compare(a: unknown, b: unknown): number {
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  return String(a ?? "").localeCompare(String(b ?? ""));
+}
 
 export function ArtifactTable({
   caseName,
@@ -19,16 +29,29 @@ export function ArtifactTable({
 }) {
   const api = useApi();
   const [offset, setOffset] = useState(0);
+  const [sort, setSort] = useState<{ path: string; dir: 1 | -1 } | null>(null);
+  const [selected, setSelected] = useState<Doc | null>(null);
 
-  // Reset paging when the case or dataset changes.
-  useEffect(() => setOffset(0), [caseName, dataset]);
+  // Reset paging/sort when the case or dataset changes.
+  useEffect(() => {
+    setOffset(0);
+    setSort(null);
+  }, [caseName, dataset]);
 
   const { data, loading, error } = useAsync(
-    () => api.getArtifacts(caseName, dataset, { limit: pageSize, offset }),
-    [caseName, dataset, offset, pageSize],
+    () => api.getArtifacts(caseName, dataset, { limit: 100000 }),
+    [caseName, dataset],
   );
 
   const columns = columnsFor(dataset);
+
+  const sorted = useMemo(() => {
+    const items = data?.items ?? [];
+    if (!sort) return items;
+    return [...items].sort(
+      (a, b) => compare(dig(a, sort.path), dig(b, sort.path)) * sort.dir,
+    );
+  }, [data, sort]);
 
   if (loading) return <p className="muted">Loading {dataset}…</p>;
   if (error || !data) return <p className="error">Failed to load {dataset}.</p>;
@@ -36,26 +59,78 @@ export function ArtifactTable({
 
   const from = offset + 1;
   const to = Math.min(offset + pageSize, data.total);
+  const pageItems = sorted.slice(offset, offset + pageSize);
 
-  const MONO = new Set(["file.path", "process.executable"]);
+  function toggleSort(path: string) {
+    setOffset(0);
+    setSort((s) =>
+      s && s.path === path ? { path, dir: (s.dir * -1) as 1 | -1 } : { path, dir: 1 },
+    );
+  }
 
   return (
     <section className="artifact-view" aria-label={`artifacts ${dataset}`}>
+      <div className="view-toolbar">
+        <span className="muted">{data.total} rows</span>
+        <span className="view-export">
+          <button
+            onClick={() =>
+              download(
+                `${dataset}.csv`,
+                buildCsv(sorted, columns),
+                "text/csv",
+              )
+            }
+          >
+            CSV
+          </button>
+          <button
+            onClick={() =>
+              download(
+                `${dataset}.json`,
+                JSON.stringify(sorted, null, 2),
+                "application/json",
+              )
+            }
+          >
+            JSON
+          </button>
+        </span>
+      </div>
       <div className="table-scroll">
         <table className="grid">
           <thead>
             <tr>
               {columns.map((col) => (
-                <th key={col.path}>{col.header}</th>
+                <th
+                  key={col.path}
+                  className="sortable"
+                  aria-sort={
+                    sort?.path === col.path
+                      ? sort.dir === 1
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                  onClick={() => toggleSort(col.path)}
+                >
+                  {col.header}
+                  {sort?.path === col.path && (
+                    <span className="sort-caret">
+                      {sort.dir === 1 ? " ▲" : " ▼"}
+                    </span>
+                  )}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.items.map((doc) => (
+            {pageItems.map((doc) => (
               <tr
                 key={doc._id}
                 data-testid="artifact-row"
-                className={doc._id === highlightId ? "highlight" : undefined}
+                className={`clickable ${doc._id === highlightId ? "highlight" : ""}`}
+                onClick={() => setSelected(doc)}
               >
                 {columns.map((col) => {
                   const value = dig(doc, col.path);
@@ -100,6 +175,10 @@ export function ArtifactTable({
           Next
         </button>
       </div>
+
+      {selected && (
+        <DetailDrawer doc={selected} onClose={() => setSelected(null)} />
+      )}
     </section>
   );
 }

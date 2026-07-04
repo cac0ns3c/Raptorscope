@@ -32,6 +32,36 @@ describe("ArtifactTable", () => {
     );
   });
 
+  it("opens a detail drawer when a row is clicked", async () => {
+    renderWithApi(
+      <ArtifactTable caseName="mac-victim" dataset="macos.persistence" />,
+    );
+    const rows = await screen.findAllByTestId("artifact-row");
+    await userEvent.click(rows[0]);
+    expect(
+      await screen.findByRole("dialog", { name: "document detail" }),
+    ).toBeInTheDocument();
+  });
+
+  it("sorts rows when a column header is clicked", async () => {
+    renderWithApi(
+      <ArtifactTable caseName="mac-victim" dataset="macos.persistence" />,
+    );
+    const header = await screen.findByText("Label");
+    await userEvent.click(header);
+    expect(header.closest("th")).toHaveAttribute("aria-sort", "ascending");
+    await userEvent.click(header);
+    expect(header.closest("th")).toHaveAttribute("aria-sort", "descending");
+  });
+
+  it("offers CSV and JSON export", async () => {
+    renderWithApi(
+      <ArtifactTable caseName="mac-victim" dataset="macos.persistence" />,
+    );
+    expect(await screen.findByRole("button", { name: "CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "JSON" })).toBeInTheDocument();
+  });
+
   it("paginates with Prev/Next", async () => {
     renderWithApi(
       <ArtifactTable
