@@ -5,6 +5,26 @@ import pathlib
 import tempfile
 import zipfile
 
+# Velociraptor built-in artifact name -> collection stem (the key the CLI's
+# _NORMALIZERS registry uses). Lets a real collection zip — whose result files
+# are named by artifact — ingest without renaming. See profile/raptorscope-macos.yaml.
+ARTIFACT_ALIASES = {
+    "MacOS.System.LaunchServices": "launch_items",
+    "MacOS.System.LoginItems": "login_items",
+    "MacOS.System.Crontab": "cron_items",
+    "MacOS.System.Profiles": "config_profiles",
+    "MacOS.System.BackgroundTaskManagement": "btm_items",
+    "MacOS.System.Processes": "processes",
+    "MacOS.System.QuarantineEvents": "quarantine",
+    "MacOS.System.TCC": "tcc",
+    "MacOS.System.Packages": "installed_apps",
+}
+
+
+def canonical_artifact(name: str) -> str:
+    """Resolve a collection file stem to its canonical artifact stem."""
+    return ARTIFACT_ALIASES.get(name, name)
+
 
 def enrich_host(raw: dict) -> dict:
     """Return the ECS ``host.*`` object for a collection's ``host.json``.
@@ -28,7 +48,7 @@ def _load_dir(root: pathlib.Path) -> tuple[dict, dict]:
     for f in root.glob("*.json"):
         if f.name == "host.json":
             continue
-        artifacts[f.stem] = json.loads(f.read_text())
+        artifacts[canonical_artifact(f.stem)] = json.loads(f.read_text())
     return artifacts, host
 
 

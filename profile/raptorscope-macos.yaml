@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Raptorscope macOS collection profile — the collection *contract*.
+#
+# This is the curated Velociraptor artifact set the normalizers map. It answers
+# the macOS first-hour triage questions: who's persisting, what ran, what got in,
+# what got permission. Build it as an offline collector or run it as a server
+# hunt (see profile/README.md); either way the per-artifact results ingest via
+# `raptorscope ingest` (artifact filenames are aliased to normalizers in
+# raptorscope.collection.ARTIFACT_ALIASES).
+name: Raptorscope.MacOS.Triage
+description: >
+  Curated macOS DFIR collection: persistence, execution, ingress, access, and
+  inventory. Each artifact ships a paired normalizer + Sigma detection.
+type: collection
+os: macos
+
+artifacts:
+  # --- Persistence ---
+  - artifact: MacOS.System.LaunchServices
+    stem: launch_items
+    dataset: macos.persistence
+    normalizer: normalize_launch_items
+    question: who's persisting (launch agents/daemons)
+  - artifact: MacOS.System.LoginItems
+    stem: login_items
+    dataset: macos.persistence
+    normalizer: normalize_login_items
+    question: who's persisting (login items)
+  - artifact: MacOS.System.Crontab
+    stem: cron_items
+    dataset: macos.persistence
+    normalizer: normalize_cron
+    question: who's persisting (cron/periodic)
+  - artifact: MacOS.System.Profiles
+    stem: config_profiles
+    dataset: macos.persistence
+    normalizer: normalize_config_profiles
+    question: who's persisting (config/MDM profiles)
+  - artifact: MacOS.System.BackgroundTaskManagement
+    stem: btm_items
+    dataset: macos.persistence
+    normalizer: normalize_btm
+    question: who's persisting (BTM)
+  # --- Execution ---
+  - artifact: MacOS.System.Processes
+    stem: processes
+    dataset: macos.process
+    normalizer: normalize_processes
+    question: what ran
+  # --- Ingress ---
+  - artifact: MacOS.System.QuarantineEvents
+    stem: quarantine
+    dataset: macos.quarantine
+    normalizer: normalize_quarantine
+    question: what got in
+  # --- Access ---
+  - artifact: MacOS.System.TCC
+    stem: tcc
+    dataset: macos.tcc
+    normalizer: normalize_tcc
+    question: what got permission
+  # --- Inventory / context ---
+  - artifact: MacOS.System.Packages
+    stem: installed_apps
+    dataset: macos.inventory
+    normalizer: normalize_inventory
+    question: what's installed
