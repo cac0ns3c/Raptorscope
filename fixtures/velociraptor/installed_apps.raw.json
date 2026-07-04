@@ -1,0 +1,18 @@
+[
+  {
+    "Name": "Slack",
+    "BundleIdentifier": "com.tinyspeck.slackmacgap",
+    "Version": "4.36.140",
+    "Path": "/Applications/Slack.app",
+    "SignerCN": "Developer ID Application: Slack Technologies, Inc. (BQR82RBBHL)",
+    "Mtime": "2025-04-02T07:45:00Z"
+  },
+  {
+    "Name": "Updater",
+    "BundleIdentifier": "com.system.updater",
+    "Version": "1.0",
+    "Path": "/Users/analyst/.local/Updater.app",
+    "SignerCN": null,
+    "Mtime": "2026-07-01T05:12:20Z"
+  }
+]

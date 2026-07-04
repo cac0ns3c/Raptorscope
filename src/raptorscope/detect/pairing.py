@@ -35,6 +35,10 @@ EMITTED_FIELDS = {
     "raptorscope.persistence.btm_type",
     "raptorscope.persistence.developer",
     "raptorscope.persistence.uuid",
+    "raptorscope.app.name",
+    "raptorscope.app.bundle_id",
+    "raptorscope.app.version",
+    "raptorscope.app.signed",
 }
 
 

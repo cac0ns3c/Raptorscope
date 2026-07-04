@@ -145,3 +145,22 @@ Dataset `macos.quarantine`, `event.category = ["file"]`. Fires:
 Dataset `macos.tcc`. Fires: `kTCCServiceAccessibility` allowed to non-Apple path
 client `/Users/Shared/.helper/agent`. The rule excludes `com.apple.*` clients and
 non-sensitive services (Zoom camera grant does not fire).
+
+---
+
+## installed apps — `MacOS.System.Packages`
+
+`velociraptor artifacts collect MacOS.System.Packages --format json`
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `Name` | string | `raptorscope.app.name` |
+| `BundleIdentifier` | string | `raptorscope.app.bundle_id` |
+| `Version` | string | `raptorscope.app.version` |
+| `Path` | string | `file.path`, `file.name` |
+| `SignerCN` | string \| null | `process.code_signature.subject_name`; drives `.signed` |
+| `Mtime` | ISO8601 | `@timestamp` |
+
+Dataset `macos.inventory`, `event.category = ["package"]`. Fires: unsigned
+`Updater.app` under `/Users/analyst/.local/` (outside `/Applications`). The rule
+excludes `/Applications/*`.

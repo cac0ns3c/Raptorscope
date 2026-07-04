@@ -1,0 +1,24 @@
+title: macOS unsigned application installed outside /Applications
+id: d3c9a8f4-0008-4000-a000-0000000c0de9
+status: experimental
+description: >
+  An installed application bundle that is unsigned and lives outside the
+  standard /Applications directory (e.g. under a user's home or a hidden
+  folder). Legitimate software is signed and installed in /Applications; this
+  combination is typical of dropped or side-loaded malware.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    raptorscope.app.signed: false
+  filter_applications:
+    file.path|startswith: /Applications/
+  condition: selection and not filter_applications
+falsepositives:
+  - Developer builds and portable apps run from a home directory
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1543.001
