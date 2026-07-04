@@ -25,6 +25,13 @@ INDEX_TEMPLATE = {
                         "os": {"properties": {"type": {"type": "keyword"}}},
                     }
                 },
+                "user": {"properties": {"name": {"type": "keyword"}}},
+                "url": {
+                    "properties": {
+                        "full": {"type": "keyword"},
+                        "original": {"type": "keyword"},
+                    }
+                },
                 "file": {
                     "properties": {
                         "path": {"type": "keyword"},
@@ -33,8 +40,11 @@ INDEX_TEMPLATE = {
                 },
                 "process": {
                     "properties": {
+                        "pid": {"type": "long"},
+                        "name": {"type": "keyword"},
                         "executable": {"type": "keyword"},
                         "command_line": {"type": "text"},
+                        "parent": {"properties": {"pid": {"type": "long"}}},
                         "code_signature": {
                             "properties": {
                                 "exists": {"type": "boolean"},
@@ -51,8 +61,34 @@ INDEX_TEMPLATE = {
                                 "type": {"type": "keyword"},
                                 "label": {"type": "keyword"},
                                 "run_at_load": {"type": "boolean"},
+                                "hidden": {"type": "boolean"},
+                                "schedule": {"type": "keyword"},
+                                "payload_type": {"type": "keyword"},
+                                "signed": {"type": "boolean"},
+                                "btm_type": {"type": "keyword"},
+                                "developer": {"type": "keyword"},
+                                "uuid": {"type": "keyword"},
                             }
-                        }
+                        },
+                        "quarantine": {
+                            "properties": {"sender": {"type": "keyword"}}
+                        },
+                        "tcc": {
+                            "properties": {
+                                "service": {"type": "keyword"},
+                                "client": {"type": "keyword"},
+                                "client_type": {"type": "keyword"},
+                                "allowed": {"type": "boolean"},
+                            }
+                        },
+                        "app": {
+                            "properties": {
+                                "name": {"type": "keyword"},
+                                "bundle_id": {"type": "keyword"},
+                                "version": {"type": "keyword"},
+                                "signed": {"type": "boolean"},
+                            }
+                        },
                     }
                 },
             },

@@ -6,6 +6,20 @@ import tempfile
 import zipfile
 
 
+def enrich_host(raw: dict) -> dict:
+    """Return the ECS ``host.*`` object for a collection's ``host.json``.
+
+    Accepts either a flat host dict (``{"name": ..., "os": {...}}``) or a
+    wrapped one carrying sibling context (``{"host": {...}, "user": {...}}``),
+    and defaults ``host.os.type`` to ``macos`` (raptorscope is macOS-only).
+    """
+    host = dict(raw.get("host", raw)) if isinstance(raw, dict) else {}
+    os_ctx = dict(host.get("os") or {})
+    os_ctx.setdefault("type", "macos")
+    host["os"] = os_ctx
+    return host
+
+
 def _load_dir(root: pathlib.Path) -> tuple[dict, dict]:
     host = {}
     if (root / "host.json").exists():

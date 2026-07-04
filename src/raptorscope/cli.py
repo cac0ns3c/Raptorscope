@@ -2,11 +2,45 @@
 """Command-line entry point: ingest a collection -> normalize -> index."""
 import argparse
 
-from .collection import load_collection
+from .collection import enrich_host, load_collection
+from .normalize.btm import normalize_btm
+from .normalize.config_profiles import normalize_config_profiles
+from .normalize.cron import normalize_cron
+from .normalize.inventory import normalize_inventory
 from .normalize.launch_items import normalize_launch_items
+from .normalize.login_items import normalize_login_items
+from .normalize.processes import normalize_processes
+from .normalize.quarantine import normalize_quarantine
+from .normalize.tcc import normalize_tcc
 
-# artifact name (collection json stem) -> normalizer
-_NORMALIZERS = {"launch_items": normalize_launch_items}
+# collection json stem -> normalizer for that artifact
+_NORMALIZERS = {
+    "launch_items": normalize_launch_items,
+    "login_items": normalize_login_items,
+    "cron_items": normalize_cron,
+    "config_profiles": normalize_config_profiles,
+    "btm_items": normalize_btm,
+    "processes": normalize_processes,
+    "quarantine": normalize_quarantine,
+    "tcc": normalize_tcc,
+    "installed_apps": normalize_inventory,
+}
+
+
+def _index_for(dataset: str) -> str:
+    """Map an ECS dataset to its raptorscope index name (``raptorscope-*``)."""
+    return "raptorscope-" + dataset.replace(".", "-")
+
+
+def normalize_collection(path: str) -> list[dict]:
+    """Load a collection and normalize every known artifact to ECS docs."""
+    artifacts, raw_host = load_collection(path)
+    host = enrich_host(raw_host)
+    docs: list[dict] = []
+    for name, fn in _NORMALIZERS.items():
+        if name in artifacts:
+            docs.extend(fn(artifacts[name], host))
+    return docs
 
 
 def ingest(path: str, es_url: str | None) -> int:
@@ -14,17 +48,19 @@ def ingest(path: str, es_url: str | None) -> int:
 
     Returns the total number of ECS docs produced.
     """
-    artifacts, host = load_collection(path)
-    docs = []
-    for name, fn in _NORMALIZERS.items():
-        if name in artifacts:
-            docs.extend(fn(artifacts[name], host))
+    docs = normalize_collection(path)
     if es_url:
         from elasticsearch import Elasticsearch
 
         from .es.indexer import bulk_index
 
-        bulk_index(Elasticsearch(es_url), "raptorscope-persistence", docs)
+        client = Elasticsearch(es_url)
+        # Route each doc to a per-dataset index under the raptorscope-* pattern.
+        by_index: dict[str, list[dict]] = {}
+        for d in docs:
+            by_index.setdefault(_index_for(d["event"]["dataset"]), []).append(d)
+        for index, group in by_index.items():
+            bulk_index(client, index, group)
     print(f"{len(docs)} docs")
     return len(docs)
 

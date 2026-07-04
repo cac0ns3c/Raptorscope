@@ -42,6 +42,17 @@ EMITTED_FIELDS = {
 }
 
 
+# Every ECS dataset the v1 normalizers emit; the pairing guard requires each to
+# have at least one Sigma rule.
+ALL_DATASETS = {
+    "macos.persistence",
+    "macos.process",
+    "macos.quarantine",
+    "macos.tcc",
+    "macos.inventory",
+}
+
+
 def _rule_datasets_and_fields(doc):
     det = doc.get("detection", {})
     datasets, fields = set(), set()
