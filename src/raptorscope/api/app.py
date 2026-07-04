@@ -18,8 +18,24 @@ def create_app(store: Store) -> FastAPI:
         if case not in store.hosts():
             raise HTTPException(status_code=404, detail=f"unknown case: {case}")
 
+    def case_summary(case: str) -> dict:
+        return {
+            "name": case,
+            "doc_count": store.count(host=case),
+            "datasets": store.datasets(host=case),
+        }
+
     @app.get("/health")
     def health():
         return {"status": "ok"}
+
+    @app.get("/cases")
+    def list_cases():
+        return [case_summary(h) for h in store.hosts()]
+
+    @app.get("/cases/{case}")
+    def get_case(case: str):
+        require_case(case)
+        return case_summary(case)
 
     return app
