@@ -83,13 +83,13 @@ No standard built-ins exist for these.
 - Add `Store.aggregate(host, spec)` (ES `terms`/`date_histogram`/`filter` aggs;
   in-memory equivalent for `InMemoryStore`). Rewrite `overview` and count paths to
   use it. Keeps the same JSON contract.
-- [ ] Agg interface + both store impls + endpoint rewrite + tests.
+- [x] **DONE (B1)** — `Store.aggregate(host)` on both backends (ES aggs, no full scan); overview endpoint + AI `_overview` rewired; validated byte-identical against live ES.
 
 ### B2 — pagination / `search_after`
 `es/store.py` caps at `MAX_WINDOW = 10000`.
 - Replace with cursor pagination (PIT + `search_after`) in `ESStore.search`; add
   `?cursor=` to `/artifacts` and `/search`; SPA infinite-scroll / next-page.
-- [ ] Cursor API + store impls + UI paging + tests.
+- [x] **PARTIAL (B2)** — ES-side `offset`+`size` paging on `search`; artifacts endpoint pages ES-side (no full-dataset pull); validated live. Deep >10k paging (PIT + search_after) still to do.
 
 ### B3 — ES-native detections (scale path)
 In-process `run_rules` reads all case docs.
@@ -97,13 +97,12 @@ In-process `run_rules` reads all case docs.
   (`detect/convert.py`) against ES and returns hits; keep the in-process evaluator
   for the offline/demo path. Resolve spec §11 (query-on-read vs. written alert docs)
   — recommend a `detect run` that writes `raptorscope-alerts-*`.
-- [ ] Converter parity test (evaluator vs. Lucene on the same fixtures) + ESDetector
-  + optional alert-index writer.
+- [ ] **NOT STARTED (B3)** — note: in-process substring matching vs ES analyzed-text (`command_line`) means exact parity needs care; design before asserting.
 
 ### B4 — multi-host / multi-case
 - Ingest multiple hosts; case = collection, host = sub-filter; cross-host IOC
   pivot in the API + SPA.
-- [ ] Data model + endpoints + UI.
+- [ ] **NOT STARTED (B4)** — multi-host is a larger architectural change.
 
 ---
 
