@@ -101,6 +101,16 @@ and `/docs` stay open, `/login` issues a **time-limited signed bearer token**
 `RAPTORSCOPE_LOGIN_RATE` (default 20) and `RAPTORSCOPE_AI_RATE` (default 60);
 `/ai/status` polling is exempt. Exceeding a limit returns `429`.
 
+**Roles (RBAC).** Each user has a role — `viewer`, `analyst` (default), or `admin`
+— baked into the signed token. Set them with
+`RAPTORSCOPE_AUTH_ROLES="alice:admin,bob:viewer"`. `viewer` is read-only (cases,
+overview, timeline, artifacts, search); the **active/costly** actions — all AI
+endpoints and the fleet `/hunt` — require `analyst` or higher (`403` otherwise).
+
+**Audit + observability.** Every case-data, AI, and hunt request is written to the
+`raptorscope.audit` log with the user, method, path, and status; every response
+carries an `X-Request-ID`; `GET /metrics` exposes Prometheus counters.
+
 ### Query API
 
 `create_app(store)` (`api/app.py`) serves JSON over a `Store` abstraction —

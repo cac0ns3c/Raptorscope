@@ -134,7 +134,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 ### D1 — RBAC, audit, transport
 - Roles (viewer/analyst/admin) on the token; an append-only **audit log** of
   case access + AI calls; document/ship a TLS reverse-proxy (nginx/Caddy) in front.
-- [ ] Role claims + audit middleware + TLS compose profile + tests.
+- [x] **PARTIAL (D1)** — role claims in the signed token (viewer/analyst/admin; `RAPTORSCOPE_AUTH_ROLES`), analyst-gate on AI + `/hunt`, and an append-only `raptorscope.audit` log. TLS reverse-proxy remains doc-only.
 
 ### D2 — observability
 - Structured JSON logging, `/metrics` (Prometheus), request-id propagation and

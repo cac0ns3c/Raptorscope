@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 _log = logging.getLogger("raptorscope.ai")
 _access = logging.getLogger("raptorscope.access")
+_audit = logging.getLogger("raptorscope.audit")
 
 
 class _Metrics:
@@ -72,7 +73,12 @@ class _RateLimiter:
 from ..ai import service as ai_service
 from ..ai.client import AIClient, MODEL, build_ai_from_env
 from ..detect.evaluate import load_rules, run_rules
-from .auth import AuthConfig, make_auth_dependency
+from .auth import (
+    AuthConfig,
+    _bearer,
+    make_auth_dependency,
+    make_role_dependency,
+)
 from .docs import get_doc, list_docs
 from .store import Store
 
@@ -203,15 +209,26 @@ def create_app(
         start = time.monotonic()
         response = await call_next(request)
         response.headers["X-Request-ID"] = rid
-        metrics.observe(request.url.path, response.status_code)
+        path = request.url.path
+        metrics.observe(path, response.status_code)
         _access.info(
             "rid=%s %s %s -> %s %.1fms",
             rid,
             request.method,
-            request.url.path,
+            path,
             response.status_code,
             (time.monotonic() - start) * 1000,
         )
+        # Audit trail: who touched case data / AI / hunt, and the outcome.
+        if path.startswith("/cases") or path.startswith("/hunt") or "/ai/" in path:
+            user = "-"
+            if auth.enabled:
+                prin = auth.principal(_bearer(request.headers.get("authorization", "")))
+                user = prin[0] if prin else "anon"
+            _audit.info(
+                "rid=%s user=%s %s %s -> %s",
+                rid, user, request.method, path, response.status_code,
+            )
         return response
 
     @app.middleware("http")
@@ -229,6 +246,8 @@ def create_app(
             )
         return await call_next(request)
     require_token = make_auth_dependency(auth)
+    # Active/costly actions (AI, fleet hunt) require analyst+; viewers are read-only.
+    require_analyst = Depends(make_role_dependency(auth, "analyst"))
     # All /cases/* routes require a valid token when auth is enabled.
     router = APIRouter(dependencies=[Depends(require_token)])
 
@@ -398,7 +417,7 @@ def create_app(
             "model": getattr(ai, "model", MODEL) if ai is not None else None,
         }
 
-    @router.post("/cases/{case}/ai/triage")
+    @router.post("/cases/{case}/ai/triage", dependencies=[require_analyst])
     def ai_triage(case: str, body: TriageBody):
         require_case(case)
         _require_ai()
@@ -413,7 +432,7 @@ def create_app(
             lambda: ai_service.triage_alert(ai, alert, store.get(body.doc_id) or {})
         )
 
-    @router.post("/cases/{case}/ai/summary")
+    @router.post("/cases/{case}/ai/summary", dependencies=[require_analyst])
     def ai_summary(case: str):
         require_case(case)
         _require_ai()
@@ -437,7 +456,7 @@ def create_app(
             lambda: ai_service.summarize_case(ai, _overview(case), fired, events)
         )
 
-    @router.post("/cases/{case}/ai/nl-query")
+    @router.post("/cases/{case}/ai/nl-query", dependencies=[require_analyst])
     def ai_nl_query(case: str, body: QuestionBody):
         require_case(case)
         _require_ai()
@@ -445,13 +464,13 @@ def create_app(
             lambda: ai_service.compile_query(ai, body.question, store.datasets(host=case))
         )
 
-    @router.post("/cases/{case}/ai/iocs")
+    @router.post("/cases/{case}/ai/iocs", dependencies=[require_analyst])
     def ai_iocs(case: str):
         require_case(case)
         _require_ai()
         return _ai_call(lambda: ai_service.extract_iocs(ai, _fired(case)))
 
-    @router.post("/cases/{case}/ai/copilot")
+    @router.post("/cases/{case}/ai/copilot", dependencies=[require_analyst])
     def ai_copilot(case: str, body: QuestionBody):
         require_case(case)
         _require_ai()
@@ -475,7 +494,7 @@ def create_app(
 
         return _ai_call(lambda: ai_service.run_copilot(ai, body.question, dispatch))
 
-    @router.get("/hunt")
+    @router.get("/hunt", dependencies=[require_analyst])
     def hunt(q: str, limit: int = 200):
         """Cross-host IOC hunt: where does an indicator appear across the fleet?"""
         docs = store.hunt(q.strip(), size=limit) if q.strip() else []
