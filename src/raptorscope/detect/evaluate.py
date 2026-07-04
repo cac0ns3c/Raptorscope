@@ -100,6 +100,8 @@ def _eval_condition(cond: str, results: dict) -> bool:
 
     def parse_atom():
         nonlocal pos
+        if pos >= len(tokens):  # malformed condition (dangling operator/paren)
+            return False
         tok = tokens[pos]
         pos += 1
         if tok == "(":
