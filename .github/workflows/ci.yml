@@ -44,3 +44,45 @@ jobs:
         run: npm run verify
       - name: Production build
         run: npm run build
+
+  # Live-Elasticsearch integration: exercises ingest + the ES-backed store,
+  # aggregations, pagination, and the ES-native detector parity (Phase B).
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports:
+          - 9200:9200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Wait for Elasticsearch
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9200/_cluster/health && break
+            sleep 5
+          done
+      - name: Ingest the bundled sample
+        run: python -m raptorscope ingest samples/mac-victim --es http://localhost:9200
+      - name: Ingest smoke (doc count > 0)
+        run: |
+          sleep 2
+          COUNT=$(curl -s 'http://localhost:9200/raptorscope-*/_count' | python -c "import sys,json;print(json.load(sys.stdin)['count'])")
+          echo "indexed $COUNT docs"; test "$COUNT" -gt 0
+      - name: ES-native detector parity + ES store paths
+        env:
+          RAPTORSCOPE_TEST_ES: http://localhost:9200
+        run: python -m pytest tests/detect/test_es_detector_parity.py -q -rs
