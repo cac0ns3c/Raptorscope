@@ -139,7 +139,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 ### D2 — observability
 - Structured JSON logging, `/metrics` (Prometheus), request-id propagation and
   basic tracing.
-- [x] **PARTIAL (D2)** — request-id correlation + access logging DONE; Prometheus /metrics pending.
+- [x] **DONE (D2)** — request-id correlation, access logging, and a Prometheus `/metrics` endpoint (requests_total, by-status, ai_requests).
 
 ### D3 — supply chain
 - Pin all deps (lockfiles committed for Python too), generate an SBOM, scan the

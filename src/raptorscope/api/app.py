@@ -12,11 +12,44 @@ import time
 import uuid
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 
 _log = logging.getLogger("raptorscope.ai")
 _access = logging.getLogger("raptorscope.access")
+
+
+class _Metrics:
+    """Minimal in-process counters exposed in Prometheus text format."""
+
+    def __init__(self):
+        self.requests = 0
+        self.by_status: dict[str, int] = {}
+        self.ai_requests = 0
+
+    def observe(self, path: str, status: int) -> None:
+        self.requests += 1
+        cls = f"{status // 100}xx"
+        self.by_status[cls] = self.by_status.get(cls, 0) + 1
+        if "/ai/" in path and not path.endswith("/ai/status"):
+            self.ai_requests += 1
+
+    def render(self) -> str:
+        lines = [
+            "# HELP raptorscope_requests_total Total HTTP requests",
+            "# TYPE raptorscope_requests_total counter",
+            f"raptorscope_requests_total {self.requests}",
+            "# HELP raptorscope_requests_by_status HTTP requests by status class",
+            "# TYPE raptorscope_requests_by_status counter",
+        ]
+        for cls, n in sorted(self.by_status.items()):
+            lines.append(f'raptorscope_requests_by_status{{class="{cls}"}} {n}')
+        lines += [
+            "# HELP raptorscope_ai_requests_total AI endpoint requests",
+            "# TYPE raptorscope_ai_requests_total counter",
+            f"raptorscope_ai_requests_total {self.ai_requests}",
+        ]
+        return "\n".join(lines) + "\n"
 
 
 class _RateLimiter:
@@ -158,6 +191,11 @@ def create_app(
     )
     ai_bucket = _RateLimiter(ai_limit)
     login_bucket = _RateLimiter(login_limit)
+    metrics = _Metrics()
+
+    @app.get("/metrics")
+    def prometheus_metrics():
+        return PlainTextResponse(metrics.render())
 
     @app.middleware("http")
     async def _access_log(request, call_next):
@@ -165,6 +203,7 @@ def create_app(
         start = time.monotonic()
         response = await call_next(request)
         response.headers["X-Request-ID"] = rid
+        metrics.observe(request.url.path, response.status_code)
         _access.info(
             "rid=%s %s %s -> %s %.1fms",
             rid,
