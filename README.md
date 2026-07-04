@@ -3,7 +3,19 @@
 macOS DFIR analytics stack: Velociraptor macOS collections → ECS-normalized,
 detection-enriched triage in Elasticsearch with a dedicated GUI.
 
-Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md`
+Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md` ·
+Install: `docs/INSTALL.md` · Demo walkthrough: `docs/DEMO.md`
+
+## Quickstart
+
+```bash
+make setup          # venv + Python deps + web npm install
+make demo           # serve the bundled sample case on :8000 (no ES needed)
+make web            # in another shell: SPA on http://localhost:5173
+```
+
+Open http://localhost:5173, pick the `mac-victim` case, and follow an alert
+pivot-to-evidence. Full tour in `docs/DEMO.md`.
 
 ## Status
 
@@ -15,7 +27,9 @@ Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md`
   per-artifact views, timeline, alerts) over a `Store` abstraction.
 - **Phase 4 (GUI):** done — React/TypeScript SPA under `web/` (case picker,
   overview, per-artifact tables, timeline, alerts with pivot-to-evidence).
-- Phase 5 (packaging/docs/demo) is deferred; see `docs/superpowers/plans/`.
+- **Phase 5 (packaging/docs/demo):** done — collection profile (`profile/`),
+  bundled sample case (`samples/`) + `raptorscope demo`, `Makefile`, install/demo
+  docs. **The v1 build is complete.**
 
 ## v1 artifact coverage
 
@@ -90,8 +104,16 @@ npm run build      # tsc typecheck + production bundle
 PYTHONPATH=../src ../.venv/bin/python -m raptorscope serve --collection <dir> --port 8000
 ```
 
-A collection is a directory (or zip) of `<artifact>.json` files (one per artifact,
-named by the stems in `cli._NORMALIZERS`) plus an optional `host.json` for
-`host.*`/`user.*` context. Docs are routed to per-dataset `raptorscope-*` indices.
+A collection is a directory (or zip) of `<artifact>.json` files plus an optional
+`host.json` for `host.*`/`user.*` context. Files may be named by the internal
+stems (`cli._NORMALIZERS`) **or** by real Velociraptor artifact names
+(`MacOS.System.TCC.json`, …) — the latter are aliased in
+`collection.ARTIFACT_ALIASES`. Docs are routed to per-dataset `raptorscope-*`
+indices.
+
+The curated artifact set — the **collection contract** — lives in
+`profile/raptorscope-macos.yaml` (`profile/README.md` covers building a collector
+or running a hunt). `samples/mac-victim/` is a worked example served by
+`raptorscope demo`.
 
 License: GPL-3.0-or-later
