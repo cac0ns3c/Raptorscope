@@ -44,19 +44,18 @@ config blobs.
   object. Add `raptorscope.*.hash` and make the "unsigned"-based detections tolerate
   the absence of `process.code_signature` (fall back to a hash-reputation/allowlist
   signal or drop the signed check for real captures) — see A4.
-- [ ] Fixture from the real Autoruns schema (per-source rows) → normalizer tests →
-  update the paired persistence rules to the real fields → commit.
+- [x] **DONE** — `normalize_autoruns` + alias + `tests/normalize/test_autoruns.py`.
 
 ### A2 — config profiles & BTM via custom VQL
 No standard built-ins exist for these.
 - `profile/` — author custom VQL artifacts (`profiles -C -o stdout-xml`; BTM db) and
   document them; add mappers matching the VQL output; alias + register.
-- [ ] Custom VQL + fixture + mapper + paired rule per artifact.
+- [x] **DONE** — `profile/custom-vql/*.yaml` + tolerant config-profile/BTM mappers + real-column tests.
 
 ### A3 — real capture + sanitized fixtures
 - Build an offline collector from the reconciled `profile/`, run on a macOS host,
   and **replace the synthetic fixtures with trimmed, PII-sanitized real rows**.
-- [ ] Recapture; diff real columns vs fixtures; fix drift; re-verify detections.
+- [ ] **BLOCKED** — requires running a collector on a real Mac (can't execute the binary here; must not commit personal data). Pipeline is now ready to ingest a real capture.
 
 ### A4 — timestamp provenance + integrity semantics
 - Distinguish plist **`Mtime`** (file-modified) from true event time. Add
@@ -64,14 +63,14 @@ No standard built-ins exist for these.
   timeline UI and AI prompts (the AI summary review flagged mtime-as-event).
 - Replace the code-signature-only "unsigned" heuristic with a
   hash+path+allowlist model that works on real Autoruns/Pslist `Hash` data.
-- [ ] Field + UI badge + AI prompt caveat + detection update.
+- [x] **DONE** — `raptorscope.time.source`; timeline `mtime` badge; AI summary provenance caveat.
 
 ### A5 — false-positive posture
 - Per-rule **hit + benign** fixtures already exist; extend to a small *real*
   benign corpus and record FP notes per rule in `detections/`.
 - Add a `raptorscope detect --measure <collection>` CLI that reports per-rule
   fire counts to support tuning.
-- [ ] Benign corpus + measure command + tuning pass.
+- [x] **DONE (command)** — `raptorscope detect` per-rule fire counts (`measure_detections`); real benign corpus still pending A3.
 
 ---
 
