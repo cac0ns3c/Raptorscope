@@ -57,7 +57,9 @@ test.describe("Raptorscope SPA smoke", () => {
 
     await page.getByRole("button", { name: "search", exact: true }).click();
     await page.getByLabel("query", { exact: true }).fill("helper");
-    await page.getByRole("button", { name: "Search" }).click();
+    // exact/case-sensitive so this matches the form's "Search" button, not the
+    // lowercase "search" tab button.
+    await page.getByRole("button", { name: "Search", exact: true }).click();
 
     await expect(page.getByLabel("search results")).toBeVisible();
     await expect(page.getByTestId("search-row").first()).toBeVisible();
