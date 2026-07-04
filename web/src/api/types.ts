@@ -46,6 +46,17 @@ export interface TimelineRow {
   doc_id: string;
 }
 
+export interface DocMeta {
+  id: string;
+  title: string;
+}
+
+export interface DocContent {
+  id: string;
+  title: string;
+  markdown: string;
+}
+
 export interface Alert {
   rule_id: string;
   title: string;

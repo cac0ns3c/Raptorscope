@@ -5,6 +5,7 @@ import type { Case } from "./api/types";
 import { Alerts } from "./components/Alerts";
 import { ArtifactTable } from "./components/ArtifactTable";
 import { CasePicker } from "./components/CasePicker";
+import { Docs } from "./components/Docs";
 import { Overview } from "./components/Overview";
 import { Search } from "./components/Search";
 import { Timeline } from "./components/Timeline";
@@ -33,6 +34,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>("overview");
   const [dataset, setDataset] = useState<string>("");
   const [highlight, setHighlight] = useState<string | undefined>(undefined);
+  const [showDocs, setShowDocs] = useState(false);
 
   function selectCase(c: Case) {
     setSelected(c);
@@ -57,7 +59,11 @@ export function App() {
           <h1>Raptorscope</h1>
           <span className="tagline">macOS DFIR triage</span>
         </div>
-        {selected && (
+        <div className="topbar-actions">
+          <button className="btn-change" onClick={() => setShowDocs(true)}>
+            Docs
+          </button>
+          {selected && (
           <div className="case-context">
             <span className="host-ico">
               <IconHost width={16} height={16} />
@@ -77,8 +83,11 @@ export function App() {
               change case
             </button>
           </div>
-        )}
+          )}
+        </div>
       </header>
+
+      {showDocs && <Docs onClose={() => setShowDocs(false)} />}
 
       {!selected ? (
         <main className="content landing">

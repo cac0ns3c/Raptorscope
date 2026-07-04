@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from ..detect.evaluate import load_rules, run_rules
 from .auth import AuthConfig, make_auth_dependency
+from .docs import get_doc, list_docs
 from .store import Store
 
 
@@ -99,7 +100,13 @@ def create_app(
     rules_dir: str = "detections/sigma",
     auth: AuthConfig | None = None,
 ) -> FastAPI:
-    app = FastAPI(title="Raptorscope API", version="0.1.0")
+    # Disable the built-in Swagger/ReDoc UIs so `/docs` serves our own guides.
+    app = FastAPI(
+        title="Raptorscope API",
+        version="0.1.0",
+        docs_url=None,
+        redoc_url=None,
+    )
     rules = load_rules(rules_dir)
     auth = auth or AuthConfig()
     require_token = make_auth_dependency(auth)
@@ -127,6 +134,18 @@ def create_app(
         if token is None:
             raise HTTPException(status_code=401, detail="invalid credentials")
         return {"token": token}
+
+    # Docs are public (no case data) so they're readable even before login.
+    @app.get("/docs")
+    def docs_index():
+        return list_docs()
+
+    @app.get("/docs/{doc_id}")
+    def doc(doc_id: str):
+        d = get_doc(doc_id)
+        if d is None:
+            raise HTTPException(status_code=404, detail="unknown doc")
+        return d
 
     @router.get("/cases")
     def list_cases():

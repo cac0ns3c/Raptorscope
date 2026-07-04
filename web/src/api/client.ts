@@ -3,6 +3,8 @@ import type {
   Alert,
   ArtifactPage,
   Case,
+  DocContent,
+  DocMeta,
   Overview,
   SearchQuery,
   SearchResult,
@@ -28,6 +30,8 @@ export interface ApiClient {
   getAlerts(caseName: string): Promise<Alert[]>;
   search(caseName: string, query: SearchQuery): Promise<SearchResult>;
   login(username: string, password: string): Promise<{ token: string }>;
+  listDocs(): Promise<DocMeta[]>;
+  getDoc(id: string): Promise<DocContent>;
 }
 
 /** Raised on a 401 so the UI can show the login screen. */
@@ -81,5 +85,7 @@ export function createHttpClient(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       }),
+    listDocs: () => req(`/docs`),
+    getDoc: (id) => req(`/docs/${c(id)}`),
   };
 }

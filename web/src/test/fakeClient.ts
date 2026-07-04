@@ -180,6 +180,15 @@ export function makeFakeClient(): ApiClient {
       }
       throw new Error("request failed: 401 /login");
     },
+    listDocs: async () => [
+      { id: "readme", title: "Overview" },
+      { id: "kibana", title: "Using Kibana" },
+    ],
+    getDoc: async (id) => ({
+      id,
+      title: id === "kibana" ? "Using Kibana" : "Overview",
+      markdown: `# ${id}\n\nSample documentation body for **${id}**.`,
+    }),
   };
 }
 
