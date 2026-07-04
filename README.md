@@ -109,6 +109,23 @@ evaluated in-process (`detect/evaluate.py`) against the case's docs.
 | `GET /cases/{case}/alerts` | fired detections with `doc_id` pivot-to-evidence |
 | `GET /cases/{case}/search` | free-text (`?q=`) + optional `?dataset=`/`?field=&op=&value=` query over case docs |
 | `GET /docs`, `GET /docs/{id}` | the user-facing docs (Overview/Install/Demo/Kibana/Profile), rendered in the SPA's **Docs** panel |
+| `GET /ai/status` · `POST /cases/{case}/ai/{triage,summary,nl-query,copilot}` | Claude-backed AI features (off unless `ANTHROPIC_API_KEY` is set) |
+
+### AI features (optional)
+
+Set `ANTHROPIC_API_KEY` on the API process to enable Claude-powered triage
+(`claude-opus-4-8`). When configured, the SPA shows: an **AI triage** button on
+each alert (why-it-fired / MITRE / assessment / next-steps), **Summarize case** on
+the Overview, an **Ask in plain English** bar in Search (natural language → query
+filters), and a **Copilot** tab — an agentic tool-loop that queries the case's
+own endpoints and returns a grounded verdict with citations. All AI code sits
+behind an injectable `AIClient` seam, so the test suite runs with no key and no
+network. Model output (derived from collected artifacts) is sanitized with
+DOMPurify before rendering.
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-… PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <dir>
+```
 
 ### GUI (`web/`)
 
