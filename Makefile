@@ -65,3 +65,10 @@ stack:
 clean:
 	rm -rf .venv web/node_modules web/dist build dist *.egg-info
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
+
+certs: ## generate a self-signed TLS cert for local HTTPS (deploy/tls/certs)
+	mkdir -p deploy/tls/certs
+	openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
+	  -keyout deploy/tls/certs/raptorscope.key \
+	  -out    deploy/tls/certs/raptorscope.crt \
+	  -subj "/CN=raptorscope.local"

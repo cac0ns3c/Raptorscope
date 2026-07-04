@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# TLS overlay: adds an HTTPS-terminating reverse proxy in front of the `web`
+# service. Use together with the base compose + the `app` profile:
+#
+#   make certs                       # one-time self-signed cert (testing)
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml \
+#     --profile app --profile tls up
+#
+# In production replace deploy/tls/certs/* with a real certificate (Let's Encrypt).
+services:
+  proxy:
+    profiles: ["tls"]
+    image: nginx:1.27-alpine
+    depends_on: [web]
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./deploy/tls/nginx-tls.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/tls/certs:/etc/nginx/certs:ro

@@ -93,9 +93,11 @@ and `/docs` stay open, `/login` issues a **time-limited signed bearer token**
 `RAPTORSCOPE_AUTH_USERS="alice:pw1,bob:pw2"`.
 
 > **Serve over TLS.** Tokens and credentials are sent in the request; run the API
-> behind an HTTPS reverse proxy (nginx/Caddy/Traefik) for anything beyond
-> localhost. The dev `ES_JAVA_OPTS`/`xpack.security.enabled=false` compose is for
-> local use only.
+> behind HTTPS for anything beyond localhost. A ready-made TLS reverse proxy ships
+> in `docker-compose.tls.yml` + `deploy/tls/` — `make certs` then
+> `docker compose -f docker-compose.yml -f docker-compose.tls.yml --profile app
+> --profile tls up` (see `deploy/tls/README.md`). The dev
+> `ES_JAVA_OPTS`/`xpack.security.enabled=false` compose is for local use only.
 
 **Rate limits** (per client, 60s window) protect `/login` and the AI endpoints:
 `RAPTORSCOPE_LOGIN_RATE` (default 20) and `RAPTORSCOPE_AI_RATE` (default 60);
