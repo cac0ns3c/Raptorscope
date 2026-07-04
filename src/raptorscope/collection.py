@@ -25,6 +25,8 @@ ARTIFACT_ALIASES = {
     "MacOS.System.QuarantineEvents": "quarantine",
     "MacOS.System.TCC": "tcc",
     "MacOS.System.Packages": "installed_apps",
+    # The whole persistence family really comes from one Autoruns artifact.
+    "MacOS.Detection.Autoruns": "autoruns",
 }
 
 

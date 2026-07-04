@@ -7,6 +7,7 @@ from .collection import enrich_host, load_collection
 
 # The committed sample collection that `raptorscope demo` serves out of the box.
 DEMO_SAMPLE = pathlib.Path(__file__).resolve().parents[2] / "samples" / "mac-victim"
+from .normalize.autoruns import normalize_autoruns
 from .normalize.btm import normalize_btm
 from .normalize.config_profiles import normalize_config_profiles
 from .normalize.cron import normalize_cron
@@ -22,6 +23,7 @@ _NORMALIZERS = {
     "launch_items": normalize_launch_items,
     "login_items": normalize_login_items,
     "cron_items": normalize_cron,
+    "autoruns": normalize_autoruns,
     "config_profiles": normalize_config_profiles,
     "btm_items": normalize_btm,
     "processes": normalize_processes,
