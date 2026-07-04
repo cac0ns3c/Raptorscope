@@ -53,7 +53,10 @@ INDEX_TEMPLATE = {
                         "pid": {"type": "long"},
                         "name": {"type": "keyword"},
                         "executable": {"type": "keyword"},
-                        "command_line": {"type": "text"},
+                        # `wildcard` (not `text`) so Sigma `|contains` wildcard
+                        # queries do true substring matching, matching the
+                        # in-process evaluator. See detect/es_detector.py.
+                        "command_line": {"type": "wildcard"},
                         "parent": {"properties": {"pid": {"type": "long"}}},
                         "code_signature": {
                             "properties": {

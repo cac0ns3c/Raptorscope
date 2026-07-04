@@ -97,7 +97,7 @@ In-process `run_rules` reads all case docs.
   (`detect/convert.py`) against ES and returns hits; keep the in-process evaluator
   for the offline/demo path. Resolve spec §11 (query-on-read vs. written alert docs)
   — recommend a `detect run` that writes `raptorscope-alerts-*`.
-- [ ] **NOT STARTED (B3)** — note: in-process substring matching vs ES analyzed-text (`command_line`) means exact parity needs care; design before asserting.
+- [x] **DONE (B3)** — `ESDetector` runs the generated Lucene per rule (query-on-read, no full-doc pull), wired as the ES-backed `/alerts` path. Root-caused the parity gap (3/15 rules on the analyzed `command_line` field) and fixed it by mapping `command_line` as ES `wildcard`; **0/15 divergence** verified live. Unit tests (fake ES) + `tests/detect/test_es_detector_parity.py` (live integration, skips w/o ES).
 
 ### B4 — multi-host / multi-case
 - Ingest multiple hosts; case = collection, host = sub-filter; cross-host IOC

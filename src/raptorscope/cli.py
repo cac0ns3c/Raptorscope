@@ -132,21 +132,26 @@ def build_serve_app(
     from .api.auth import AuthConfig
     from .api.store import InMemoryStore
 
+    detector = None
     if collection is not None:
         store = InMemoryStore(normalize_collection(collection))
     elif es_url is not None:
         from elasticsearch import Elasticsearch
 
+        from .detect.es_detector import ESDetector
         from .es.store import ESStore
 
-        store = ESStore(Elasticsearch(es_url))
+        client = Elasticsearch(es_url)
+        store = ESStore(client)
+        # ES-backed detection: run rules as Lucene queries (no full-doc pull).
+        detector = ESDetector(client)
     else:
         raise ValueError("serve requires either --collection or --es")
 
     auth = AuthConfig.from_env()
     if auth_user and auth_pass:
         auth.users[auth_user] = auth_pass
-    return create_app(store, auth=auth)
+    return create_app(store, auth=auth, detector=detector)
 
 
 def build_demo_app(collection=None):

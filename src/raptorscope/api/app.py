@@ -138,6 +138,7 @@ def create_app(
     ai: AIClient | None = None,
     ai_rate: int | None = None,
     login_rate: int | None = None,
+    detector=None,
 ) -> FastAPI:
     # Disable the built-in Swagger/ReDoc UIs so `/docs` serves our own guides.
     app = FastAPI(
@@ -270,11 +271,17 @@ def create_app(
         rows.sort(key=lambda r: r["timestamp"], reverse=True)
         return rows[:limit]
 
+    def _fired(case: str) -> list[dict]:
+        """Fired alerts for a case. Uses the ES-native detector when configured
+        (no full-doc pull); falls back to the in-process evaluator otherwise."""
+        if detector is not None:
+            return detector.run(host=case)
+        return run_rules(store.search(host=case, size=100000), rules)
+
     @router.get("/cases/{case}/alerts")
     def alerts(case: str):
         require_case(case)
-        docs = store.search(host=case, size=100000)
-        fired = run_rules(docs, rules)
+        fired = _fired(case)
         fired.sort(
             key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or "")
         )
@@ -356,8 +363,7 @@ def create_app(
     def ai_triage(case: str, body: TriageBody):
         require_case(case)
         _require_ai()
-        docs = store.search(host=case, size=100000)
-        fired = run_rules(docs, rules)
+        fired = _fired(case)
         alert = next(
             (a for a in fired if a["rule_id"] == body.rule_id and a["doc_id"] == body.doc_id),
             None,
@@ -373,7 +379,7 @@ def create_app(
         require_case(case)
         _require_ai()
         docs = store.search(host=case, size=100000)
-        fired = run_rules(docs, rules)
+        fired = _fired(case)
         fired.sort(key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or ""))
         # Chronological (ascending) event timeline so the model can tell the story.
         events = sorted(
@@ -417,7 +423,7 @@ def create_app(
                     limit=int(inp.get("limit", 20)),
                 )
             if name == "list_alerts":
-                return run_rules(store.search(host=case, size=100000), rules)[:50]
+                return _fired(case)[:50]
             if name == "get_overview":
                 return _overview(case)
             return {"error": f"unknown tool {name}"}
