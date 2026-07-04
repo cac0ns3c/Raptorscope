@@ -6,10 +6,13 @@ routes via closure, so tests build an app around a seeded ``InMemoryStore`` and
 production builds one around ``ESStore``. A *case* is a collected host
 (``host.name``).
 """
+import logging
 from collections import Counter
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
+
+_log = logging.getLogger("raptorscope.ai")
 
 from ..ai import service as ai_service
 from ..ai.client import AIClient, MODEL, build_ai_from_env
@@ -310,13 +313,22 @@ def create_app(
             )
 
     def _ai_call(fn):
-        """Run an AI service call, mapping upstream LLM errors to a clean 502."""
+        """Run an AI service call, mapping upstream LLM errors to a clean 502.
+
+        The provider's raw message is logged server-side but never returned to the
+        client — only the exception class name — so request bodies, tokens, or
+        other sensitive detail can't leak through the error response.
+        """
         try:
             return fn()
         except HTTPException:
             raise
         except Exception as e:  # noqa: BLE001 - surface provider errors cleanly
-            raise HTTPException(status_code=502, detail=f"AI provider error: {e}")
+            _log.warning("AI provider error: %s", e)
+            raise HTTPException(
+                status_code=502,
+                detail=f"AI provider request failed ({type(e).__name__}).",
+            )
 
     @app.get("/ai/status")
     def ai_status():
