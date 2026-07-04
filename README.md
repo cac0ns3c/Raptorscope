@@ -17,6 +17,13 @@ make web            # in another shell: SPA on http://localhost:5173
 Open http://localhost:5173, pick the `mac-victim` case, and follow an alert
 pivot-to-evidence. Full tour in `docs/DEMO.md`.
 
+Or run the **whole app in Docker** (Elasticsearch + Kibana + API + SPA):
+
+```bash
+make stack          # docker compose --profile app up -d --build
+# SPA → http://localhost:8080 · API → :8000 · Kibana → :5601 · ES → :9200
+```
+
 ## Status
 
 - **Phase 1 (core pipeline):** done — the end-to-end spine (collection →

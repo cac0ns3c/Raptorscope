@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Opt-in Elasticsearch + Kibana for the live-ES path (security disabled for
-# local dev only). Not required for the offline demo (`make demo`).
-#   docker compose up -d
-#   raptorscope ingest samples/mac-victim --es http://localhost:9200
-#   ./kibana/provision.sh              # create the raptorscope-* data view
-#   open http://localhost:5601         # explore in Kibana
+# Local dev/deploy stack (Elasticsearch security disabled — local use only).
+#
+#   docker compose up -d                     # just ES + Kibana (data store)
+#   docker compose --profile app up -d --build   # + ingest sample, API, and SPA
+#
+# With the "app" profile: ingest seeds ES from the bundled sample, the API serves
+# from ES, and the SPA is served at http://localhost:8080 (proxying /api -> api).
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
@@ -36,3 +37,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 24
+
+  # --- application tier (opt in with: --profile app) ---
+  ingest:
+    profiles: ["app"]
+    build: .
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command: ["raptorscope", "ingest", "samples/mac-victim", "--es", "http://elasticsearch:9200"]
+    restart: "no"
+
+  api:
+    profiles: ["app"]
+    build: .
+    depends_on:
+      ingest:
+        condition: service_completed_successfully
+    command: ["raptorscope", "serve", "--es", "http://elasticsearch:9200", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ./web
+      args:
+        VITE_KIBANA_URL: http://localhost:5601
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
