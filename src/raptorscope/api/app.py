@@ -9,6 +9,7 @@ production builds one around ``ESStore``. A *case* is a collected host
 import logging
 import os
 import time
+import uuid
 from collections import Counter
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
@@ -16,6 +17,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 _log = logging.getLogger("raptorscope.ai")
+_access = logging.getLogger("raptorscope.access")
 
 
 class _RateLimiter:
@@ -156,6 +158,22 @@ def create_app(
     )
     ai_bucket = _RateLimiter(ai_limit)
     login_bucket = _RateLimiter(login_limit)
+
+    @app.middleware("http")
+    async def _access_log(request, call_next):
+        rid = request.headers.get("x-request-id") or uuid.uuid4().hex[:12]
+        start = time.monotonic()
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = rid
+        _access.info(
+            "rid=%s %s %s -> %s %.1fms",
+            rid,
+            request.method,
+            request.url.path,
+            response.status_code,
+            (time.monotonic() - start) * 1000,
+        )
+        return response
 
     @app.middleware("http")
     async def _rate_limit(request, call_next):

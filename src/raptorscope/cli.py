@@ -155,8 +155,14 @@ def build_demo_app(collection=None):
 
 
 def serve(es_url, collection, host, port, auth_user=None, auth_pass=None):  # pragma: no cover - runs a server
+    import logging
+
     import uvicorn
 
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     app = build_serve_app(
         es_url=es_url,
         collection=collection,
