@@ -76,6 +76,13 @@ export const IconAlert = (p: SVGProps<SVGSVGElement>) => (
   </Svg>
 );
 
+export const IconSearch = (p: SVGProps<SVGSVGElement>) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.2-3.2" />
+  </Svg>
+);
+
 export const IconShieldCheck = (p: SVGProps<SVGSVGElement>) => (
   <Svg {...p}>
     <path d="M12 3 5 6v5c0 4 2.6 6.6 7 8 4.4-1.4 7-4 7-8V6l-7-3Z" />

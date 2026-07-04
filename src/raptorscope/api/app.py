@@ -25,6 +25,37 @@ def _dig(doc: dict, path: str):
     return cur
 
 
+def _leaf_text(value) -> str:
+    """Lowercased concatenation of every leaf value in a doc, for free-text search."""
+    parts: list[str] = []
+
+    def walk(v):
+        if isinstance(v, dict):
+            for x in v.values():
+                walk(x)
+        elif isinstance(v, list):
+            for x in v:
+                walk(x)
+        elif v is not None:
+            parts.append(str(v))
+
+    walk(value)
+    return " ".join(parts).lower()
+
+
+def _apply_op(cell, op: str, value: str) -> bool:
+    if cell is None:
+        return False
+    s = str(cell)
+    if op == "eq":
+        return s == value
+    if op == "startswith":
+        return s.startswith(value)
+    if op == "endswith":
+        return s.endswith(value)
+    return value.lower() in s.lower()  # default: contains
+
+
 def _summary(doc: dict) -> str:
     """A one-line, dataset-aware description for the timeline."""
     ds = _dig(doc, "event.dataset")
@@ -150,5 +181,29 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
             key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or "")
         )
         return fired
+
+    @app.get("/cases/{case}/search")
+    def search(
+        case: str,
+        q: str = "",
+        dataset: str | None = None,
+        field: str | None = None,
+        op: str = "contains",
+        value: str | None = None,
+        limit: int = 100,
+    ):
+        require_case(case)
+        docs = store.search(host=case, dataset=dataset, size=100000)
+        needle = q.strip().lower()
+        hits = []
+        for d in docs:
+            if needle and needle not in _leaf_text(d):
+                continue
+            if field and value is not None and not _apply_op(
+                _dig(d, field), op, value
+            ):
+                continue
+            hits.append(d)
+        return {"total": len(hits), "items": hits[:limit]}
 
     return app

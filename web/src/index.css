@@ -874,6 +874,70 @@ button {
   color: var(--text-muted);
 }
 
+/* ---------- search ---------- */
+.query-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 0.4rem 0.5rem 0.4rem 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.query-bar:focus-within {
+  border-color: var(--accent-strong);
+}
+.q-ico {
+  color: var(--text-dim);
+  display: inline-flex;
+}
+.q-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  min-width: 0;
+}
+.q-input::placeholder {
+  color: var(--text-dim);
+}
+.q-dataset {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-size: 0.82rem;
+  text-transform: capitalize;
+}
+.q-run {
+  background: linear-gradient(180deg, var(--accent-strong), #2f6fe0);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px -6px rgba(59, 130, 246, 0.7);
+}
+.q-hint,
+.q-count {
+  font-size: 0.85rem;
+  margin: 0.4rem 0.2rem 0.8rem;
+}
+.q-count {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+.grid tr.clickable {
+  cursor: pointer;
+}
+
 /* ---------- misc states ---------- */
 .state {
   display: flex;

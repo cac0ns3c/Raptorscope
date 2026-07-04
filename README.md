@@ -84,6 +84,7 @@ evaluated in-process (`detect/evaluate.py`) against the case's docs.
 | `GET /cases/{case}/artifacts/{dataset}` | paginated docs (`?limit=&offset=`) |
 | `GET /cases/{case}/timeline` | events across datasets, newest first |
 | `GET /cases/{case}/alerts` | fired detections with `doc_id` pivot-to-evidence |
+| `GET /cases/{case}/search` | free-text (`?q=`) + optional `?dataset=`/`?field=&op=&value=` query over case docs |
 
 ### GUI (`web/`)
 

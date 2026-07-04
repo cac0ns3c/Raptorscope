@@ -24,6 +24,20 @@ export interface ArtifactPage {
   items: Doc[];
 }
 
+export interface SearchQuery {
+  q?: string;
+  dataset?: string;
+  field?: string;
+  op?: string;
+  value?: string;
+  limit?: number;
+}
+
+export interface SearchResult {
+  total: number;
+  items: Doc[];
+}
+
 export interface TimelineRow {
   timestamp: string;
   dataset: string;

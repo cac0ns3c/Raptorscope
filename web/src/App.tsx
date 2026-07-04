@@ -6,6 +6,7 @@ import { Alerts } from "./components/Alerts";
 import { ArtifactTable } from "./components/ArtifactTable";
 import { CasePicker } from "./components/CasePicker";
 import { Overview } from "./components/Overview";
+import { Search } from "./components/Search";
 import { Timeline } from "./components/Timeline";
 import {
   IconBell,
@@ -14,14 +15,16 @@ import {
   IconHost,
   IconLayers,
   IconLogo,
+  IconSearch,
 } from "./ui/icons";
 
-type Tab = "overview" | "artifacts" | "timeline" | "alerts";
+type Tab = "overview" | "artifacts" | "timeline" | "alerts" | "search";
 const TABS: { id: Tab; icon: JSX.Element }[] = [
   { id: "overview", icon: <IconGauge /> },
   { id: "artifacts", icon: <IconLayers /> },
   { id: "timeline", icon: <IconClock /> },
   { id: "alerts", icon: <IconBell /> },
+  { id: "search", icon: <IconSearch /> },
 ];
 
 export function App() {
@@ -127,6 +130,14 @@ export function App() {
 
             {tab === "alerts" && (
               <Alerts caseName={selected.name} onPivot={pivot} />
+            )}
+
+            {tab === "search" && (
+              <Search
+                caseName={selected.name}
+                datasets={selected.datasets}
+                onPivot={pivot}
+              />
             )}
           </div>
         </main>

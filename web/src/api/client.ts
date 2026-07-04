@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import type { Alert, ArtifactPage, Case, Overview, TimelineRow } from "./types";
+import type {
+  Alert,
+  ArtifactPage,
+  Case,
+  Overview,
+  SearchQuery,
+  SearchResult,
+  TimelineRow,
+} from "./types";
 
 /** The SPA's sole data source. Implemented by `createHttpClient` (prod) and by
  *  the fake client used in tests. */
@@ -13,6 +21,7 @@ export interface ApiClient {
   ): Promise<ArtifactPage>;
   getTimeline(caseName: string, limit?: number): Promise<TimelineRow[]>;
   getAlerts(caseName: string): Promise<Alert[]>;
+  search(caseName: string, query: SearchQuery): Promise<SearchResult>;
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -43,5 +52,13 @@ export function createHttpClient(baseUrl: string): ApiClient {
         `${base}/cases/${c(name)}/timeline${limit != null ? `?limit=${limit}` : ""}`,
       ),
     getAlerts: (name) => getJson(`${base}/cases/${c(name)}/alerts`),
+    search: (name, query) => {
+      const params = new URLSearchParams();
+      for (const [k, v] of Object.entries(query)) {
+        if (v != null && v !== "") params.set(k, String(v));
+      }
+      const qs = params.toString();
+      return getJson(`${base}/cases/${c(name)}/search${qs ? `?${qs}` : ""}`);
+    },
   };
 }

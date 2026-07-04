@@ -148,6 +148,32 @@ export function makeFakeClient(): ApiClient {
       return limit != null ? rows.slice(0, limit) : rows;
     },
     getAlerts: async (name) => (name === DIRTY ? ALERTS : []),
+    search: async (name, query) => {
+      let items = Object.entries(docsFor(name))
+        .filter(([ds]) => !query.dataset || ds === query.dataset)
+        .flatMap(([, list]) => list);
+      const q = (query.q ?? "").trim().toLowerCase();
+      if (q) {
+        items = items.filter((d) => JSON.stringify(d).toLowerCase().includes(q));
+      }
+      if (query.field && query.value != null && query.value !== "") {
+        items = items.filter((d) => {
+          const cur = query.field!
+            .split(".")
+            .reduce<unknown>(
+              (o, k) =>
+                o && typeof o === "object"
+                  ? (o as Record<string, unknown>)[k]
+                  : undefined,
+              d,
+            );
+          return String(cur ?? "")
+            .toLowerCase()
+            .includes(String(query.value).toLowerCase());
+        });
+      }
+      return { total: items.length, items: items.slice(0, query.limit ?? 100) };
+    },
   };
 }
 
