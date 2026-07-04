@@ -114,3 +114,13 @@ def test_build_ai_is_configurable(monkeypatch):
     assert ai is not None
     assert ai.model == "claude-test-model"
     assert "gateway.example" in str(ai._client.base_url)
+
+
+class BoomAI(FakeAI):
+    def text(self, system, user, max_tokens=1024):
+        raise RuntimeError("provider exploded")
+
+
+def test_provider_error_maps_to_502():
+    c = TestClient(create_app(InMemoryStore(seed_docs()), ai=BoomAI()))
+    assert c.post("/cases/mac-victim/ai/summary").status_code == 502
