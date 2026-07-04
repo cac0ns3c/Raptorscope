@@ -1,0 +1,26 @@
+[
+  {
+    "Service": "kTCCServiceSystemPolicyAllFiles",
+    "Client": "com.apple.Terminal",
+    "ClientType": 0,
+    "AuthValue": 2,
+    "LastModified": "2025-01-05T12:00:00Z",
+    "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+  },
+  {
+    "Service": "kTCCServiceCamera",
+    "Client": "us.zoom.xos",
+    "ClientType": 0,
+    "AuthValue": 2,
+    "LastModified": "2025-03-11T08:30:00Z",
+    "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+  },
+  {
+    "Service": "kTCCServiceAccessibility",
+    "Client": "/Users/Shared/.helper/agent",
+    "ClientType": 1,
+    "AuthValue": 2,
+    "LastModified": "2026-07-02T22:14:38Z",
+    "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+  }
+]

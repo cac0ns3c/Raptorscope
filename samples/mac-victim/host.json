@@ -1,0 +1,6 @@
+{
+  "name": "mac-victim",
+  "os": {
+    "type": "macos"
+  }
+}

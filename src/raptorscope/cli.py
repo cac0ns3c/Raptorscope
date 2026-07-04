@@ -1,8 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Command-line entry point: ingest a collection -> normalize -> index."""
 import argparse
+import pathlib
 
 from .collection import enrich_host, load_collection
+
+# The committed sample collection that `raptorscope demo` serves out of the box.
+DEMO_SAMPLE = pathlib.Path(__file__).resolve().parents[2] / "samples" / "mac-victim"
 from .normalize.btm import normalize_btm
 from .normalize.config_profiles import normalize_config_profiles
 from .normalize.cron import normalize_cron
@@ -87,10 +91,22 @@ def build_serve_app(es_url: str | None = None, collection: str | None = None):
     return create_app(store)
 
 
+def build_demo_app(collection=None):
+    """Build the API app over the bundled sample case (fully offline)."""
+    return build_serve_app(collection=str(collection or DEMO_SAMPLE))
+
+
 def serve(es_url, collection, host, port):  # pragma: no cover - runs a server
     import uvicorn
 
     uvicorn.run(build_serve_app(es_url=es_url, collection=collection), host=host, port=port)
+
+
+def demo(host, port):  # pragma: no cover - runs a server
+    import uvicorn
+
+    print(f"raptorscope demo: serving sample case from {DEMO_SAMPLE}")
+    uvicorn.run(build_demo_app(), host=host, port=port)
 
 
 def main(argv=None):
@@ -108,11 +124,17 @@ def main(argv=None):
     srv.add_argument("--host", default="127.0.0.1")
     srv.add_argument("--port", type=int, default=8000)
 
+    dem = sub.add_parser("demo", help="serve the bundled sample case (no setup)")
+    dem.add_argument("--host", default="127.0.0.1")
+    dem.add_argument("--port", type=int, default=8000)
+
     a = p.parse_args(argv)
     if a.cmd == "ingest":
         ingest(a.path, a.es)
     elif a.cmd == "serve":
         serve(a.es, a.collection, a.host, a.port)
+    elif a.cmd == "demo":
+        demo(a.host, a.port)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,44 @@
+[
+  {
+    "Pid": 1,
+    "Ppid": 0,
+    "Name": "launchd",
+    "Exe": "/sbin/launchd",
+    "CommandLine": "/sbin/launchd",
+    "Username": "root",
+    "Mtime": "2026-07-03T08:00:00Z",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Software Signing"
+    }
+  },
+  {
+    "Pid": 842,
+    "Ppid": 1,
+    "Name": "Safari",
+    "Exe": "/Applications/Safari.app/Contents/MacOS/Safari",
+    "CommandLine": "/Applications/Safari.app/Contents/MacOS/Safari",
+    "Username": "analyst",
+    "Mtime": "2026-07-03T09:12:44Z",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Software Signing"
+    }
+  },
+  {
+    "Pid": 5099,
+    "Ppid": 842,
+    "Name": "helper",
+    "Exe": "/private/tmp/.cache/helper",
+    "CommandLine": "/private/tmp/.cache/helper --beacon http://45.9.148.99",
+    "Username": "analyst",
+    "Mtime": "2026-07-03T09:41:03Z",
+    "CodeSignature": {
+      "Exists": false,
+      "Trusted": false,
+      "SubjectName": null
+    }
+  }
+]

