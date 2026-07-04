@@ -1,0 +1,24 @@
+title: macOS persistence program in suspicious path
+id: 5a1e0b7c-0000-4000-a000-0000000c0de1
+status: experimental
+description: >
+  A launch agent/daemon plist whose path resides in a world-writable or
+  staging directory (/tmp, /private/tmp, /Users/Shared) — a common macOS
+  persistence staging location.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    file.path|contains:
+      - /tmp/
+      - /private/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Legitimate installers that briefly stage helper plists in shared paths
+level: high
+tags:
+  - attack.persistence
+  - attack.t1543
