@@ -113,20 +113,20 @@ In-process `run_rules` reads all case docs.
 - Stream `triage`/`summary`/`copilot` (SSE) so long copilot runs render
   incrementally; add `output_config.effort` tuning and prompt caching of the
   system persona. Extend `AIClient` with a streaming primitive; SPA reads the stream.
-- [ ] Streaming seam + SSE endpoints + SPA + tests (fake stream).
+- [ ] Streaming seam + SSE endpoints + SPA + tests (fake stream). *(not started)*
 
 ### C2 — prompt-injection hardening (input side)
 Case data (attacker-controllable artifact fields) flows into prompts.
 - Delimit/label all evidence as untrusted data (not instructions); add a guard
   system directive; strip/escape control sequences; add a red-team test with a
   malicious `command_line` attempting instruction injection.
-- [ ] Framing + guard + injection test.
+- [x] **DONE (C2)** — untrusted-evidence fencing + guard directive + red-team test.
 
 ### C3 — guardrails & structured output
 - Rate-limit `/ai/*` and `/login`; per-request token ceilings; **structured IOC
   extraction** (`messages.parse` → typed IOCs) surfaced in the UI and exportable;
   persist triage results per case (like the summary).
-- [ ] Rate limiter + IOC schema/endpoint + triage persistence + tests.
+- [x] **PARTIAL** — rate limiter (`/login`,`/ai/*`) + per-alert triage persistence DONE; structured IOC extraction pending.
 
 ---
 
@@ -140,7 +140,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 ### D2 — observability
 - Structured JSON logging, `/metrics` (Prometheus), request-id propagation and
   basic tracing.
-- [ ] Logging + metrics + tests.
+- [x] **PARTIAL (D2)** — request-id correlation + access logging DONE; Prometheus /metrics pending.
 
 ### D3 — supply chain
 - Pin all deps (lockfiles committed for Python too), generate an SBOM, scan the
@@ -160,7 +160,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 ### E2 — coverage & evaluator robustness
 - Coverage gates (pytest-cov, vitest coverage); **property/fuzz tests** for the
   Sigma condition parser (`detect/evaluate.py`) and `_leaf_text`/`_apply_op`.
-- [ ] Coverage config + property tests.
+- [x] **DONE (E2)** — evaluator property/fuzz tests (found+fixed an IndexError); coverage gate pending.
 
 ### E3 — release & distribution
 - PyPI publish workflow, semver + `CHANGELOG.md`, published Docker images,
