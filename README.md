@@ -97,6 +97,10 @@ and `/docs` stay open, `/login` issues a **time-limited signed bearer token**
 > localhost. The dev `ES_JAVA_OPTS`/`xpack.security.enabled=false` compose is for
 > local use only.
 
+**Rate limits** (per client, 60s window) protect `/login` and the AI endpoints:
+`RAPTORSCOPE_LOGIN_RATE` (default 20) and `RAPTORSCOPE_AI_RATE` (default 60);
+`/ai/status` polling is exempt. Exceeding a limit returns `429`.
+
 ### Query API
 
 `create_app(store)` (`api/app.py`) serves JSON over a `Store` abstraction —

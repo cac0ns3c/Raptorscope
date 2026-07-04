@@ -151,3 +151,20 @@ def test_prompt_injection_is_fenced_and_guarded():
     start = body.index("<untrusted_evidence>")
     end = body.index("</untrusted_evidence>")
     assert start < body.index(payload) < end
+
+
+def test_ai_endpoints_are_rate_limited():
+    c = TestClient(create_app(InMemoryStore(seed_docs()), ai=FakeAI(), ai_rate=3))
+    for _ in range(3):
+        assert c.post("/cases/mac-victim/ai/summary").status_code == 200
+    assert c.post("/cases/mac-victim/ai/summary").status_code == 429
+    # status polling is exempt
+    assert c.get("/ai/status").status_code == 200
+
+
+def test_login_is_rate_limited():
+    c = TestClient(create_app(InMemoryStore(seed_docs()), login_rate=2))
+    body = {"username": "x", "password": "y"}
+    for _ in range(2):
+        c.post("/login", json=body)
+    assert c.post("/login", json=body).status_code == 429

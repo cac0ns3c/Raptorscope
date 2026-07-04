@@ -7,12 +7,33 @@ production builds one around ``ESStore``. A *case* is a collected host
 (``host.name``).
 """
 import logging
+import os
+import time
 from collections import Counter
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 _log = logging.getLogger("raptorscope.ai")
+
+
+class _RateLimiter:
+    """Fixed-window per-client request counter (in-memory, per app instance)."""
+
+    def __init__(self, limit: int, window: float = 60.0):
+        self.limit = limit
+        self.window = window
+        self._hits: dict[str, tuple[float, int]] = {}
+
+    def allow(self, key: str) -> bool:
+        now = time.monotonic()
+        start, count = self._hits.get(key, (now, 0))
+        if now - start >= self.window:
+            start, count = now, 0
+        count += 1
+        self._hits[key] = (start, count)
+        return count <= self.limit
 
 from ..ai import service as ai_service
 from ..ai.client import AIClient, MODEL, build_ai_from_env
@@ -114,6 +135,8 @@ def create_app(
     rules_dir: str = "detections/sigma",
     auth: AuthConfig | None = None,
     ai: AIClient | None = None,
+    ai_rate: int | None = None,
+    login_rate: int | None = None,
 ) -> FastAPI:
     # Disable the built-in Swagger/ReDoc UIs so `/docs` serves our own guides.
     app = FastAPI(
@@ -125,6 +148,29 @@ def create_app(
     rules = load_rules(rules_dir)
     ai = ai if ai is not None else build_ai_from_env()
     auth = auth or AuthConfig()
+
+    # Per-client rate limits (fixed 60s window) for abuse/cost protection.
+    ai_limit = ai_rate if ai_rate is not None else int(os.environ.get("RAPTORSCOPE_AI_RATE", "60"))
+    login_limit = (
+        login_rate if login_rate is not None else int(os.environ.get("RAPTORSCOPE_LOGIN_RATE", "20"))
+    )
+    ai_bucket = _RateLimiter(ai_limit)
+    login_bucket = _RateLimiter(login_limit)
+
+    @app.middleware("http")
+    async def _rate_limit(request, call_next):
+        path = request.url.path
+        key = request.client.host if request.client else "?"
+        bucket = None
+        if path == "/login":
+            bucket = login_bucket
+        elif "/ai/" in path and not path.endswith("/ai/status"):
+            bucket = ai_bucket
+        if bucket is not None and not bucket.allow(key):
+            return JSONResponse(
+                status_code=429, content={"detail": "rate limit exceeded"}
+            )
+        return await call_next(request)
     require_token = make_auth_dependency(auth)
     # All /cases/* routes require a valid token when auth is enabled.
     router = APIRouter(dependencies=[Depends(require_token)])
