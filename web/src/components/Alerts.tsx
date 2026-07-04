@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Alert } from "../api/types";
 import { useApi } from "../context/ApiContext";
@@ -8,6 +8,35 @@ import { useAsync } from "../hooks/useAsync";
 import { triageKey, useTriage } from "../hooks/useTriage";
 import { IconAlert, IconShieldCheck } from "../ui/icons";
 import { Markdown } from "../ui/Markdown";
+
+type AiState = Record<string, { loading: boolean; text?: string }>;
+const aiTriageKey = (c: string) => `rs_triage:${c}`;
+
+function loadTriage(c: string): AiState {
+  try {
+    const raw = window.localStorage.getItem(aiTriageKey(c));
+    if (!raw) return {};
+    const saved = JSON.parse(raw) as Record<string, string>;
+    return Object.fromEntries(
+      Object.entries(saved).map(([k, text]) => [k, { loading: false, text }]),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function saveTriage(c: string, state: AiState): void {
+  try {
+    const done = Object.fromEntries(
+      Object.entries(state)
+        .filter(([, v]) => v.text)
+        .map(([k, v]) => [k, v.text]),
+    );
+    window.localStorage.setItem(aiTriageKey(c), JSON.stringify(done));
+  } catch {
+    /* ignore storage failures */
+  }
+}
 
 export function Alerts({
   caseName,
@@ -21,15 +50,22 @@ export function Alerts({
   const { map, update } = useTriage();
   const [showDismissed, setShowDismissed] = useState(false);
   const [noteOpen, setNoteOpen] = useState<string | null>(null);
-  const [ai, setAi] = useState<Record<string, { loading: boolean; text?: string }>>(
-    {},
-  );
+  const [ai, setAi] = useState<AiState>({});
+
+  // Restore persisted triage analyses for this case (survive tab/case switches).
+  useEffect(() => setAi(loadTriage(caseName)), [caseName]);
 
   function runTriage(key: string, a: Alert) {
     setAi((s) => ({ ...s, [key]: { loading: true } }));
     api
       .aiTriage(caseName, a.rule_id, a.doc_id)
-      .then((r) => setAi((s) => ({ ...s, [key]: { loading: false, text: r.analysis } })))
+      .then((r) =>
+        setAi((s) => {
+          const next = { ...s, [key]: { loading: false, text: r.analysis } };
+          saveTriage(caseName, next);
+          return next;
+        }),
+      )
       .catch(() =>
         setAi((s) => ({
           ...s,

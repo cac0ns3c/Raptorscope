@@ -65,6 +65,18 @@ describe("Alerts", () => {
     expect(await screen.findByText(/Assessment/)).toBeInTheDocument();
   });
 
+  it("persists a triage analysis across remounts", async () => {
+    const { unmount } = renderWithApi(<Alerts caseName="mac-victim" />);
+    await screen.findByLabelText("alerts");
+    const btns = await screen.findAllByRole("button", { name: "AI triage" });
+    await userEvent.click(btns[0]);
+    await screen.findByText(/Assessment/);
+    unmount();
+    // fresh mount restores the analysis from storage without re-running it
+    renderWithApi(<Alerts caseName="mac-victim" />);
+    expect(await screen.findByText(/Assessment/)).toBeInTheDocument();
+  });
+
   it("keeps a triage note without pivoting", async () => {
     const onPivot = vi.fn();
     renderWithApi(<Alerts caseName="mac-victim" onPivot={onPivot} />);
