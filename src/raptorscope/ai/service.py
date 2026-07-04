@@ -73,7 +73,7 @@ def summarize_case(
         "Ground every claim in the evidence. Use the real timestamps and paths; "
         "never invent artifacts or times that aren't in the data."
     )
-    return {"summary": ai.text(_PERSONA, prompt, max_tokens=2400)}
+    return {"summary": ai.text(_PERSONA, prompt, max_tokens=4096)}
 
 
 _QUERY_SCHEMA = {
