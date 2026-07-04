@@ -3,6 +3,16 @@
 
 INDEX_PATTERN = "raptorscope-*"
 
+
+def put_index_template(client, name: str = "raptorscope") -> None:
+    """Install the raptorscope ECS index template so ``raptorscope-*`` indices
+    get correctly-typed fields (keyword/date/boolean) instead of dynamic guesses."""
+    client.indices.put_index_template(
+        name=name,
+        index_patterns=INDEX_TEMPLATE["index_patterns"],
+        template=INDEX_TEMPLATE["template"],
+    )
+
 INDEX_TEMPLATE = {
     "index_patterns": [INDEX_PATTERN],
     "template": {

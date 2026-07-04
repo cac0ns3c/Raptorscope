@@ -9,7 +9,7 @@ description = "macOS DFIR analytics: Velociraptor collections -> ECS -> Elastics
 requires-python = ">=3.10"
 license = "GPL-3.0-or-later"
 dependencies = [
-    "elasticsearch>=8.11",
+    "elasticsearch>=8.11,<9",
     "pysigma>=0.11",
     "pysigma-backend-elasticsearch>=1.1",
     "fastapi>=0.110",

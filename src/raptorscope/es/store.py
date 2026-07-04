@@ -47,6 +47,11 @@ class ESStore:
         body = {"query": {"bool": {"filter": self._filter(host, dataset)}}}
         return self._client.count(index=self._pattern, body=body)["count"]
 
+    # ES rejects ``from + size`` above ``index.max_result_window`` (default 10k).
+    # A single collected host is far under that, so we cap at the window rather
+    # than carry PIT/scroll machinery. (Raise the setting + revisit if needed.)
+    MAX_WINDOW = 10000
+
     def search(
         self,
         host: str | None = None,
@@ -54,8 +59,8 @@ class ESStore:
         size: int = 1000,
         sort: tuple[str, str] | None = None,
     ) -> list[dict]:
-        body = {
-            "size": size,
+        body: dict = {
+            "size": min(size, self.MAX_WINDOW),
             "query": {"bool": {"filter": self._filter(host, dataset)}},
         }
         if sort is not None:

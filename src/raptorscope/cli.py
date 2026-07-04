@@ -57,8 +57,10 @@ def ingest(path: str, es_url: str | None) -> int:
         from elasticsearch import Elasticsearch
 
         from .es.indexer import bulk_index
+        from .es.template import put_index_template
 
         client = Elasticsearch(es_url)
+        put_index_template(client)
         # Route each doc to a per-dataset index under the raptorscope-* pattern.
         by_index: dict[str, list[dict]] = {}
         for d in docs:
