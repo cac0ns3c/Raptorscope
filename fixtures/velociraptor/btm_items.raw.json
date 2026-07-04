@@ -1,0 +1,30 @@
+[
+  {
+    "UUID": "0B6E2F31-7C2A-4E11-9E3C-1A2B3C4D5E6F",
+    "Name": "com.docker.helper",
+    "Developer": "Docker Inc",
+    "Executable": "/Applications/Docker.app/Contents/MacOS/com.docker.helper",
+    "Type": "daemon",
+    "Enabled": true,
+    "Mtime": "2025-02-20T10:15:00Z",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Developer ID Application: Docker Inc (9BNSXJN65R)"
+    }
+  },
+  {
+    "UUID": "F1E2D3C4-B5A6-4978-8899-AABBCCDDEEFF",
+    "Name": "com.apple.helperd",
+    "Developer": "Unknown",
+    "Executable": "/private/tmp/.x/helperd",
+    "Type": "agent",
+    "Enabled": true,
+    "Mtime": "2026-07-02T04:09:57Z",
+    "CodeSignature": {
+      "Exists": false,
+      "Trusted": false,
+      "SubjectName": null
+    }
+  }
+]

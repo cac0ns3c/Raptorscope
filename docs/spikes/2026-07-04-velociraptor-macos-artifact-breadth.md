@@ -66,3 +66,23 @@ running `bash -c 'curl … | bash'` every 5 minutes.
 Dataset `macos.persistence`, `persistence.type = config_profile`. `signed` bool
 = `SignerCN is not null`. Fires: unsigned `com.systemhelper.support` web-content
 filter profile.
+
+---
+
+## BTM — `MacOS.System.BackgroundTaskManagement`
+
+`velociraptor artifacts collect MacOS.System.BackgroundTaskManagement --format json`
+(parses the `backgroundtaskmanagementagent` db, macOS 13+)
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `UUID` | string | `raptorscope.persistence.uuid` |
+| `Name` | string | `raptorscope.persistence.label` |
+| `Developer` | string | `raptorscope.persistence.developer` |
+| `Executable` | string | `process.executable`, `file.path` |
+| `Type` | `agent`/`daemon`/`login_item` | `raptorscope.persistence.btm_type` |
+| `Enabled` | bool | `raptorscope.persistence.run_at_load` |
+| `CodeSignature` | object \| null | `process.code_signature.*` |
+
+Dataset `macos.persistence`, `persistence.type = btm`. Fires: unsigned
+`com.apple.helperd` agent (Developer "Unknown") running from `/private/tmp/.x/`.

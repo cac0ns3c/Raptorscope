@@ -1,0 +1,26 @@
+title: macOS BTM persistence item from suspicious path
+id: 9e5c4fb0-0004-4000-a000-0000000c0de5
+status: experimental
+description: >
+  A Background Task Management persistence item (launch agent/daemon or login
+  item) whose executable resides in a world-writable staging directory. Modern
+  macOS malware registers here for persistence; a BTM entry running out of
+  /tmp or /Users/Shared is high-signal.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: btm
+    process.executable|contains:
+      - /tmp/
+      - /private/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Developer tooling launched from a shared build directory
+level: high
+tags:
+  - attack.persistence
+  - attack.t1543.001

@@ -21,6 +21,9 @@ EMITTED_FIELDS = {
     "raptorscope.persistence.schedule",
     "raptorscope.persistence.payload_type",
     "raptorscope.persistence.signed",
+    "raptorscope.persistence.btm_type",
+    "raptorscope.persistence.developer",
+    "raptorscope.persistence.uuid",
 }
 
 
