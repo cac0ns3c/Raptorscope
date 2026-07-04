@@ -144,7 +144,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 ### D3 — supply chain
 - Pin all deps (lockfiles committed for Python too), generate an SBOM, scan the
   Docker images in CI (Trivy/Grype).
-- [ ] Pins + SBOM + CI scan.
+- [x] **DONE (D3)** — pinned `requirements.lock`; CI `security` job: `pip-audit` (gates fixable vulns; one unfixable transitive `diskcache` CVE triaged + documented), production `npm audit --omit=dev` (clean), CycloneDX SBOM artifact, Trivy fs scan. See `docs/SUPPLY-CHAIN.md`.
 
 ---
 

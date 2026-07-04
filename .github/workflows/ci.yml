@@ -45,6 +45,49 @@ jobs:
       - name: Production build
         run: npm run build
 
+  # Supply-chain: pinned deps, dependency-vuln scans, SBOM, filesystem scan.
+  # See docs/SUPPLY-CHAIN.md for the triaged findings (diskcache CVE, dev-only npm).
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install (pinned)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock
+          pip install -e . pip-audit cyclonedx-bom
+      - name: Audit Python deps
+        # CVE-2025-69872: unfixable transitive diskcache via pySigma; precondition
+        # (attacker write access to the cache dir) not reachable — see docs/SUPPLY-CHAIN.md
+        run: pip-audit --ignore-vuln CVE-2025-69872
+      - name: Audit production web deps
+        working-directory: web
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+      - name: Generate CycloneDX SBOM
+        run: cyclonedx-py environment $(python -c "import sys;print(sys.prefix)") > sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "0" # report only; findings are triaged in docs/SUPPLY-CHAIN.md
+
   # Live-Elasticsearch integration: exercises ingest + the ES-backed store,
   # aggregations, pagination, and the ES-native detector parity (Phase B).
   integration:

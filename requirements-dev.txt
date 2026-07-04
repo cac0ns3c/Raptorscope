@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Dev + CI tooling (not runtime deps).
+-r requirements.txt
+pytest>=8
+pip-audit>=2.7
+pip-tools>=7
+cyclonedx-bom>=4
