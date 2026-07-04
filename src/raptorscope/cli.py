@@ -65,15 +65,54 @@ def ingest(path: str, es_url: str | None) -> int:
     return len(docs)
 
 
+def build_serve_app(es_url: str | None = None, collection: str | None = None):
+    """Build the FastAPI app for ``serve``.
+
+    ``collection`` (a dir/zip) runs fully offline over an in-memory store —
+    handy for demos; ``es_url`` serves a live Elasticsearch via ``ESStore``.
+    """
+    from .api.app import create_app
+    from .api.store import InMemoryStore
+
+    if collection is not None:
+        store = InMemoryStore(normalize_collection(collection))
+    elif es_url is not None:
+        from elasticsearch import Elasticsearch
+
+        from .es.store import ESStore
+
+        store = ESStore(Elasticsearch(es_url))
+    else:
+        raise ValueError("serve requires either --collection or --es")
+    return create_app(store)
+
+
+def serve(es_url, collection, host, port):  # pragma: no cover - runs a server
+    import uvicorn
+
+    uvicorn.run(build_serve_app(es_url=es_url, collection=collection), host=host, port=port)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="raptorscope")
     sub = p.add_subparsers(dest="cmd", required=True)
     ing = sub.add_parser("ingest", help="ingest a Velociraptor collection")
     ing.add_argument("path", help="collection directory or zip")
     ing.add_argument("--es", default=None, help="Elasticsearch URL (omit for dry run)")
+
+    srv = sub.add_parser("serve", help="run the query API")
+    srv.add_argument("--es", default=None, help="Elasticsearch URL")
+    srv.add_argument(
+        "--collection", default=None, help="serve a collection dir/zip offline"
+    )
+    srv.add_argument("--host", default="127.0.0.1")
+    srv.add_argument("--port", type=int, default=8000)
+
     a = p.parse_args(argv)
     if a.cmd == "ingest":
         ingest(a.path, a.es)
+    elif a.cmd == "serve":
+        serve(a.es, a.collection, a.host, a.port)
 
 
 if __name__ == "__main__":

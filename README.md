@@ -11,8 +11,9 @@ Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md`
   normalize → index → one paired detection).
 - **Phase 2 (artifact breadth):** done — mappers + paired detections for the v1
   macOS artifact set (below).
-- Phases 3–5 (backend API, GUI, packaging) are deferred; see
-  `docs/superpowers/plans/`.
+- **Phase 3 (backend API):** done — FastAPI query layer (cases, overview,
+  per-artifact views, timeline, alerts) over a `Store` abstraction.
+- Phases 4–5 (GUI, packaging) are deferred; see `docs/superpowers/plans/`.
 
 ## v1 artifact coverage
 
@@ -46,7 +47,27 @@ PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir>
 
 # ...and index into Elasticsearch
 PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir> --es http://localhost:9200
+
+# serve the query API — offline over a collection (demo) or over a live ES
+PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <collection-dir> --port 8000
+PYTHONPATH=src .venv/bin/python -m raptorscope serve --es http://localhost:9200
 ```
+
+### Query API
+
+`create_app(store)` (`api/app.py`) serves JSON over a `Store` abstraction —
+`InMemoryStore` for tests/offline demo, `ESStore` for a live Elasticsearch. A
+*case* is a collected host. Alerts are query-on-read: the Sigma YAMLs are
+evaluated in-process (`detect/evaluate.py`) against the case's docs.
+
+| Endpoint | Returns |
+|----------|---------|
+| `GET /health` | liveness |
+| `GET /cases`, `GET /cases/{case}` | cases with doc counts + datasets |
+| `GET /cases/{case}/overview` | first-hour counts, persistence-type + signed/unsigned breakdown |
+| `GET /cases/{case}/artifacts/{dataset}` | paginated docs (`?limit=&offset=`) |
+| `GET /cases/{case}/timeline` | events across datasets, newest first |
+| `GET /cases/{case}/alerts` | fired detections with `doc_id` pivot-to-evidence |
 
 A collection is a directory (or zip) of `<artifact>.json` files (one per artifact,
 named by the stems in `cli._NORMALIZERS`) plus an optional `host.json` for

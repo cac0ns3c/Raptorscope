@@ -10,7 +10,10 @@ from collections import Counter
 
 from fastapi import FastAPI, HTTPException
 
+from ..detect.evaluate import load_rules, run_rules
 from .store import Store
+
+_LEVEL_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "informational": 4}
 
 
 def _dig(doc: dict, path: str):
@@ -53,8 +56,9 @@ def _summary(doc: dict) -> str:
     return _dig(doc, "file.path") or ds or ""
 
 
-def create_app(store: Store) -> FastAPI:
+def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
     app = FastAPI(title="Raptorscope API", version="0.1.0")
+    rules = load_rules(rules_dir)
 
     def require_case(case: str) -> None:
         if case not in store.hosts():
@@ -136,5 +140,15 @@ def create_app(store: Store) -> FastAPI:
         ]
         rows.sort(key=lambda r: r["timestamp"], reverse=True)
         return rows[:limit]
+
+    @app.get("/cases/{case}/alerts")
+    def alerts(case: str):
+        require_case(case)
+        docs = store.search(host=case, size=100000)
+        fired = run_rules(docs, rules)
+        fired.sort(
+            key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or "")
+        )
+        return fired
 
     return app
