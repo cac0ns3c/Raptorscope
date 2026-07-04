@@ -113,9 +113,17 @@ class ESStore:
         dataset: str | None = None,
         size: int = 1000,
         sort: tuple[str, str] | None = None,
+        offset: int = 0,
     ) -> list[dict]:
+        # ES rejects ``from + size`` past ``index.max_result_window`` (10k). For a
+        # single collected host that's ample; paging beyond it needs PIT +
+        # search_after (tracked as the deep-pagination follow-up).
+        size = min(size, self.MAX_WINDOW)
+        if offset + size > self.MAX_WINDOW:
+            offset = max(0, self.MAX_WINDOW - size)
         body: dict = {
-            "size": min(size, self.MAX_WINDOW),
+            "from": offset,
+            "size": size,
             "query": {"bool": {"filter": self._filter(host, dataset)}},
         }
         if sort is not None:

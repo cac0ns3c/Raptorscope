@@ -44,6 +44,7 @@ class Store(Protocol):
         dataset: str | None = None,
         size: int = 1000,
         sort: tuple[str, str] | None = None,
+        offset: int = 0,
     ) -> list[dict]: ...
 
     def get(self, doc_id: str) -> dict | None: ...
@@ -119,12 +120,13 @@ class InMemoryStore:
         dataset: str | None = None,
         size: int = 1000,
         sort: tuple[str, str] | None = None,
+        offset: int = 0,
     ) -> list[dict]:
         hits = [d for d in self._docs if self._match(d, host, dataset)]
         if sort is not None:
             field, order = sort
             hits.sort(key=lambda d: d.get(field) or "", reverse=(order == "desc"))
-        return hits[:size]
+        return hits[offset : offset + size]
 
     def get(self, doc_id: str) -> dict | None:
         return self._by_id.get(doc_id)

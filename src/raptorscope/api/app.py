@@ -243,11 +243,13 @@ def create_app(
     @router.get("/cases/{case}/artifacts/{dataset}")
     def artifact_view(case: str, dataset: str, limit: int = 50, offset: int = 0):
         require_case(case)
-        hits = store.search(host=case, dataset=dataset, size=100000)
+        # Page ES-side (from+size) instead of pulling the whole dataset into memory.
         return {
             "dataset": dataset,
-            "total": len(hits),
-            "items": hits[offset : offset + limit],
+            "total": store.count(host=case, dataset=dataset),
+            "items": store.search(
+                host=case, dataset=dataset, size=limit, offset=offset
+            ),
         }
 
     @router.get("/cases/{case}/timeline")
