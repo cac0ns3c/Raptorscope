@@ -5,11 +5,13 @@ import type { Case } from "./api/types";
 import { Alerts } from "./components/Alerts";
 import { ArtifactTable } from "./components/ArtifactTable";
 import { CasePicker } from "./components/CasePicker";
+import { Copilot } from "./components/Copilot";
 import { Docs } from "./components/Docs";
 import { Overview } from "./components/Overview";
 import { Search } from "./components/Search";
 import { Timeline } from "./components/Timeline";
 import { useAuthSession } from "./context/AuthSessionContext";
+import { useAiEnabled } from "./hooks/useAiEnabled";
 import { useTheme } from "./hooks/useTheme";
 import {
   IconBell,
@@ -19,11 +21,12 @@ import {
   IconLayers,
   IconLogo,
   IconSearch,
+  IconSpark,
 } from "./ui/icons";
 import { kibanaBase, kibanaDiscoverUrl } from "./util/kibana";
 
-type Tab = "overview" | "artifacts" | "timeline" | "alerts" | "search";
-const TABS: { id: Tab; icon: JSX.Element }[] = [
+type Tab = "overview" | "artifacts" | "timeline" | "alerts" | "search" | "copilot";
+const BASE_TABS: { id: Tab; icon: JSX.Element }[] = [
   { id: "overview", icon: <IconGauge /> },
   { id: "artifacts", icon: <IconLayers /> },
   { id: "timeline", icon: <IconClock /> },
@@ -39,6 +42,10 @@ export function App() {
   const [showDocs, setShowDocs] = useState(false);
   const { theme, toggle } = useTheme();
   const { gated, logout } = useAuthSession();
+  const aiEnabled = useAiEnabled();
+  const TABS = aiEnabled
+    ? [...BASE_TABS, { id: "copilot" as Tab, icon: <IconSpark /> }]
+    : BASE_TABS;
 
   function selectCase(c: Case) {
     setSelected(c);
@@ -175,6 +182,8 @@ export function App() {
                 onPivot={pivot}
               />
             )}
+
+            {tab === "copilot" && <Copilot caseName={selected.name} />}
           </div>
         </main>
       )}

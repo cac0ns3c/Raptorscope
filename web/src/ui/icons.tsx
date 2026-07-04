@@ -83,6 +83,13 @@ export const IconSearch = (p: SVGProps<SVGSVGElement>) => (
   </Svg>
 );
 
+export const IconSpark = (p: SVGProps<SVGSVGElement>) => (
+  <Svg {...p}>
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+    <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4Z" />
+  </Svg>
+);
+
 export const IconShieldCheck = (p: SVGProps<SVGSVGElement>) => (
   <Svg {...p}>
     <path d="M12 3 5 6v5c0 4 2.6 6.6 7 8 4.4-1.4 7-4 7-8V6l-7-3Z" />

@@ -1,13 +1,27 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { useState } from "react";
+
 import { useApi } from "../context/ApiContext";
+import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
+import { Markdown } from "../ui/Markdown";
 
 export function Overview({ caseName }: { caseName: string }) {
   const api = useApi();
+  const aiEnabled = useAiEnabled();
+  const [summary, setSummary] = useState<{ loading: boolean; text?: string }>();
   const { data, loading, error } = useAsync(
     () => api.getOverview(caseName),
     [caseName],
   );
+
+  function summarize() {
+    setSummary({ loading: true });
+    api
+      .aiSummary(caseName)
+      .then((r) => setSummary({ loading: false, text: r.summary }))
+      .catch(() => setSummary({ loading: false, text: "Summary failed." }));
+  }
 
   if (loading)
     return (
@@ -21,6 +35,23 @@ export function Overview({ caseName }: { caseName: string }) {
 
   return (
     <section className="overview" aria-label="overview">
+      {aiEnabled && (
+        <div className="ai-summary">
+          <button
+            className="ai-btn"
+            onClick={summarize}
+            disabled={summary?.loading}
+          >
+            {summary?.loading ? "Summarizing…" : "✦ Summarize case (AI)"}
+          </button>
+          {summary?.text && (
+            <div className="ai-panel">
+              <Markdown text={summary.text} />
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="tiles">
         {Object.entries(data.datasets).map(([ds, count]) => (
           <div className="tile" data-dataset={ds} key={ds}>

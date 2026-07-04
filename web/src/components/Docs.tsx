@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { marked } from "marked";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { DocMeta } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { Markdown } from "../ui/Markdown";
 
 export function Docs({ onClose }: { onClose: () => void }) {
   const api = useApi();
@@ -24,10 +24,6 @@ export function Docs({ onClose }: { onClose: () => void }) {
   }, [api]);
 
   const { data } = useAsync(() => api.getDoc(active), [active]);
-  const html = useMemo(
-    () => (data ? marked.parse(data.markdown) : ""),
-    [data],
-  );
 
   return (
     <div className="docs-overlay" role="dialog" aria-label="documentation">
@@ -52,11 +48,9 @@ export function Docs({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
         </aside>
-        <article
-          className="docs-content markdown"
-          // Trusted content: our own repo docs served by the backend.
-          dangerouslySetInnerHTML={{ __html: html as string }}
-        />
+        <div className="docs-content">
+          {data && <Markdown text={data.markdown} />}
+        </div>
       </div>
     </div>
   );

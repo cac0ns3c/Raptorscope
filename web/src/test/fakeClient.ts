@@ -189,6 +189,23 @@ export function makeFakeClient(): ApiClient {
       title: id === "kibana" ? "Using Kibana" : "Overview",
       markdown: `# ${id}\n\nSample documentation body for **${id}**.`,
     }),
+    aiStatus: async () => ({ enabled: true, model: "claude-opus-4-8" }),
+    aiTriage: async (_name, ruleId) => ({
+      analysis: `**Assessment** — ${ruleId} is likely malicious.`,
+    }),
+    aiSummary: async () => ({
+      summary: "**Bottom line** — one host shows staged persistence and a beacon.",
+    }),
+    aiNlQuery: async (_name, question) => ({
+      query: { q: question.includes("tmp") ? "/private/tmp" : question, dataset: "macos.process" },
+    }),
+    aiCopilot: async (_name, question) => ({
+      answer: `**Verdict** — regarding "${question}": suspicious activity found.`,
+      citations: [
+        { tool: "get_overview", input: {} },
+        { tool: "search_case", input: { q: "/private/tmp" } },
+      ],
+    }),
   };
 }
 

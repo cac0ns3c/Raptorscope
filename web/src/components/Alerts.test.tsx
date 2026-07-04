@@ -57,6 +57,14 @@ describe("Alerts", () => {
     expect(screen.getByText(/1 acknowledged/)).toBeInTheDocument();
   });
 
+  it("runs AI triage and shows the analysis", async () => {
+    renderWithApi(<Alerts caseName="mac-victim" />);
+    await screen.findByLabelText("alerts");
+    const btns = await screen.findAllByRole("button", { name: "AI triage" });
+    await userEvent.click(btns[0]);
+    expect(await screen.findByText(/Assessment/)).toBeInTheDocument();
+  });
+
   it("keeps a triage note without pivoting", async () => {
     const onPivot = vi.fn();
     renderWithApi(<Alerts caseName="mac-victim" onPivot={onPivot} />);

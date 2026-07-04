@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import type { Doc, SearchQuery } from "../api/types";
 import { useApi } from "../context/ApiContext";
+import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { IconSearch } from "../ui/icons";
 import { cell, dig } from "../util/dig";
@@ -49,13 +50,33 @@ export function Search({
   onPivot?: (dataset: string, docId: string) => void;
 }) {
   const api = useApi();
+  const aiEnabled = useAiEnabled();
   const [q, setQ] = useState("");
   const [ds, setDs] = useState("");
   const [field, setField] = useState("");
   const [op, setOp] = useState("contains");
   const [value, setValue] = useState("");
   const [showHelp, setShowHelp] = useState(false);
+  const [nl, setNl] = useState("");
+  const [nlBusy, setNlBusy] = useState(false);
   const [query, setQuery] = useState<SearchQuery | null>(null);
+
+  async function askNl(e: React.FormEvent) {
+    e.preventDefault();
+    if (!nl.trim()) return;
+    setNlBusy(true);
+    try {
+      const { query: compiled } = await api.aiNlQuery(caseName, nl);
+      setQ(compiled.q ?? "");
+      setDs(compiled.dataset ?? "");
+      setField(compiled.field ?? "");
+      setOp(compiled.op ?? "contains");
+      setValue(compiled.value ?? "");
+      setQuery({ ...compiled, limit: 200 });
+    } finally {
+      setNlBusy(false);
+    }
+  }
 
   const { data, loading } = useAsync(
     () => (query ? api.search(caseName, query) : Promise.resolve(null)),
@@ -76,6 +97,21 @@ export function Search({
 
   return (
     <section className="search">
+      {aiEnabled && (
+        <form className="nl-bar" onSubmit={askNl}>
+          <span className="ai-spark">✦</span>
+          <input
+            className="q-input"
+            aria-label="ask in plain english"
+            placeholder="Ask in plain English — e.g. unsigned processes from tmp"
+            value={nl}
+            onChange={(e) => setNl(e.target.value)}
+          />
+          <button className="q-run" type="submit" disabled={nlBusy}>
+            {nlBusy ? "…" : "Ask"}
+          </button>
+        </form>
+      )}
       <form className="query-bar" onSubmit={run} role="search">
         <span className="q-ico">
           <IconSearch width={16} height={16} />

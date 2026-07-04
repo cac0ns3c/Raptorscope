@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { Overview } from "./Overview";
 import { renderWithApi } from "../test/renderWithApi";
@@ -22,5 +23,13 @@ describe("Overview", () => {
     expect(await screen.findByText(/22 documents total/)).toBeInTheDocument();
     expect(screen.getByText("Unsigned processes")).toBeInTheDocument();
     expect(screen.getByText("Unsigned applications")).toBeInTheDocument();
+  });
+
+  it("generates an AI case summary on demand", async () => {
+    renderWithApi(<Overview caseName="mac-victim" />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Summarize case/ }),
+    );
+    expect(await screen.findByText(/Bottom line/)).toBeInTheDocument();
   });
 });

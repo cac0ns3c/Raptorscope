@@ -3,9 +3,11 @@ import { useState } from "react";
 
 import type { Alert } from "../api/types";
 import { useApi } from "../context/ApiContext";
+import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { triageKey, useTriage } from "../hooks/useTriage";
 import { IconAlert, IconShieldCheck } from "../ui/icons";
+import { Markdown } from "../ui/Markdown";
 
 export function Alerts({
   caseName,
@@ -15,9 +17,26 @@ export function Alerts({
   onPivot?: (dataset: string, docId: string) => void;
 }) {
   const api = useApi();
+  const aiEnabled = useAiEnabled();
   const { map, update } = useTriage();
   const [showDismissed, setShowDismissed] = useState(false);
   const [noteOpen, setNoteOpen] = useState<string | null>(null);
+  const [ai, setAi] = useState<Record<string, { loading: boolean; text?: string }>>(
+    {},
+  );
+
+  function runTriage(key: string, a: Alert) {
+    setAi((s) => ({ ...s, [key]: { loading: true } }));
+    api
+      .aiTriage(caseName, a.rule_id, a.doc_id)
+      .then((r) => setAi((s) => ({ ...s, [key]: { loading: false, text: r.analysis } })))
+      .catch(() =>
+        setAi((s) => ({
+          ...s,
+          [key]: { loading: false, text: "AI triage failed." },
+        })),
+      );
+  }
   const { data, loading, error } = useAsync(
     () => api.getAlerts(caseName),
     [caseName],
@@ -130,7 +149,23 @@ export function Alerts({
                   >
                     Note
                   </button>
+                  {aiEnabled && (
+                    <button
+                      className="ai-btn"
+                      aria-label="AI triage"
+                      onClick={() => runTriage(key, a)}
+                      disabled={ai[key]?.loading}
+                    >
+                      {ai[key]?.loading ? "Analyzing…" : "✦ AI triage"}
+                    </button>
+                  )}
                 </div>
+
+                {ai[key]?.text && (
+                  <div className="ai-panel" onClick={(e) => e.stopPropagation()}>
+                    <Markdown text={ai[key]!.text!} />
+                  </div>
+                )}
 
                 {(noteOpen === key || entry.note) && (
                   <input

@@ -32,6 +32,20 @@ describe("Search", () => {
     expect(typeof onPivot.mock.calls[0][0]).toBe("string");
   });
 
+  it("compiles a natural-language question and runs it", async () => {
+    renderWithApi(
+      <Search caseName="mac-victim" datasets={DATASETS} onPivot={() => {}} />,
+    );
+    await userEvent.type(
+      await screen.findByLabelText("ask in plain english"),
+      "unsigned processes from tmp",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Ask" }));
+    // NL → q=/private/tmp, dataset=macos.process → results render
+    const results = await screen.findByLabelText("search results");
+    expect(within(results).getAllByTestId("search-row").length).toBeGreaterThan(0);
+  });
+
   it("toggles the query help guide", async () => {
     renderWithApi(
       <Search caseName="mac-victim" datasets={DATASETS} onPivot={() => {}} />,

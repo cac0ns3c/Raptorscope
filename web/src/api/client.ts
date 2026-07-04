@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type {
+  AIStatus,
   Alert,
   ArtifactPage,
   Case,
+  CopilotResult,
   DocContent,
   DocMeta,
   Overview,
@@ -32,6 +34,15 @@ export interface ApiClient {
   login(username: string, password: string): Promise<{ token: string }>;
   listDocs(): Promise<DocMeta[]>;
   getDoc(id: string): Promise<DocContent>;
+  aiStatus(): Promise<AIStatus>;
+  aiTriage(
+    caseName: string,
+    ruleId: string,
+    docId: string,
+  ): Promise<{ analysis: string }>;
+  aiSummary(caseName: string): Promise<{ summary: string }>;
+  aiNlQuery(caseName: string, question: string): Promise<{ query: SearchQuery }>;
+  aiCopilot(caseName: string, question: string): Promise<CopilotResult>;
 }
 
 /** Raised on a 401 so the UI can show the login screen. */
@@ -87,5 +98,26 @@ export function createHttpClient(
       }),
     listDocs: () => req(`/docs`),
     getDoc: (id) => req(`/docs/${c(id)}`),
+    aiStatus: () => req(`/ai/status`),
+    aiTriage: (name, ruleId, docId) =>
+      req(`/cases/${c(name)}/ai/triage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rule_id: ruleId, doc_id: docId }),
+      }),
+    aiSummary: (name) =>
+      req(`/cases/${c(name)}/ai/summary`, { method: "POST" }),
+    aiNlQuery: (name, question) =>
+      req(`/cases/${c(name)}/ai/nl-query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      }),
+    aiCopilot: (name, question) =>
+      req(`/cases/${c(name)}/ai/copilot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      }),
   };
 }

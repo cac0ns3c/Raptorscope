@@ -1447,6 +1447,91 @@ button {
   margin: 0.1rem 0 0;
 }
 
+/* ---------- AI features ---------- */
+.ai-btn {
+  background: linear-gradient(180deg, #6a4cf0, #7c3aed) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.ai-btn:hover {
+  filter: brightness(1.08);
+}
+.ai-btn:disabled {
+  opacity: 0.6;
+}
+.ai-spark {
+  color: #a78bfa;
+  font-size: 1rem;
+}
+.ai-panel {
+  grid-column: 2;
+  margin-top: 0.6rem;
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, #7c3aed 30%, var(--border));
+  border-radius: var(--r);
+  padding: 0.7rem 1rem;
+}
+.ai-panel .markdown {
+  font-size: 0.86rem;
+}
+.ai-summary {
+  margin-bottom: 1.2rem;
+}
+.ai-summary .ai-panel {
+  grid-column: auto;
+  max-width: 52rem;
+}
+.nl-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: color-mix(in srgb, #7c3aed 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, #7c3aed 32%, var(--border));
+  border-radius: var(--r);
+  padding: 0.4rem 0.5rem 0.4rem 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.copilot {
+  max-width: 52rem;
+}
+.copilot-result {
+  margin-top: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.3rem;
+  box-shadow: var(--shadow);
+}
+.citations {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border-soft);
+}
+.citations-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+.citations ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.citations code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+.cite-input {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
 /* ---------- misc states ---------- */
 .state {
   display: flex;

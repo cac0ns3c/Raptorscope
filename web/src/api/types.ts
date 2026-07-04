@@ -57,6 +57,21 @@ export interface DocContent {
   markdown: string;
 }
 
+export interface AIStatus {
+  enabled: boolean;
+  model: string | null;
+}
+
+export interface Citation {
+  tool: string;
+  input: Record<string, unknown>;
+}
+
+export interface CopilotResult {
+  answer: string;
+  citations: Citation[];
+}
+
 export interface Alert {
   rule_id: string;
   title: string;
