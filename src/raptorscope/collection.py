@@ -27,6 +27,9 @@ ARTIFACT_ALIASES = {
     "MacOS.System.Packages": "installed_apps",
     # The whole persistence family really comes from one Autoruns artifact.
     "MacOS.Detection.Autoruns": "autoruns",
+    # Custom VQL artifacts (profile/custom-vql/) for what has no built-in.
+    "MacOS.Raptorscope.ConfigProfiles": "config_profiles",
+    "MacOS.Raptorscope.BTM": "btm_items",
 }
 
 

@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Custom Velociraptor artifact — macOS configuration / MDM profiles.
+#
+# There is no standard built-in that dumps installed configuration profiles, so
+# raptorscope ships this one. It shells out to `profiles` and enumerates the
+# on-disk ConfigurationProfiles store, emitting the columns the
+# `normalize_config_profiles` mapper consumes (OSPath, PayloadIdentifier,
+# PayloadType, Signed, Mtime). Alias it to the `config_profiles` stem via
+# raptorscope.collection.ARTIFACT_ALIASES.
+name: MacOS.Raptorscope.ConfigProfiles
+description: |
+  Enumerate installed macOS configuration/MDM profiles from the
+  ConfigurationProfiles store, with signing status. Persistence + config
+  manipulation (MITRE T1547 / T1176).
+type: CLIENT
+parameters:
+  - name: StoreGlob
+    default: /var/db/ConfigurationProfiles/Store/*.plist
+sources:
+  - query: |
+      LET store = SELECT OSPath, Mtime
+        FROM glob(globs=StoreGlob)
+      SELECT
+        OSPath,
+        Mtime,
+        parse_plist(file=OSPath).PayloadIdentifier AS PayloadIdentifier,
+        parse_plist(file=OSPath).PayloadType AS PayloadType,
+        -- `profiles` reports signed state; treat a present signer as signed.
+        if(condition=parse_plist(file=OSPath).SignerCN,
+           then=TRUE, else=FALSE) AS Signed,
+        parse_plist(file=OSPath).SignerCN AS SignerCN
+      FROM store

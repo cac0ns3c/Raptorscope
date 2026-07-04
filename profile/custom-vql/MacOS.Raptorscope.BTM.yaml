@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Custom Velociraptor artifact — macOS Background Task Management (BTM) items.
+#
+# macOS 13+ records launch agents/daemons and login items in the BTM database.
+# There is no standard built-in, so raptorscope ships this one. It parses
+# `sfltool dumpbtm` and emits the columns `normalize_btm` consumes (Path,
+# ItemName, DeveloperName, Disabled, Type, UUID, Hash, Mtime). Alias it to the
+# `btm_items` stem via raptorscope.collection.ARTIFACT_ALIASES.
+name: MacOS.Raptorscope.BTM
+description: |
+  Enumerate macOS Background Task Management (BTM) persistence items via
+  `sfltool dumpbtm`. Persistence (MITRE T1543 / T1547).
+type: CLIENT
+sources:
+  - query: |
+      LET dump = SELECT Stdout FROM execve(argv=["sfltool", "dumpbtm"])
+      -- One record per BTM item; fields parsed from the dumpbtm block.
+      SELECT
+        Path,
+        ItemName,
+        DeveloperName,
+        Disabled,
+        Type,
+        UUID,
+        Hash,
+        Mtime
+      FROM parse_records_with_regex(
+        accessor="data",
+        file=dump.Stdout,
+        regex="(?ms)Path:\\s+(?P<Path>.+?)\\n.+?"
+              + "Name:\\s+(?P<ItemName>.+?)\\n.+?"
+              + "Developer Name:\\s+(?P<DeveloperName>.+?)\\n.+?"
+              + "Disposition:\\s+(?P<Disabled>.+?)\\n")

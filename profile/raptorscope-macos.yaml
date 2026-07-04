@@ -16,30 +16,27 @@ os: macos
 
 artifacts:
   # --- Persistence ---
-  - artifact: MacOS.System.LaunchServices
-    stem: launch_items
+  # Real captures use the single built-in MacOS.Detection.Autoruns (launch
+  # agents/daemons, login items, cron, startup items) → normalize_autoruns.
+  # The synthetic per-type stems below still ingest for the bundled sample.
+  - artifact: MacOS.Detection.Autoruns
+    stem: autoruns
     dataset: macos.persistence
-    normalizer: normalize_launch_items
-    question: who's persisting (launch agents/daemons)
-  - artifact: MacOS.System.LoginItems
-    stem: login_items
-    dataset: macos.persistence
-    normalizer: normalize_login_items
-    question: who's persisting (login items)
-  - artifact: MacOS.System.Crontab
-    stem: cron_items
-    dataset: macos.persistence
-    normalizer: normalize_cron
-    question: who's persisting (cron/periodic)
-  - artifact: MacOS.System.Profiles
+    normalizer: normalize_autoruns
+    question: who's persisting (launch agents/daemons, login items, cron)
+  # Config profiles + BTM have no standard built-in — raptorscope ships custom
+  # VQL artifacts under profile/custom-vql/.
+  - artifact: MacOS.Raptorscope.ConfigProfiles
     stem: config_profiles
     dataset: macos.persistence
     normalizer: normalize_config_profiles
+    custom_vql: profile/custom-vql/MacOS.Raptorscope.ConfigProfiles.yaml
     question: who's persisting (config/MDM profiles)
-  - artifact: MacOS.System.BackgroundTaskManagement
+  - artifact: MacOS.Raptorscope.BTM
     stem: btm_items
     dataset: macos.persistence
     normalizer: normalize_btm
+    custom_vql: profile/custom-vql/MacOS.Raptorscope.BTM.yaml
     question: who's persisting (BTM)
   # --- Execution ---
   - artifact: MacOS.System.Processes

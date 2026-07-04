@@ -13,9 +13,19 @@ from .ecs import code_signature, ecs_base
 
 
 def normalize_btm(rows: list[dict], host: dict) -> list[dict]:
+    """Accepts both the synthetic fixture columns and the custom-VQL output
+    (``sfltool dumpbtm``): ``Path``/``Executable``, ``ItemName``/``Name``,
+    ``DeveloperName``/``Developer``, ``Disabled`` (inverse of ``Enabled``), and a
+    ``Hash``. See profile/custom-vql/MacOS.Raptorscope.BTM.yaml.
+    """
     docs = []
     for r in rows:
-        executable = r.get("Executable") or ""
+        executable = r.get("Executable") or r.get("Path") or ""
+        # Real dumpbtm carries `Disabled`; the fixture carries `Enabled`.
+        if r.get("Disabled") is not None:
+            enabled = not bool(r.get("Disabled"))
+        else:
+            enabled = bool(r.get("Enabled"))
 
         doc = ecs_base(host, "macos.persistence")
         doc["@timestamp"] = r.get("Mtime") or ""
@@ -26,15 +36,17 @@ def normalize_btm(rows: list[dict], host: dict) -> list[dict]:
             if sig is not None:
                 process["code_signature"] = sig
             doc["process"] = process
-        doc["raptorscope"] = {
-            "persistence": {
-                "type": "btm",
-                "label": r.get("Name"),
-                "run_at_load": bool(r.get("Enabled")),
-                "btm_type": r.get("Type"),
-                "developer": r.get("Developer"),
-                "uuid": r.get("UUID"),
-            }
+        persistence = {
+            "type": "btm",
+            "label": r.get("Name") or r.get("ItemName"),
+            "run_at_load": enabled,
+            "btm_type": r.get("Type"),
+            "developer": r.get("Developer") or r.get("DeveloperName"),
+            "uuid": r.get("UUID"),
         }
+        if r.get("Hash"):
+            h = r["Hash"]
+            persistence["hash"] = h.get("SHA256") if isinstance(h, dict) else str(h)
+        doc["raptorscope"] = {"persistence": persistence}
         docs.append(doc)
     return docs

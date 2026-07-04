@@ -12,13 +12,19 @@ from .ecs import ecs_base
 
 
 def normalize_config_profiles(rows: list[dict], host: dict) -> list[dict]:
+    """Accepts both the synthetic fixture columns and the custom-VQL output
+    (``profiles -C``): ``OSPath``/``Path``, ``PayloadIdentifier``, ``Mtime``, and
+    a boolean ``Signed``. See profile/custom-vql/MacOS.Raptorscope.ConfigProfiles.yaml.
+    """
     docs = []
     for r in rows:
-        path = r.get("Path") or ""
+        path = r.get("OSPath") or r.get("Path") or ""
         signer = r.get("SignerCN")
+        # Real custom-VQL emits a boolean `Signed`; the fixture carries `SignerCN`.
+        signed = r.get("Signed") if r.get("Signed") is not None else signer is not None
 
         doc = ecs_base(host, "macos.persistence")
-        doc["@timestamp"] = r.get("InstallDate") or ""
+        doc["@timestamp"] = r.get("InstallDate") or r.get("Mtime") or ""
         doc["file"] = {"path": path, "name": os.path.basename(path)}
         if signer is not None:
             doc["process"] = {
@@ -27,10 +33,10 @@ def normalize_config_profiles(rows: list[dict], host: dict) -> list[dict]:
         doc["raptorscope"] = {
             "persistence": {
                 "type": "config_profile",
-                "label": r.get("ProfileIdentifier"),
+                "label": r.get("ProfileIdentifier") or r.get("PayloadIdentifier"),
                 "run_at_load": True,
                 "payload_type": r.get("PayloadType"),
-                "signed": signer is not None,
+                "signed": bool(signed),
             }
         }
         docs.append(doc)

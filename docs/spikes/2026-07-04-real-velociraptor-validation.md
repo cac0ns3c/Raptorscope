@@ -38,19 +38,30 @@ the synthetic and the real columns (`tests/normalize/test_real_columns.py`):
 `ARTIFACT_ALIASES` now also maps the confirmed real names (`MacOS.Sys.Pslist`,
 `MacOS.System.QuarantineEvents`, `MacOS.System.TCC`, `MacOS.System.Packages`).
 
+## Closed since (improvement plan Phase A1/A2)
+
+- **Persistence family rework — DONE.** `src/raptorscope/normalize/autoruns.py`
+  (`normalize_autoruns`) consumes the real single `MacOS.Detection.Autoruns`
+  artifact: per-source rows, nested `LaunchdConfig`/`LoginItemConfig`, `Program`,
+  `Hash`, crontab `Minute/Hour/…/Command`, `OSPath`/`Mtime`/`Disabled`. Aliased
+  (`MacOS.Detection.Autoruns → autoruns`) and registered; tests in
+  `tests/normalize/test_autoruns.py`. The synthetic per-type mappers remain for
+  the bundled sample.
+- **config_profiles / btm — custom VQL authored + mappers hardened.**
+  `profile/custom-vql/MacOS.Raptorscope.{ConfigProfiles,BTM}.yaml` (no standard
+  built-ins exist); both mappers now accept the real column variants (`OSPath`,
+  `PayloadIdentifier`, `Signed`; `Path`, `ItemName`, `DeveloperName`, `Disabled`,
+  `Hash`) — `tests/normalize/test_real_columns.py`.
+- **Signatures:** Autoruns/BTM `Hash` is now carried as
+  `raptorscope.persistence.hash`; Autoruns rows tag time provenance
+  (`raptorscope.time.source = mtime`).
+
 ## Remaining gap (tracked, NOT faked)
 
-- **Persistence family rework:** `MacOS.Detection.Autoruns` is one artifact with
-  per-source rows and nested config blobs (`LaunchdConfig`, `LoginItemConfig`),
-  not the flat per-type fixtures we invented. Consuming it means: parse the
-  nested plist config, derive `type` from the source/OSPath, and drop the invented
-  `Label`/`ProgramArguments`/`RunAtLoad` in favor of what Autoruns actually emits
-  (`Program`, `Hash`, crontab fields). This is a real mapper rewrite.
-- **config_profiles / btm:** author custom VQL artifacts (no standard built-ins);
-  then a matching mapper.
-- **Signatures:** Autoruns/Pslist give a **`Hash`**, not a code-signature object —
-  the `process.code_signature.*` mappings (and the unsigned-based detections) need
-  a signature-enrichment step or a different signal for real captures.
+- **Real capture (A3):** still requires running an offline collector on a Mac and
+  replacing the synthetic fixtures with sanitized real rows — blocked here (can't
+  execute the binary; must not commit personal data). The pipeline is now ready to
+  ingest a real `MacOS.Detection.Autoruns` + custom-VQL capture cleanly.
 
 ## To finish for real
 

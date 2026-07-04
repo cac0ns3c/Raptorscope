@@ -51,3 +51,47 @@ def test_processes_real_pslist_columns():
     assert docs[0]["@timestamp"] == "2026-07-03T09:41:03Z"
     assert docs[0]["process"]["pid"] == 501
     assert docs[0]["process"]["executable"] == "/private/tmp/helper"
+
+
+def test_config_profiles_custom_vql_columns():
+    # MacOS.Raptorscope.ConfigProfiles: OSPath, PayloadIdentifier, PayloadType,
+    # Signed(bool), Mtime
+    from raptorscope.normalize.config_profiles import normalize_config_profiles
+
+    rows = [{
+        "OSPath": "/var/db/ConfigurationProfiles/Store/com.systemhelper.support.plist",
+        "PayloadIdentifier": "com.systemhelper.support",
+        "PayloadType": "com.apple.webcontent-filter",
+        "Signed": False,
+        "Mtime": "2026-06-28T11:47:19Z",
+    }]
+    doc = normalize_config_profiles(rows, HOST)[0]
+    p = doc["raptorscope"]["persistence"]
+    assert doc["@timestamp"] == "2026-06-28T11:47:19Z"
+    assert p["type"] == "config_profile"
+    assert p["label"] == "com.systemhelper.support"
+    assert p["payload_type"] == "com.apple.webcontent-filter"
+    assert p["signed"] is False
+
+
+def test_btm_custom_vql_columns():
+    # MacOS.Raptorscope.BTM: Path, ItemName, DeveloperName, Disabled(bool), Hash
+    from raptorscope.normalize.btm import normalize_btm
+
+    rows = [{
+        "Path": "/private/tmp/.x/helperd",
+        "ItemName": "com.apple.helperd",
+        "DeveloperName": "Unknown",
+        "Disabled": False,
+        "Type": "agent",
+        "Hash": {"SHA256": "deadbeef"},
+        "Mtime": "2026-07-02T04:09:57Z",
+    }]
+    doc = normalize_btm(rows, HOST)[0]
+    p = doc["raptorscope"]["persistence"]
+    assert p["type"] == "btm"
+    assert p["label"] == "com.apple.helperd"
+    assert p["developer"] == "Unknown"
+    assert p["run_at_load"] is True  # not disabled
+    assert p["hash"] == "deadbeef"
+    assert doc["process"]["executable"] == "/private/tmp/.x/helperd"
