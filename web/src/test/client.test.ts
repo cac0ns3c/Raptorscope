@@ -9,11 +9,13 @@ afterEach(() => {
 });
 
 function mockFetch(body: unknown) {
-  const fetchMock = vi.fn(async () => ({
-    ok: true,
-    status: 200,
-    json: async () => body,
-  }));
+  const fetchMock = vi.fn(
+    async (_url: string, _init?: RequestInit) => ({
+      ok: true,
+      status: 200,
+      json: async () => body,
+    }),
+  );
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
@@ -23,9 +25,17 @@ describe("createHttpClient", () => {
     const f = mockFetch({ dataset: "macos.tcc", total: 0, items: [] });
     const client = createHttpClient("/api/");
     await client.getArtifacts("mac-victim", "macos.tcc", { limit: 5, offset: 10 });
-    expect(f).toHaveBeenCalledWith(
+    expect(f.mock.calls[0][0]).toBe(
       "/api/cases/mac-victim/artifacts/macos.tcc?limit=5&offset=10",
     );
+  });
+
+  it("attaches a bearer token when one is set", async () => {
+    const f = mockFetch([]);
+    const tokenRef = { current: "tok-123" };
+    await createHttpClient("/api", tokenRef).listCases();
+    const headers = f.mock.calls[0][1]!.headers as Headers;
+    expect(headers.get("Authorization")).toBe("Bearer tok-123");
   });
 
   it("throws on non-ok responses", async () => {

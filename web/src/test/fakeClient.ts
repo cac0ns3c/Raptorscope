@@ -174,6 +174,12 @@ export function makeFakeClient(): ApiClient {
       }
       return { total: items.length, items: items.slice(0, query.limit ?? 100) };
     },
+    login: async (username, password) => {
+      if (username === "analyst" && password === "s3cret") {
+        return { token: "fake-token" };
+      }
+      throw new Error("request failed: 401 /login");
+    },
   };
 }
 

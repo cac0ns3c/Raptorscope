@@ -938,6 +938,64 @@ button {
   cursor: pointer;
 }
 
+/* ---------- login ---------- */
+.login-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+.login-card {
+  width: 100%;
+  max-width: 22rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.8rem 1.6rem;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.login-card h2 {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.login-card .hero-mark {
+  align-self: center;
+  margin-bottom: 0.3rem;
+}
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.login-card input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.5rem 0.65rem;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+.login-card input:focus {
+  border-color: var(--accent-strong);
+}
+.login-btn {
+  margin-top: 0.5rem;
+  padding: 0.55rem;
+}
+.login-error {
+  color: var(--sev-high);
+  font-size: 0.82rem;
+  margin: 0.1rem 0 0;
+}
+
 /* ---------- misc states ---------- */
 .state {
   display: flex;
@@ -945,6 +1003,10 @@ button {
   gap: 0.55rem;
   color: var(--text-muted);
   padding: 1.5rem 0;
+}
+.state.center {
+  justify-content: center;
+  min-height: 60vh;
 }
 .spinner {
   width: 15px;

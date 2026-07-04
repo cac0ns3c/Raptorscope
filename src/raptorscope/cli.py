@@ -69,13 +69,21 @@ def ingest(path: str, es_url: str | None) -> int:
     return len(docs)
 
 
-def build_serve_app(es_url: str | None = None, collection: str | None = None):
+def build_serve_app(
+    es_url: str | None = None,
+    collection: str | None = None,
+    auth_user: str | None = None,
+    auth_pass: str | None = None,
+):
     """Build the FastAPI app for ``serve``.
 
     ``collection`` (a dir/zip) runs fully offline over an in-memory store —
     handy for demos; ``es_url`` serves a live Elasticsearch via ``ESStore``.
+    Passing ``auth_user``/``auth_pass`` (or the ``RAPTORSCOPE_AUTH_*`` env vars)
+    requires clients to log in for a bearer token.
     """
     from .api.app import create_app
+    from .api.auth import AuthConfig
     from .api.store import InMemoryStore
 
     if collection is not None:
@@ -88,7 +96,13 @@ def build_serve_app(es_url: str | None = None, collection: str | None = None):
         store = ESStore(Elasticsearch(es_url))
     else:
         raise ValueError("serve requires either --collection or --es")
-    return create_app(store)
+
+    auth = AuthConfig.from_env()
+    if auth_user is not None:
+        auth.username = auth_user
+    if auth_pass is not None:
+        auth.password = auth_pass
+    return create_app(store, auth=auth)
 
 
 def build_demo_app(collection=None):
@@ -96,10 +110,16 @@ def build_demo_app(collection=None):
     return build_serve_app(collection=str(collection or DEMO_SAMPLE))
 
 
-def serve(es_url, collection, host, port):  # pragma: no cover - runs a server
+def serve(es_url, collection, host, port, auth_user=None, auth_pass=None):  # pragma: no cover - runs a server
     import uvicorn
 
-    uvicorn.run(build_serve_app(es_url=es_url, collection=collection), host=host, port=port)
+    app = build_serve_app(
+        es_url=es_url,
+        collection=collection,
+        auth_user=auth_user,
+        auth_pass=auth_pass,
+    )
+    uvicorn.run(app, host=host, port=port)
 
 
 def demo(host, port):  # pragma: no cover - runs a server
@@ -123,6 +143,8 @@ def main(argv=None):
     )
     srv.add_argument("--host", default="127.0.0.1")
     srv.add_argument("--port", type=int, default=8000)
+    srv.add_argument("--auth-user", default=None, help="require login as this user")
+    srv.add_argument("--auth-pass", default=None, help="password for --auth-user")
 
     dem = sub.add_parser("demo", help="serve the bundled sample case (no setup)")
     dem.add_argument("--host", default="127.0.0.1")
@@ -132,7 +154,7 @@ def main(argv=None):
     if a.cmd == "ingest":
         ingest(a.path, a.es)
     elif a.cmd == "serve":
-        serve(a.es, a.collection, a.host, a.port)
+        serve(a.es, a.collection, a.host, a.port, a.auth_user, a.auth_pass)
     elif a.cmd == "demo":
         demo(a.host, a.port)
 

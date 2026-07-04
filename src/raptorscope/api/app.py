@@ -8,10 +8,17 @@ production builds one around ``ESStore``. A *case* is a collected host
 """
 from collections import Counter
 
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from pydantic import BaseModel
 
 from ..detect.evaluate import load_rules, run_rules
+from .auth import AuthConfig, make_auth_dependency
 from .store import Store
+
+
+class Credentials(BaseModel):
+    username: str
+    password: str
 
 _LEVEL_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "informational": 4}
 
@@ -87,9 +94,17 @@ def _summary(doc: dict) -> str:
     return _dig(doc, "file.path") or ds or ""
 
 
-def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
+def create_app(
+    store: Store,
+    rules_dir: str = "detections/sigma",
+    auth: AuthConfig | None = None,
+) -> FastAPI:
     app = FastAPI(title="Raptorscope API", version="0.1.0")
     rules = load_rules(rules_dir)
+    auth = auth or AuthConfig()
+    require_token = make_auth_dependency(auth)
+    # All /cases/* routes require a valid token when auth is enabled.
+    router = APIRouter(dependencies=[Depends(require_token)])
 
     def require_case(case: str) -> None:
         if case not in store.hosts():
@@ -104,18 +119,25 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
 
     @app.get("/health")
     def health():
-        return {"status": "ok"}
+        return {"status": "ok", "auth": auth.enabled}
 
-    @app.get("/cases")
+    @app.post("/login")
+    def login(creds: Credentials):
+        token = auth.token_for(creds.username, creds.password)
+        if token is None:
+            raise HTTPException(status_code=401, detail="invalid credentials")
+        return {"token": token}
+
+    @router.get("/cases")
     def list_cases():
         return [case_summary(h) for h in store.hosts()]
 
-    @app.get("/cases/{case}")
+    @router.get("/cases/{case}")
     def get_case(case: str):
         require_case(case)
         return case_summary(case)
 
-    @app.get("/cases/{case}/overview")
+    @router.get("/cases/{case}/overview")
     def overview(case: str):
         require_case(case)
         docs = store.search(host=case, size=100000)
@@ -145,7 +167,7 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
             "unsigned": {"process": unsigned_proc, "inventory": unsigned_app},
         }
 
-    @app.get("/cases/{case}/artifacts/{dataset}")
+    @router.get("/cases/{case}/artifacts/{dataset}")
     def artifact_view(case: str, dataset: str, limit: int = 50, offset: int = 0):
         require_case(case)
         hits = store.search(host=case, dataset=dataset, size=100000)
@@ -155,7 +177,7 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
             "items": hits[offset : offset + limit],
         }
 
-    @app.get("/cases/{case}/timeline")
+    @router.get("/cases/{case}/timeline")
     def timeline(case: str, limit: int = 100):
         require_case(case)
         docs = store.search(host=case, size=100000)
@@ -172,7 +194,7 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
         rows.sort(key=lambda r: r["timestamp"], reverse=True)
         return rows[:limit]
 
-    @app.get("/cases/{case}/alerts")
+    @router.get("/cases/{case}/alerts")
     def alerts(case: str):
         require_case(case)
         docs = store.search(host=case, size=100000)
@@ -182,7 +204,7 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
         )
         return fired
 
-    @app.get("/cases/{case}/search")
+    @router.get("/cases/{case}/search")
     def search(
         case: str,
         q: str = "",
@@ -206,4 +228,5 @@ def create_app(store: Store, rules_dir: str = "detections/sigma") -> FastAPI:
             hits.append(d)
         return {"total": len(hits), "items": hits[:limit]}
 
+    app.include_router(router)
     return app

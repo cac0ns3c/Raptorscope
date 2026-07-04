@@ -67,7 +67,16 @@ PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir> --es http
 # serve the query API — offline over a collection (demo) or over a live ES
 PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <collection-dir> --port 8000
 PYTHONPATH=src .venv/bin/python -m raptorscope serve --es http://localhost:9200
+
+# require login (bearer token): clients POST /login for a token, then send it
+PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <dir> \
+  --auth-user analyst --auth-pass s3cret   # or RAPTORSCOPE_AUTH_USER/PASS env
 ```
+
+**Auth** is off by default (the demo stays zero-setup). When enabled, `/health`
+stays open, `/login` issues a bearer token for valid credentials, and every
+`/cases/*` request must carry `Authorization: Bearer <token>`. The SPA shows a
+login screen automatically when the API answers `401`.
 
 ### Query API
 
