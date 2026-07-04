@@ -6,9 +6,20 @@ routes via closure, so tests build an app around a seeded ``InMemoryStore`` and
 production builds one around ``ESStore``. A *case* is a collected host
 (``host.name``).
 """
+from collections import Counter
+
 from fastapi import FastAPI, HTTPException
 
 from .store import Store
+
+
+def _dig(doc: dict, path: str):
+    cur = doc
+    for key in path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    return cur
 
 
 def create_app(store: Store) -> FastAPI:
@@ -37,5 +48,35 @@ def create_app(store: Store) -> FastAPI:
     def get_case(case: str):
         require_case(case)
         return case_summary(case)
+
+    @app.get("/cases/{case}/overview")
+    def overview(case: str):
+        require_case(case)
+        docs = store.search(host=case, size=100000)
+        datasets = Counter(_dig(d, "event.dataset") for d in docs)
+        ptypes = Counter(
+            _dig(d, "raptorscope.persistence.type")
+            for d in docs
+            if _dig(d, "event.dataset") == "macos.persistence"
+        )
+        unsigned_proc = sum(
+            1
+            for d in docs
+            if _dig(d, "event.dataset") == "macos.process"
+            and _dig(d, "process.code_signature.trusted") is not True
+        )
+        unsigned_app = sum(
+            1
+            for d in docs
+            if _dig(d, "event.dataset") == "macos.inventory"
+            and _dig(d, "raptorscope.app.signed") is False
+        )
+        return {
+            "case": case,
+            "total": len(docs),
+            "datasets": dict(datasets),
+            "persistence_types": dict(ptypes),
+            "unsigned": {"process": unsigned_proc, "inventory": unsigned_app},
+        }
 
     return app
