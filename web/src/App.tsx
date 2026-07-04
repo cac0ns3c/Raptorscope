@@ -7,9 +7,22 @@ import { ArtifactTable } from "./components/ArtifactTable";
 import { CasePicker } from "./components/CasePicker";
 import { Overview } from "./components/Overview";
 import { Timeline } from "./components/Timeline";
+import {
+  IconBell,
+  IconClock,
+  IconGauge,
+  IconHost,
+  IconLayers,
+  IconLogo,
+} from "./ui/icons";
 
 type Tab = "overview" | "artifacts" | "timeline" | "alerts";
-const TABS: Tab[] = ["overview", "artifacts", "timeline", "alerts"];
+const TABS: { id: Tab; icon: JSX.Element }[] = [
+  { id: "overview", icon: <IconGauge /> },
+  { id: "artifacts", icon: <IconLayers /> },
+  { id: "timeline", icon: <IconClock /> },
+  { id: "alerts", icon: <IconBell /> },
+];
 
 export function App() {
   const [selected, setSelected] = useState<Case | null>(null);
@@ -32,13 +45,21 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Raptorscope</h1>
-        <span className="tagline">macOS DFIR triage</span>
+      <header className="topbar">
+        <div className="brand">
+          <span className="logo">
+            <IconLogo />
+          </span>
+          <h1>Raptorscope</h1>
+          <span className="tagline">macOS DFIR triage</span>
+        </div>
         {selected && (
-          <div className="case-badge">
-            <span>{selected.name}</span>
-            <button className="link" onClick={() => setSelected(null)}>
+          <div className="case-context">
+            <span className="host-ico">
+              <IconHost width={16} height={16} />
+            </span>
+            <span className="host-name">{selected.name}</span>
+            <button className="btn-change" onClick={() => setSelected(null)}>
               change case
             </button>
           </div>
@@ -46,21 +67,28 @@ export function App() {
       </header>
 
       {!selected ? (
-        <main className="pad">
-          <h2>Select a case</h2>
+        <main className="content landing">
+          <div className="hero">
+            <span className="hero-mark">
+              <IconLogo width={26} height={26} />
+            </span>
+            <h2>Select a case</h2>
+            <p>Choose a collected macOS host to begin first-hour triage.</p>
+          </div>
           <CasePicker onSelect={selectCase} />
         </main>
       ) : (
-        <main className="workspace">
+        <main className="content">
           <nav className="tabs" aria-label="views">
             {TABS.map((t) => (
               <button
-                key={t}
-                className={t === tab ? "tab active" : "tab"}
-                aria-current={t === tab ? "page" : undefined}
-                onClick={() => setTab(t)}
+                key={t.id}
+                className={t.id === tab ? "tab active" : "tab"}
+                aria-current={t.id === tab ? "page" : undefined}
+                onClick={() => setTab(t.id)}
               >
-                {t}
+                <span className="tab-ico">{t.icon}</span>
+                {t.id}
               </button>
             ))}
           </nav>
@@ -74,6 +102,7 @@ export function App() {
                   {selected.datasets.map((ds) => (
                     <button
                       key={ds}
+                      data-dataset={ds}
                       className={ds === dataset ? "chip active" : "chip"}
                       onClick={() => {
                         setDataset(ds);

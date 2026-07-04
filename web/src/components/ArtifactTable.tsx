@@ -37,30 +37,51 @@ export function ArtifactTable({
   const from = offset + 1;
   const to = Math.min(offset + pageSize, data.total);
 
+  const MONO = new Set(["file.path", "process.executable"]);
+
   return (
     <section className="artifact-view" aria-label={`artifacts ${dataset}`}>
-      <table className="grid">
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.path}>{col.header}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.items.map((doc) => (
-            <tr
-              key={doc._id}
-              data-testid="artifact-row"
-              className={doc._id === highlightId ? "highlight" : undefined}
-            >
+      <div className="table-scroll">
+        <table className="grid">
+          <thead>
+            <tr>
               {columns.map((col) => (
-                <td key={col.path}>{cell(dig(doc, col.path))}</td>
+                <th key={col.path}>{col.header}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.items.map((doc) => (
+              <tr
+                key={doc._id}
+                data-testid="artifact-row"
+                className={doc._id === highlightId ? "highlight" : undefined}
+              >
+                {columns.map((col) => {
+                  const value = dig(doc, col.path);
+                  if (typeof value === "boolean") {
+                    return (
+                      <td key={col.path}>
+                        <span className={`pill ${value ? "pill-yes" : "pill-no"}`}>
+                          {value ? "yes" : "no"}
+                        </span>
+                      </td>
+                    );
+                  }
+                  return (
+                    <td
+                      key={col.path}
+                      className={MONO.has(col.path) ? "mono" : undefined}
+                    >
+                      {cell(value)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="pager">
         <button

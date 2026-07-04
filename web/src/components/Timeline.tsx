@@ -15,21 +15,29 @@ export function Timeline({
     [caseName, limit],
   );
 
-  if (loading) return <p className="muted">Loading timeline…</p>;
+  if (loading)
+    return (
+      <div className="state">
+        <span className="spinner" /> Loading timeline…
+      </div>
+    );
   if (error || !data) return <p className="error">Failed to load timeline.</p>;
   if (data.length === 0) return <p className="muted">No events.</p>;
 
   return (
     <ol className="timeline" aria-label="timeline">
       {data.map((row) => (
-        <li key={row.doc_id} className="timeline-row">
+        <li key={row.doc_id} className="timeline-row" data-dataset={row.dataset}>
           <time className="ts" data-testid="tl-ts">
             {row.timestamp}
           </time>
-          <span className="badge" data-dataset={row.dataset}>
-            {row.dataset.replace("macos.", "")}
+          <span className="dot" aria-hidden="true" />
+          <span className="tl-main">
+            <span className="badge" data-dataset={row.dataset}>
+              {row.dataset.replace("macos.", "")}
+            </span>
+            <span className="summary">{row.summary}</span>
           </span>
-          <span className="summary">{row.summary}</span>
         </li>
       ))}
     </ol>

@@ -2,6 +2,7 @@
 import type { Alert } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { IconAlert, IconShieldCheck } from "../ui/icons";
 
 export function Alerts({
   caseName,
@@ -16,22 +17,39 @@ export function Alerts({
     [caseName],
   );
 
-  if (loading) return <p className="muted">Loading alerts…</p>;
+  if (loading)
+    return (
+      <div className="state">
+        <span className="spinner" /> Loading alerts…
+      </div>
+    );
   if (error || !data) return <p className="error">Failed to load alerts.</p>;
   if (data.length === 0)
-    return <p className="muted good">No detections fired for this case.</p>;
+    return (
+      <div className="empty-clear">
+        <IconShieldCheck />
+        No detections fired for this case.
+      </div>
+    );
 
   return (
     <ul className="alerts" aria-label="alerts">
       {data.map((a: Alert, i) => (
         <li key={`${a.rule_id}-${a.doc_id}-${i}`}>
           <button
-            className="alert-card"
+            className={`alert-card sev-${a.level}`}
             onClick={() => onPivot?.(a.dataset, a.doc_id)}
           >
-            <span className={`level level-${a.level}`}>{a.level}</span>
-            <span className="alert-title">{a.title}</span>
-            <span className="alert-dataset">{a.dataset}</span>
+            <span className="alert-ico">
+              <IconAlert />
+            </span>
+            <span className="alert-head">
+              <span className="level">{a.level}</span>
+              <span className="alert-title">{a.title}</span>
+              <span className="alert-dataset">
+                {a.dataset.replace("macos.", "")}
+              </span>
+            </span>
             <span className="alert-evidence">
               {Object.entries(a.evidence).map(([k, v]) => (
                 <code key={k}>

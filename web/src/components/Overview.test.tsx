@@ -20,7 +20,7 @@ describe("Overview", () => {
   it("shows unsigned counters and the document total", async () => {
     renderWithApi(<Overview caseName="mac-victim" />);
     expect(await screen.findByText(/22 documents total/)).toBeInTheDocument();
-    expect(screen.getByText("processes")).toBeInTheDocument();
-    expect(screen.getByText("applications")).toBeInTheDocument();
+    expect(screen.getByText("Unsigned processes")).toBeInTheDocument();
+    expect(screen.getByText("Unsigned applications")).toBeInTheDocument();
   });
 });
