@@ -74,9 +74,16 @@ PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <dir> \
 ```
 
 **Auth** is off by default (the demo stays zero-setup). When enabled, `/health`
-stays open, `/login` issues a bearer token for valid credentials, and every
-`/cases/*` request must carry `Authorization: Bearer <token>`. The SPA shows a
-login screen automatically when the API answers `401`.
+and `/docs` stay open, `/login` issues a **time-limited signed bearer token**
+(default 8h, `RAPTORSCOPE_AUTH_TTL`), and every `/cases/*` request must carry
+`Authorization: Bearer <token>`. The SPA shows a login screen automatically on
+`401` and a **Sign out** button once authenticated. Multiple users:
+`RAPTORSCOPE_AUTH_USERS="alice:pw1,bob:pw2"`.
+
+> **Serve over TLS.** Tokens and credentials are sent in the request; run the API
+> behind an HTTPS reverse proxy (nginx/Caddy/Traefik) for anything beyond
+> localhost. The dev `ES_JAVA_OPTS`/`xpack.security.enabled=false` compose is for
+> local use only.
 
 ### Query API
 

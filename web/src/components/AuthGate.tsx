@@ -2,12 +2,13 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 import { AuthError, type TokenRef } from "../api/client";
+import { AuthSessionProvider } from "../context/AuthSessionContext";
 import { useApi } from "../context/ApiContext";
 import { Login } from "./Login";
 
 /** Probes the API; if it answers 401, shows the login screen until a token is
  *  obtained. When auth is disabled server-side the probe succeeds and children
- *  render immediately. */
+ *  render immediately. Exposes a `logout` to children via AuthSessionContext. */
 export function AuthGate({
   tokenHolder,
   children,
@@ -17,16 +18,34 @@ export function AuthGate({
 }) {
   const api = useApi();
   const [status, setStatus] = useState<"checking" | "ok" | "login">("checking");
+  const [gated, setGated] = useState(false);
 
   function probe() {
     setStatus("checking");
     api.listCases().then(
       () => setStatus("ok"),
-      (e: unknown) => setStatus(e instanceof AuthError ? "login" : "ok"),
+      (e: unknown) => {
+        if (e instanceof AuthError) {
+          setGated(true);
+          setStatus("login");
+        } else {
+          setStatus("ok");
+        }
+      },
     );
   }
 
   useEffect(probe, [api]);
+
+  function logout() {
+    tokenHolder.current = null;
+    try {
+      window.localStorage.removeItem("rs_token");
+    } catch {
+      /* ignore */
+    }
+    setStatus("login");
+  }
 
   if (status === "checking") {
     return (
@@ -41,14 +60,18 @@ export function AuthGate({
         onAuth={(token) => {
           tokenHolder.current = token;
           try {
-            localStorage.setItem("rs_token", token);
+            window.localStorage.setItem("rs_token", token);
           } catch {
-            /* ignore storage failures */
+            /* ignore */
           }
           probe();
         }}
       />
     );
   }
-  return <>{children}</>;
+  return (
+    <AuthSessionProvider value={{ gated, logout }}>
+      {children}
+    </AuthSessionProvider>
+  );
 }

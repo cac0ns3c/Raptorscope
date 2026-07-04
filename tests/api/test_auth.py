@@ -44,3 +44,20 @@ def test_bad_token_rejected():
     assert (
         c.get("/cases", headers={"Authorization": "Bearer nope"}).status_code == 401
     )
+
+
+def test_token_expires():
+    cfg = AuthConfig(username="analyst", password="s3cret", ttl_seconds=100)
+    tok = cfg.token_for("analyst", "s3cret", now=1000)
+    assert cfg.valid_token(tok, now=1050) is True
+    assert cfg.valid_token(tok, now=1101) is False  # past TTL
+    assert cfg.valid_token(tok, now=1000 - 5) is False  # issued in the future
+
+
+def test_multi_user():
+    cfg = AuthConfig(users={"alice": "pw1", "bob": "pw2"})
+    assert cfg.enabled
+    assert cfg.token_for("alice", "pw1") is not None
+    assert cfg.token_for("bob", "pw2") is not None
+    assert cfg.token_for("bob", "wrong") is None
+    assert cfg.token_for("carol", "pw") is None

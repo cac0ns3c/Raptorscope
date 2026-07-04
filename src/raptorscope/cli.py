@@ -100,10 +100,8 @@ def build_serve_app(
         raise ValueError("serve requires either --collection or --es")
 
     auth = AuthConfig.from_env()
-    if auth_user is not None:
-        auth.username = auth_user
-    if auth_pass is not None:
-        auth.password = auth_pass
+    if auth_user and auth_pass:
+        auth.users[auth_user] = auth_pass
     return create_app(store, auth=auth)
 
 

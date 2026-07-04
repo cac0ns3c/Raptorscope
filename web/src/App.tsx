@@ -9,6 +9,7 @@ import { Docs } from "./components/Docs";
 import { Overview } from "./components/Overview";
 import { Search } from "./components/Search";
 import { Timeline } from "./components/Timeline";
+import { useAuthSession } from "./context/AuthSessionContext";
 import { useTheme } from "./hooks/useTheme";
 import {
   IconBell,
@@ -37,6 +38,7 @@ export function App() {
   const [highlight, setHighlight] = useState<string | undefined>(undefined);
   const [showDocs, setShowDocs] = useState(false);
   const { theme, toggle } = useTheme();
+  const { gated, logout } = useAuthSession();
 
   function selectCase(c: Case) {
     setSelected(c);
@@ -72,6 +74,11 @@ export function App() {
           <button className="btn-change" onClick={() => setShowDocs(true)}>
             Docs
           </button>
+          {gated && (
+            <button className="btn-change" onClick={logout}>
+              Sign out
+            </button>
+          )}
           {selected && (
           <div className="case-context">
             <span className="host-ico">
