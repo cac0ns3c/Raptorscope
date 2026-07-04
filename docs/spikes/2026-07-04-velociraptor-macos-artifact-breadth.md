@@ -29,3 +29,21 @@ Common conventions: fixtures are JSON **arrays** (curated/trimmed from
 
 Dataset `macos.persistence`, `persistence.type = login_item`. Fires: hidden,
 unsigned `SystemUpdater.app` staged under `/Users/Shared/.updater/`.
+
+---
+
+## cron / periodic — `MacOS.System.Crontab`
+
+`velociraptor artifacts collect MacOS.System.Crontab --format json`
+(reads `/etc/crontab`, `/usr/lib/cron/tabs/*`, and the periodic dirs)
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `User` | string | `user.name` |
+| `Command` | string | `process.command_line` (`[0]` → `process.executable`) |
+| `Schedule` | string | `raptorscope.persistence.schedule` |
+| `Path` | string | `file.path`, `raptorscope.persistence.label` |
+| `Mtime` | ISO8601 | `@timestamp` |
+
+Dataset `macos.persistence`, `persistence.type = cron`. Fires: `analyst` crontab
+running `bash -c 'curl … | bash'` every 5 minutes.

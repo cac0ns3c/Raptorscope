@@ -1,0 +1,26 @@
+title: macOS cron/periodic job runs a suspicious command
+id: 7c3a2d9e-0002-4000-a000-0000000c0de3
+status: experimental
+description: >
+  A crontab or periodic entry that downloads and executes a payload, decodes
+  base64, or runs from a world-writable path — classic scheduled-task
+  persistence and C2 staging.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: cron
+    process.command_line|contains:
+      - 'curl '
+      - 'wget '
+      - base64
+      - /tmp/
+  condition: selection
+falsepositives:
+  - Legitimate admin maintenance jobs that fetch over the network
+level: high
+tags:
+  - attack.persistence
+  - attack.t1053.003
