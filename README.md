@@ -71,6 +71,11 @@ PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir>
 # ...and index into Elasticsearch
 PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir> --es http://localhost:9200
 
+# run detections and report per-rule fire counts (false-positive tuning) —
+# point it at a benign collection to see which rules fire on clean data
+PYTHONPATH=src .venv/bin/python -m raptorscope detect <collection-dir>
+PYTHONPATH=src .venv/bin/python -m raptorscope detect <collection-dir> --json
+
 # serve the query API — offline over a collection (demo) or over a live ES
 PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <collection-dir> --port 8000
 PYTHONPATH=src .venv/bin/python -m raptorscope serve --es http://localhost:9200

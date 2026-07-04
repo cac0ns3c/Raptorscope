@@ -33,6 +33,48 @@ _NORMALIZERS = {
 }
 
 
+def measure_detections(path: str, rules_dir: str = "detections/sigma") -> dict:
+    """Normalize a collection, run the detections, and tally per-rule fire counts.
+
+    Supports false-positive tuning: run it against a benign collection to see
+    which rules fire on clean data. Returns a report dict; ``detect`` prints it.
+    """
+    import collections
+
+    from .detect.evaluate import load_rules, run_rules
+
+    docs = normalize_collection(path)
+    rules = load_rules(rules_dir)
+    alerts = run_rules(docs, rules)
+    counts = collections.Counter(
+        (a["rule_id"], a["title"], a["level"]) for a in alerts
+    )
+    return {
+        "docs": len(docs),
+        "rules": len(rules),
+        "alerts": len(alerts),
+        "per_rule": [
+            {"rule_id": rid, "title": title, "level": level, "count": n}
+            for (rid, title, level), n in counts.most_common()
+        ],
+    }
+
+
+def detect(path: str, rules_dir: str = "detections/sigma", as_json: bool = False):  # pragma: no cover - thin CLI wrapper
+    import json
+
+    report = measure_detections(path, rules_dir)
+    if as_json:
+        print(json.dumps(report, indent=2))
+        return
+    print(
+        f"{report['docs']} docs · {report['rules']} rules · "
+        f"{report['alerts']} alerts"
+    )
+    for row in report["per_rule"]:
+        print(f"  {row['count']:>4}  [{row['level']:>13}] {row['title']}")
+
+
 def _index_for(dataset: str) -> str:
     """Map an ECS dataset to its raptorscope index name (``raptorscope-*``)."""
     return "raptorscope-" + dataset.replace(".", "-")
@@ -152,6 +194,16 @@ def main(argv=None):
     dem.add_argument("--host", default="127.0.0.1")
     dem.add_argument("--port", type=int, default=8000)
 
+    det = sub.add_parser(
+        "detect", help="run detections and report per-rule fire counts (FP tuning)"
+    )
+    det.add_argument("path", help="collection directory or zip")
+    det.add_argument("--rules", default="detections/sigma", help="Sigma rules dir")
+    det.add_argument("--json", action="store_true", dest="as_json")
+    det.add_argument(
+        "--measure", action="store_true", help="report per-rule counts (default)"
+    )
+
     a = p.parse_args(argv)
     if a.cmd == "ingest":
         ingest(a.path, a.es)
@@ -159,6 +211,8 @@ def main(argv=None):
         serve(a.es, a.collection, a.host, a.port, a.auth_user, a.auth_pass)
     elif a.cmd == "demo":
         demo(a.host, a.port)
+    elif a.cmd == "detect":
+        detect(a.path, a.rules, a.as_json)
 
 
 if __name__ == "__main__":
