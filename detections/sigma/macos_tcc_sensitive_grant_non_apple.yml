@@ -1,0 +1,29 @@
+title: macOS sensitive TCC grant to a non-Apple client
+id: c2b8f7e3-0007-4000-a000-0000000c0de8
+status: experimental
+description: >
+  A TCC authorization granting Accessibility, Full-Disk-Access, or
+  Input-Monitoring to a client that is not an Apple binary. These services
+  enable keylogging, screen control, and unrestricted file reads; a non-Apple
+  grant here is a strong post-exploitation / persistence signal.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service:
+      - kTCCServiceAccessibility
+      - kTCCServiceSystemPolicyAllFiles
+      - kTCCServiceListenEvent
+  filter_apple:
+    raptorscope.tcc.client|startswith: com.apple.
+  condition: selection and not filter_apple
+falsepositives:
+  - Legitimate automation/remote-support tools the user intentionally authorized
+level: high
+tags:
+  - attack.persistence
+  - attack.collection
+  - attack.t1548

@@ -125,3 +125,23 @@ Dataset `macos.process`, `event.category = ["process"]`. Fires: unsigned
 
 Dataset `macos.quarantine`, `event.category = ["file"]`. Fires:
 `Invoice.pdf.command` double-extension payload downloaded from a raw-IP origin.
+
+---
+
+## TCC — `MacOS.System.TCC`
+
+`velociraptor artifacts collect MacOS.System.TCC --format json`
+(per-user and system `TCC.db` `access` table)
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `Service` | string (`kTCCService…`) | `raptorscope.tcc.service` |
+| `Client` | string | `raptorscope.tcc.client`; `process.executable` when path |
+| `ClientType` | 0 (bundle id) / 1 (path) | `raptorscope.tcc.client_type` |
+| `AuthValue` | 0 denied / 2 allowed | `raptorscope.tcc.allowed` (>= 2) |
+| `LastModified` | ISO8601 | `@timestamp` |
+| `Path` | string | `file.path` (the TCC.db) |
+
+Dataset `macos.tcc`. Fires: `kTCCServiceAccessibility` allowed to non-Apple path
+client `/Users/Shared/.helper/agent`. The rule excludes `com.apple.*` clients and
+non-sensitive services (Zoom camera grant does not fire).
