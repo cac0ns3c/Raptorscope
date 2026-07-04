@@ -1,0 +1,25 @@
+title: macOS process running from a suspicious path
+id: a0f6d5c1-0005-4000-a000-0000000c0de6
+status: experimental
+description: >
+  A running process whose executable lives in a world-writable or temporary
+  staging directory (/tmp, /private/tmp, /Users/Shared). Legitimate software
+  runs from /Applications, /System, or /usr; execution from these paths is a
+  strong indicator of a dropped payload or stager.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.executable|contains:
+      - /tmp/
+      - /private/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Developer/build tooling executed from a temporary directory
+level: high
+tags:
+  - attack.execution
+  - attack.t1059

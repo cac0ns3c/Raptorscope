@@ -86,3 +86,23 @@ filter profile.
 
 Dataset `macos.persistence`, `persistence.type = btm`. Fires: unsigned
 `com.apple.helperd` agent (Developer "Unknown") running from `/private/tmp/.x/`.
+
+---
+
+## processes — `MacOS.System.Processes`
+
+`velociraptor artifacts collect MacOS.System.Processes --format json`
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `Pid` | int | `process.pid` |
+| `Ppid` | int | `process.parent.pid` |
+| `Name` | string | `process.name` |
+| `Exe` | string | `process.executable`, `file.path` |
+| `CommandLine` | string | `process.command_line` |
+| `Username` | string | `user.name` |
+| `CodeSignature` | object \| null | `process.code_signature.*` |
+| `Mtime` | ISO8601 | `@timestamp` |
+
+Dataset `macos.process`, `event.category = ["process"]`. Fires: unsigned
+`helper` beaconing from `/private/tmp/.cache/`.
