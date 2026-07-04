@@ -27,9 +27,11 @@ detection:
     raptorscope.persistence.type: config_profile
   condition: selection and not filter_system and not filter_profiles
 falsepositives:
-  - Rare third-party software that reuses an com.apple.* label under a user path
+  - Rare third-party software that reuses a com.apple.* label under a user path
 level: high
 tags:
   - attack.persistence
   - attack.defense_evasion
   - attack.t1036.005
+  - attack.t1543.001
+  - attack.t1543.004

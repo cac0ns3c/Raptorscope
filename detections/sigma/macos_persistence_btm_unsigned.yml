@@ -15,12 +15,18 @@ detection:
     raptorscope.persistence.type: btm
     process.executable|contains:
       - /tmp/
-      - /private/tmp/
+      - /var/tmp/
       - /Users/Shared/
-  condition: selection
+  # Signing gate: BTM's real VQL emits no signature, so this is fixture-only and
+  # degrades to path-only on real captures (never false-fires on missing data).
+  signed:
+    process.code_signature.trusted: true
+  condition: selection and not signed
 falsepositives:
   - Developer tooling launched from a shared build directory
 level: high
 tags:
   - attack.persistence
   - attack.t1543.001
+  - attack.t1543.004
+  - attack.t1547.015

@@ -18,12 +18,17 @@ detection:
       - kTCCServiceSystemPolicyAllFiles
       - kTCCServiceListenEvent
   filter_apple:
-    raptorscope.tcc.client|startswith: com.apple.
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
   condition: selection and not filter_apple
 falsepositives:
   - Legitimate automation/remote-support tools the user intentionally authorized
 level: high
 tags:
-  - attack.persistence
   - attack.collection
-  - attack.t1548
+  - attack.privilege_escalation
+  - attack.t1548.006
+  - attack.t1056.001
+  - attack.t1113

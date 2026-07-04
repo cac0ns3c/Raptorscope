@@ -20,5 +20,6 @@ falsepositives:
   - Developer builds and portable apps run from a home directory
 level: medium
 tags:
-  - attack.persistence
-  - attack.t1543.001
+  - attack.defense_evasion
+  - attack.t1036
+  - attack.t1036.005

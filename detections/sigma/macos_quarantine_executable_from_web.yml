@@ -17,18 +17,17 @@ detection:
       - .command
       - .sh
       - .term
-      - .pkg
   ext_url:
     event.dataset: macos.quarantine
     url.full|endswith:
       - .command
       - .sh
       - .term
-      - .pkg
   condition: ext_name or ext_url
 falsepositives:
   - Legitimate installer packages (.pkg) from trusted vendors
 level: medium
 tags:
   - attack.initial_access
-  - attack.t1566.001
+  - attack.t1566.002
+  - attack.t1204.002

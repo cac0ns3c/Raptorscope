@@ -15,8 +15,11 @@ detection:
     process.command_line|contains:
       - 'curl '
       - 'wget '
-      - base64
-      - /tmp/
+      - 'base64 -d'
+      - 'base64 --decode'
+      - 'base64 -D'
+      - '| bash'
+      - '| sh'
   condition: selection
 falsepositives:
   - Legitimate admin maintenance jobs that fetch over the network

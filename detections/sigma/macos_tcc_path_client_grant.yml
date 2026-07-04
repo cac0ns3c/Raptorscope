@@ -14,10 +14,16 @@ detection:
     event.dataset: macos.tcc
     raptorscope.tcc.client_type: path
     raptorscope.tcc.allowed: true
-  condition: selection
+  filter_system:
+    raptorscope.tcc.client|startswith:
+      - /System/
+      - /usr/
+      - /Library/Apple/
+  condition: selection and not filter_system
 falsepositives:
   - Developer CLI tools the user intentionally authorized (e.g. a terminal)
 level: medium
 tags:
-  - attack.persistence
-  - attack.t1548
+  - attack.privilege_escalation
+  - attack.defense_evasion
+  - attack.t1548.006

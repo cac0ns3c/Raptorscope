@@ -15,7 +15,7 @@ detection:
   condition: selection
 falsepositives:
   - Internal tools distributed over plain HTTP on a trusted network
-level: medium
+level: low
 tags:
   - attack.initial_access
-  - attack.t1189
+  - attack.t1566.002

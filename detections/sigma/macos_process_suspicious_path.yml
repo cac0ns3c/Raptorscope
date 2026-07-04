@@ -14,12 +14,21 @@ detection:
     event.dataset: macos.process
     process.executable|contains:
       - /tmp/
-      - /private/tmp/
       - /Users/Shared/
-  condition: selection
+  # Also catch interpreter-staged payloads (e.g. `bash /tmp/x.sh`).
+  selection_cmd:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - /tmp/
+      - /Users/Shared/
+  # Drop signed Installer/updater temp execs; degrades safely when signature
+  # is absent (real Pslist), where the rule stays path-only.
+  filter_signed:
+    process.code_signature.trusted: true
+  condition: (selection or selection_cmd) and not filter_signed
 falsepositives:
   - Developer/build tooling executed from a temporary directory
 level: high
 tags:
   - attack.execution
-  - attack.t1059
+  - attack.t1204.002
