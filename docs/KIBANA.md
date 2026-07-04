@@ -29,9 +29,19 @@ shipped index template.
 ./kibana/provision.sh          # KIBANA=http://localhost:5601 by default
 ```
 
-This imports `kibana/saved_objects.ndjson` — a **`raptorscope-*` data view**
-(time field `@timestamp`) and a **"Raptorscope — all events"** saved search — or,
-if import is unavailable, creates the data view directly via the Kibana API.
+This imports `kibana/saved_objects.ndjson`:
+
+- the **`raptorscope-*` data view** (time field `@timestamp`),
+- the **"Raptorscope — all events"** saved search, and
+- the **"Raptorscope — macOS triage overview"** dashboard with six panels: total
+  events, events by dataset (donut), persistence by type, TCC grants, events over
+  time, and top file paths.
+
+(If import is unavailable it falls back to creating just the data view via the API.)
+
+Open the dashboard at **Analytics → Dashboard → "Raptorscope — macOS triage
+overview"** (or <http://localhost:5601/app/dashboards>). Use the time picker to
+widen the range if the fixtures fall outside the default window.
 
 ## 4. Explore
 
