@@ -1,0 +1,35 @@
+title: macOS known adware or PUP family present in installed-application inventory
+id: afd7a471-a3c1-4faf-b02d-2878c4b834aa
+status: experimental
+description: >
+  An installed application whose name matches a well-known macOS adware / PUP
+  family (MacKeeper, Genieo, Bundlore, AdLoad, Pirrit, Shlayer, InstallCore,
+  Mughthesec). These strings do not appear in legitimate software names, so a
+  match in the package inventory is a high-confidence known-bad indicator. Unlike
+  the unsigned-app inventory rules, this fires even when the family is validly
+  Developer-ID signed (e.g. MacKeeper), closing an explicit known-bad gap.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    raptorscope.app.name|contains:
+      - MacKeeper
+      - Genieo
+      - Bundlore
+      - AdLoad
+      - Pirrit
+      - Shlayer
+      - InstallCore
+      - Mughthesec
+  condition: selection
+falsepositives:
+  - Security or malware-analysis tooling that ships these family names as sample
+    or signature strings in an app bundle name
+  - Matching is case-sensitive; adware whose display name uses different casing
+    or a randomized name (common for AdLoad/Bundlore variants) will be missed
+level: high
+tags:
+  - attack.execution
+  - attack.t1204.002

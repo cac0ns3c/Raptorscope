@@ -1,0 +1,32 @@
+title: macOS quarantine attribute stripped via xattr
+id: 0ec5b259-02e6-4c18-8427-81d5480bed24
+status: experimental
+description: >
+  A live xattr process whose command line also references com.apple.quarantine
+  is removing the download-provenance flag from a file so Gatekeeper will no
+  longer prompt or block it on first launch (xattr -d/-rd com.apple.quarantine
+  <file>). This is a common post-download step used to silently "un-quarantine"
+  a dropped payload before execution. Requiring both the xattr tool token and
+  the quarantine attribute name in the same command line keeps the rule
+  high-signal and robust to argument ordering (e.g. -d, -rd, -dr). Distinct from
+  the macos.quarantine database rules, which observe provenance at download time;
+  this fires on the live tampering process.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_xattr:
+    event.dataset: macos.process
+    process.command_line|contains: xattr
+  selection_quarantine:
+    process.command_line|contains: com.apple.quarantine
+  condition: selection_xattr and selection_quarantine
+falsepositives:
+  - Developer, build, or packaging tooling clearing quarantine on locally
+    produced artifacts (e.g. make/CI scripts, notarization workflows).
+  - Admin scripts that read the attribute for troubleshooting
+    (xattr -p com.apple.quarantine <file>); these are benign but will match.
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1553.001

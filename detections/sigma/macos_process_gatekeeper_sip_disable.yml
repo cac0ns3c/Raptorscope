@@ -1,0 +1,29 @@
+title: macOS Gatekeeper or SIP weakened via spctl or csrutil
+id: 276aa6a8-b2eb-4c66-9d23-d6c91eeea0f2
+status: experimental
+description: >
+  A live process command line attempting to disable Gatekeeper
+  (spctl --master-disable / --global-disable) or System Integrity Protection
+  (csrutil disable). These commands turn off core macOS defenses and are a
+  near-unambiguous defense-impair step typically performed before dropping or
+  executing unsigned payloads. Matches the real process.command_line field, so
+  it fires on real MacOS.Sys.Pslist captures.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'spctl --master-disable'
+      - 'spctl --global-disable'
+      - 'csrutil disable'
+      - 'csrutil authenticated-root disable'
+  condition: selection
+falsepositives:
+  - Deliberate administrator or developer action temporarily disabling Gatekeeper or SIP
+  - Security/QA lab imaging or provisioning workflows
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

@@ -1,0 +1,33 @@
+title: macOS persistence item runs a reverse or interactive shell
+id: c8b5850f-adce-4425-8248-2c235805d87a
+status: experimental
+description: >
+  A persistence entry (launch agent/daemon, login item, cron, or BTM) whose
+  command line opens a reverse or interactive shell -- bash/sh interactive mode,
+  a /dev/tcp socket redirect, netcat/ncat with -e, or an mkfifo backpipe. This is
+  a very-low-FP C2 pattern that is disjoint from the network-fetch tokens covered
+  by macos_persistence_shell_download and macos_persistence_cron_suspicious_command,
+  and it reads process.command_line, which the real MacOS.Detection.Autoruns
+  collector populates for every persistence type.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - '/dev/tcp/'
+      - 'bash -i'
+      - 'sh -i'
+      - 'nc -e'
+      - 'ncat -e'
+      - 'mkfifo'
+  condition: selection
+falsepositives:
+  - Rare admin or diagnostic persistence scripts that legitimately spawn an
+    interactive shell or use a named pipe (mkfifo)
+level: high
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1059.004

@@ -1,0 +1,43 @@
+title: macOS quarantined download whose origin URL is a link shortener
+id: 59b36ae3-d0a1-4a55-9ea2-c3f128d1b9ab
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose origin URL resolves through a public link
+  shortener (bit.ly, tinyurl, t.co, is.gd, etc.). Shorteners mask the true download
+  source and are a hallmark of phishing delivery: the victim follows an opaque short
+  link and a payload lands in Downloads. Reputable macOS software is served from a
+  named vendor domain, so a quarantined download whose origin is a shortener is
+  high-signal. Keys on url.original (LSQuarantineOriginURLString), which no other
+  quarantine rule inspects.
+references:
+  - https://attack.mitre.org/techniques/T1566/002/
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  selection:
+    event.dataset: macos.quarantine
+    url.original|contains:
+      - '://bit.ly/'
+      - '://tinyurl.com/'
+      - '://t.co/'
+      - '://is.gd/'
+      - '://goo.gl/'
+      - '://cutt.ly/'
+      - '://rebrand.ly/'
+      - '://ow.ly/'
+      - '://buff.ly/'
+      - '://t.ly/'
+      - '://rb.gy/'
+      - '://shorturl.at/'
+  condition: selection
+falsepositives:
+  - Benign files legitimately shared via a shortened link (marketing campaigns,
+    newsletters, social media posts) that happen to be quarantine-aware downloads
+  - Organizations that publish internal downloads behind a corporate URL shortener
+level: medium
+tags:
+  - attack.initial_access
+  - attack.execution
+  - attack.t1566.002
+  - attack.t1204.001

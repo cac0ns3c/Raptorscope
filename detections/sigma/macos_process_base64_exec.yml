@@ -1,0 +1,43 @@
+title: macOS base64-decoded payload piped to a shell or interpreter
+id: aa85c1e3-17fe-420f-ae04-8ddf93ecb9f6
+status: experimental
+description: >
+  A live process command line that decodes base64 and pipes the result straight
+  into a shell or scripting interpreter (e.g. `base64 -d | bash`,
+  `... | base64 --decode | python`). Requiring both the decode step AND a pipe
+  into an interpreter makes this a near-unambiguous obfuscated-payload execution
+  pattern with very few benign endpoint uses, distinct from the standalone
+  base64 tokens used in the persistence cron/download rules. The BSD `-D` decode
+  flag is included (the evaluator is case-sensitive).
+logsource:
+  product: macos
+  service: process
+detection:
+  decode:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'base64 -d'
+      - 'base64 --decode'
+      - 'base64 -D'
+  piped:
+    process.command_line|contains:
+      - '| bash'
+      - '|bash'
+      - '| sh'
+      - '|sh'
+      - '| zsh'
+      - '|zsh'
+      - '| python'
+      - '| perl'
+      - '| ruby'
+      - '| osascript'
+      - '| /bin/'
+  condition: decode and piped
+falsepositives:
+  - Rare admin or build scripts that decode an embedded blob and execute it inline
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1140
+  - attack.execution
+  - attack.t1059.004

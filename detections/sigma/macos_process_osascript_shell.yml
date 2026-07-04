@@ -1,0 +1,27 @@
+title: macOS AppleScript shell execution via osascript
+id: c5f6ef9f-53cf-4c6e-b763-c2b8e5660b4c
+status: experimental
+description: >
+  osascript invoked with an inline AppleScript that bridges to a shell payload via
+  "do shell script" — a common macOS interpreter LOLBin used to run shell commands
+  from AppleScript (droppers, in-memory stagers, automation/TCC abuse). osascript is
+  Apple-signed, so signature-based process rules miss this; the rule keys on the
+  command line and requires both the osascript tool and the do-shell-script construct
+  in the same argv to stay high-signal.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains: osascript
+  selection_shell:
+    process.command_line|contains: 'do shell script'
+  condition: selection_tool and selection_shell
+falsepositives:
+  - Automation utilities (Alfred, Keyboard Maestro, BetterTouchTool, Hammerspoon) that legitimately run "do shell script" via osascript
+  - Admin, packaging, or MDM scripts that intentionally shell out through AppleScript
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.002

@@ -1,0 +1,34 @@
+title: macOS scripting interpreter executing inline code
+id: 28ff2821-6caa-4cd6-8706-7c8e5aabfe23
+status: experimental
+description: >
+  A running process whose command line invokes a scripting interpreter
+  (python/python3, ruby, perl) or a Unix shell (bash/sh/zsh) with an inline
+  one-liner flag (-c / -e) instead of a script file path. Passing code inline
+  is a classic in-memory stager / fileless-execution technique used to launch
+  reverse shells and download-and-run payloads without touching disk.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'python -c'
+      - 'python3 -c'
+      - 'ruby -e'
+      - 'perl -e'
+      - 'bash -c'
+      - 'sh -c'
+  condition: selection
+falsepositives:
+  - Developer tooling, build systems, and package managers that run inline
+    interpreter snippets (pip/gem/npm postinstall, configure scripts).
+  - Shell wrappers that legitimately invoke `bash -c` / `sh -c` for automation;
+    the `sh -c` token in particular is common in benign orchestration.
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059
+  - attack.t1059.004
+  - attack.t1059.006

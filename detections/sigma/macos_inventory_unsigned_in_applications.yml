@@ -1,0 +1,29 @@
+title: macOS unsigned application installed directly in /Applications
+id: 95dc0b85-5b00-4b73-84e3-8ccceb583f66
+status: experimental
+description: >
+  An installed application bundle located inside the primary /Applications
+  directory that carries no valid code signature. Software delivered through
+  the App Store or notarized Developer-ID distribution is signed, and macOS
+  Gatekeeper normally blocks unsigned bundles from launching there, so an
+  unsigned app residing in /Applications is evidence that trust controls were
+  bypassed. This complements the sibling rule (unsigned apps OUTSIDE
+  /Applications): malware frequently drops directly into /Applications to
+  masquerade as a legitimately installed app, and that location is a
+  deliberate blind spot of the outside-only rule.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    raptorscope.app.signed: false
+    file.path|startswith: /Applications/
+  condition: selection
+falsepositives:
+  - Homebrew Cask or other ad-hoc/self-signed builds installed into /Applications
+  - In-house or developer application bundles dragged into /Applications before notarization
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1553.001

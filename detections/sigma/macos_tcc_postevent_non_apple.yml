@@ -1,0 +1,35 @@
+title: macOS synthetic-input (PostEvent) TCC grant to a non-Apple client
+id: 2544c958-00fe-4402-b4fa-b1316d434327
+status: experimental
+description: >
+  A TCC authorization granting kTCCServicePostEvent (inject synthetic
+  keystrokes/mouse events) to a client that is not an Apple binary. Event
+  injection is the core capability of keyloggers' companion input drivers and of
+  UI-automation used to drive credential prompts; a non-Apple grant here is a
+  strong keylogging / input-capture signal. kTCCServiceListenEvent (Input
+  Monitoring) is intentionally NOT included here — it is already covered by
+  macos_tcc_sensitive_grant_non_apple.yml, so this rule stays scoped to the
+  PostEvent capability that no existing rule detects.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service: kTCCServicePostEvent
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
+  condition: selection and not filter_apple
+falsepositives:
+  - Keyboard/pointer remappers the user intentionally authorized (Karabiner-Elements, BetterTouchTool, Keyboard Maestro)
+  - Password managers or text-expansion tools that auto-type into other apps
+  - Remote-support / screen-control agents (TeamViewer, AnyDesk) authorized by the user
+level: high
+tags:
+  - attack.collection
+  - attack.credential_access
+  - attack.t1056.001

@@ -1,0 +1,48 @@
+title: macOS quarantined download from a tunneling or anonymous file-sharing host
+id: 55dec845-c59f-495c-b318-e7e12050397f
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose download (data) URL or referring
+  (origin) URL points at ad-hoc abuse infrastructure — reverse-tunnel services
+  (ngrok, Cloudflare Try) or anonymous one-shot file hosts (transfer.sh,
+  anonfiles, gofile, 0x0.st) — rather than a vendor distribution site.
+  Legitimate macOS software is served from stable vendor domains; a quarantined
+  payload sourced from throwaway tunnel/anon-host infrastructure is a strong
+  staging/delivery indicator. These downloads are usually HTTPS, so the
+  cleartext-http rule does not see them.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  data_host:
+    event.dataset: macos.quarantine
+    url.full|contains:
+      - .ngrok.io
+      - .ngrok-free.app
+      - .ngrok.app
+      - .trycloudflare.com
+      - //transfer.sh/
+      - anonfiles.com
+      - gofile.io
+      - 0x0.st
+  origin_host:
+    event.dataset: macos.quarantine
+    url.original|contains:
+      - .ngrok.io
+      - .ngrok-free.app
+      - .ngrok.app
+      - .trycloudflare.com
+      - //transfer.sh/
+      - anonfiles.com
+      - gofile.io
+      - 0x0.st
+  condition: data_host or origin_host
+falsepositives:
+  - Developers or IT staff exposing an internal service via an ngrok/Cloudflare
+    tunnel and downloading their own build through it
+  - Occasional legitimate use of transfer.sh or gofile for one-off internal
+    file sharing
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1105

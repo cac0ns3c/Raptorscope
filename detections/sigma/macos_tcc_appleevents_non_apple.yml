@@ -1,0 +1,31 @@
+title: macOS AppleEvents automation TCC grant to a non-Apple client
+id: c64b2723-6ed4-4f56-98de-799f6492ccce
+status: experimental
+description: >
+  A TCC authorization granting kTCCServiceAppleEvents (Automation) to a client
+  that is not an Apple binary. AppleEvents lets one process script and drive
+  another application (send keystrokes, exfiltrate mail/Notes/Messages content,
+  automate the browser). A non-Apple client holding an allowed AppleEvents grant
+  is a control / collection signal not covered by the Accessibility/FDA/
+  Input-Monitoring or path-client TCC rules. Benign volume is higher than the
+  other sensitive services, so treat this as a triage lead rather than a
+  high-confidence alert.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service: kTCCServiceAppleEvents
+  filter_apple:
+    raptorscope.tcc.client|startswith: com.apple.
+  condition: selection and not filter_apple
+falsepositives:
+  - Mainstream productivity and automation apps legitimately request AppleEvents
+    (Microsoft Office, Alfred, Keyboard Maestro, BetterTouchTool, Shortcuts,
+    backup and note-taking utilities) - real-world false-positive rate is high
+level: medium
+tags:
+  - attack.execution
+  - attack.t1559.002

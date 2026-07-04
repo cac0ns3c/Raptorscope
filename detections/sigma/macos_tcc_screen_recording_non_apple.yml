@@ -1,0 +1,28 @@
+title: macOS Screen Recording TCC grant to a non-Apple client
+id: 901a0ba3-59b5-4624-bbe2-96f26a1d2ffa
+status: experimental
+description: >
+  A TCC authorization granting kTCCServiceScreenCapture (Screen Recording) to a
+  client that is not an Apple binary. This privilege allows silent, continuous
+  capture of everything on the display; a non-Apple client holding an allowed
+  grant is a strong collection / post-exploitation signal and is not covered by
+  the existing sensitive-grant rule (Accessibility/FDA/Input-Monitoring only).
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service: kTCCServiceScreenCapture
+  filter_apple:
+    raptorscope.tcc.client|startswith: com.apple.
+  condition: selection and not filter_apple
+falsepositives:
+  - Conferencing and screen-share tools the user intentionally authorized (Zoom, Microsoft Teams, Webex, Google Meet)
+  - Screen-recording / screenshot utilities (OBS, Loom, CleanShot, Snagit)
+  - Remote-support and remote-desktop agents (TeamViewer, AnyDesk, Chrome Remote Desktop)
+level: medium
+tags:
+  - attack.collection
+  - attack.t1113
