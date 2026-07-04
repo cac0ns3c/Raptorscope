@@ -5,7 +5,7 @@ COLLECTION ?= samples/mac-victim
 PORT ?= 8000
 
 .PHONY: help setup setup-py setup-web test test-py test-web \
-        demo serve web build-web clean
+        demo serve web build-web es kibana clean
 
 help:
 	@echo "Raptorscope make targets:"
@@ -15,6 +15,8 @@ help:
 	@echo "  serve       serve COLLECTION=<dir|zip> on :$(PORT) (offline)"
 	@echo "  web         run the Vite dev server (proxies /api -> :8000)"
 	@echo "  build-web   type-check + production-bundle the SPA"
+	@echo "  es          start Elasticsearch + Kibana (docker compose)"
+	@echo "  kibana      start ES+Kibana and provision the raptorscope-* data view"
 	@echo "  clean       remove venv, node_modules, build artifacts"
 	@echo ""
 	@echo "Quickstart:  make setup && make demo   (then 'make web' in another shell)"
@@ -48,6 +50,12 @@ web:
 
 build-web:
 	cd web && npm run build
+
+es:
+	docker compose up -d
+
+kibana: es
+	./kibana/provision.sh
 
 clean:
 	rm -rf .venv web/node_modules web/dist build dist *.egg-info

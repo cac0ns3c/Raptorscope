@@ -17,6 +17,7 @@ import {
   IconLogo,
   IconSearch,
 } from "./ui/icons";
+import { kibanaBase, kibanaDiscoverUrl } from "./util/kibana";
 
 type Tab = "overview" | "artifacts" | "timeline" | "alerts" | "search";
 const TABS: { id: Tab; icon: JSX.Element }[] = [
@@ -62,6 +63,16 @@ export function App() {
               <IconHost width={16} height={16} />
             </span>
             <span className="host-name">{selected.name}</span>
+            {kibanaBase() && (
+              <a
+                className="btn-change kibana-link"
+                href={kibanaDiscoverUrl(kibanaBase(), selected.name)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Kibana ↗
+              </a>
+            )}
             <button className="btn-change" onClick={() => setSelected(null)}>
               change case
             </button>

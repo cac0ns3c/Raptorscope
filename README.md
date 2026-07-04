@@ -4,7 +4,7 @@ macOS DFIR analytics stack: Velociraptor macOS collections → ECS-normalized,
 detection-enriched triage in Elasticsearch with a dedicated GUI.
 
 Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md` ·
-Install: `docs/INSTALL.md` · Demo walkthrough: `docs/DEMO.md`
+Install: `docs/INSTALL.md` · Demo: `docs/DEMO.md` · Kibana: `docs/KIBANA.md`
 
 ## Quickstart
 
@@ -113,6 +113,14 @@ npm run build      # tsc typecheck + production bundle
 # in another terminal, serve the API the SPA calls:
 PYTHONPATH=../src ../.venv/bin/python -m raptorscope serve --collection <dir> --port 8000
 ```
+
+### Kibana (alternative frontend)
+
+Because everything is ECS in Elasticsearch, you can explore the same data in
+Kibana instead of (or alongside) the SPA — `make kibana` starts ES + Kibana and
+provisions a `raptorscope-*` data view + saved search. Set `VITE_KIBANA_URL` to
+add an "Open in Kibana ↗" link (deep-linked to the case host) in the SPA header.
+Full guide: `docs/KIBANA.md`.
 
 A collection is a directory (or zip) of `<artifact>.json` files plus an optional
 `host.json` for `host.*`/`user.*` context. Files may be named by the internal

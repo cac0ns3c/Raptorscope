@@ -180,6 +180,15 @@ button {
   color: var(--text);
   border-color: var(--border-strong);
 }
+.case-context .kibana-link {
+  text-decoration: none;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+.case-context .kibana-link:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
 
 /* ---------- content ---------- */
 .content {

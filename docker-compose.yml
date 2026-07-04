@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Opt-in single-node Elasticsearch for the live-ES path (security disabled for
+# Opt-in Elasticsearch + Kibana for the live-ES path (security disabled for
 # local dev only). Not required for the offline demo (`make demo`).
 #   docker compose up -d
 #   raptorscope ingest samples/mac-victim --es http://localhost:9200
-#   raptorscope serve --es http://localhost:9200
+#   ./kibana/provision.sh              # create the raptorscope-* data view
+#   open http://localhost:5601         # explore in Kibana
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
@@ -19,3 +20,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: raptorscope-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
