@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
@@ -32,4 +32,22 @@ describe("CasePicker", () => {
       expect(screen.getByText(/no cases/i)).toBeInTheDocument(),
     );
   });
+
+  it("hunts an IOC across all hosts and pivots to a host", async () => {
+    const onSelect = vi.fn();
+    renderWithApi(<CasePicker onSelect={onSelect} />);
+    await screen.findByText("mac-victim");
+    await userEvent.type(
+      screen.getByLabelText("hunt indicator across hosts"),
+      "45.9.148.99",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Hunt" }));
+    const result = await screen.findByLabelText("hunt result");
+    // correlated across 2 hosts
+    expect(result).toHaveTextContent(/found on\s*2\s*of/);
+    // clicking a host opens that case
+    await userEvent.click(within(result).getByText("mac-victim"));
+    expect(onSelect).toHaveBeenCalled();
+  });
+
 });

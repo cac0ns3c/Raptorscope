@@ -430,5 +430,33 @@ def create_app(
 
         return _ai_call(lambda: ai_service.run_copilot(ai, body.question, dispatch))
 
+    @router.get("/hunt")
+    def hunt(q: str, limit: int = 200):
+        """Cross-host IOC hunt: where does an indicator appear across the fleet?"""
+        docs = store.hunt(q.strip(), size=limit) if q.strip() else []
+        by_host: dict[str, dict] = {}
+        for d in docs:
+            h = _dig(d, "host.name") or "?"
+            entry = by_host.setdefault(
+                h, {"host": h, "count": 0, "datasets": set(), "samples": []}
+            )
+            entry["count"] += 1
+            ds = _dig(d, "event.dataset")
+            if ds:
+                entry["datasets"].add(ds)
+            if len(entry["samples"]) < 5:
+                entry["samples"].append(
+                    {"dataset": ds, "summary": _summary(d), "doc_id": d.get("_id")}
+                )
+        hosts = sorted(by_host.values(), key=lambda e: e["count"], reverse=True)
+        for e in hosts:
+            e["datasets"] = sorted(e["datasets"])
+        return {
+            "value": q,
+            "total": len(docs),
+            "host_count": len(hosts),
+            "hosts": hosts,
+        }
+
     app.include_router(router)
     return app

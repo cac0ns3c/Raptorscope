@@ -102,7 +102,7 @@ In-process `run_rules` reads all case docs.
 ### B4 — multi-host / multi-case
 - Ingest multiple hosts; case = collection, host = sub-filter; cross-host IOC
   pivot in the API + SPA.
-- [ ] **NOT STARTED (B4)** — multi-host is a larger architectural change.
+- [x] **DONE (B4)** — cross-host IOC correlation: `Store.hunt(value)` (both backends; ES `wildcard`/keyword bool-should), auth-guarded `GET /hunt` grouped by host, and a fleet-hunt UI in the case picker (pivot to any matching host). Live-validated: a shared C2 IP correlates across two ingested hosts.
 
 ---
 

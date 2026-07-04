@@ -62,6 +62,20 @@ export interface DocContent {
   markdown: string;
 }
 
+export interface HuntHost {
+  host: string;
+  count: number;
+  datasets: string[];
+  samples: { dataset: string | null; summary: string; doc_id: string }[];
+}
+
+export interface HuntResult {
+  value: string;
+  total: number;
+  host_count: number;
+  hosts: HuntHost[];
+}
+
 export interface AIStatus {
   enabled: boolean;
   model: string | null;

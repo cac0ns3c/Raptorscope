@@ -28,6 +28,22 @@ def _dig(doc: dict, path: str):
     return cur
 
 
+# Fields an indicator (IP, path, hash, label, client) can appear in — used by the
+# cross-host hunt to correlate an IOC across the whole fleet. All are keyword or
+# `wildcard`-typed in ES, so substring wildcard queries match the in-memory path.
+_INDICATOR_FIELDS = [
+    "file.path",
+    "process.executable",
+    "process.command_line",
+    "url.full",
+    "url.original",
+    "raptorscope.persistence.label",
+    "raptorscope.persistence.hash",
+    "raptorscope.tcc.client",
+    "host.name",
+]
+
+
 @runtime_checkable
 class Store(Protocol):
     def hosts(self) -> list[str]: ...
@@ -37,6 +53,8 @@ class Store(Protocol):
     def count(self, host: str | None = None, dataset: str | None = None) -> int: ...
 
     def aggregate(self, host: str | None = None) -> dict: ...
+
+    def hunt(self, value: str, size: int = 100) -> list[dict]: ...
 
     def search(
         self,
@@ -113,6 +131,18 @@ class InMemoryStore:
                 ),
             },
         }
+
+    def hunt(self, value: str, size: int = 100) -> list[dict]:
+        """Docs across ALL hosts where ``value`` (case-sensitive substring) appears
+        in any indicator field — the fleet-wide IOC correlation primitive."""
+        hits = []
+        for d in self._docs:
+            for f in _INDICATOR_FIELDS:
+                v = _dig(d, f)
+                if v is not None and value in str(v):
+                    hits.append(d)
+                    break
+        return hits[:size]
 
     def search(
         self,

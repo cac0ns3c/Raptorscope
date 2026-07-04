@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useEffect, useState } from "react";
 
-import type { Case } from "../api/types";
+import type { Case, HuntResult } from "../api/types";
 import { useApi } from "../context/ApiContext";
-import { IconChevronRight, IconHost } from "../ui/icons";
+import { IconChevronRight, IconHost, IconSearch } from "../ui/icons";
 
 export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
   const api = useApi();
   const [cases, setCases] = useState<Case[] | null>(null);
+  const [ioc, setIoc] = useState("");
+  const [hunt, setHunt] = useState<HuntResult | null>(null);
+  const [hunting, setHunting] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -16,6 +19,22 @@ export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
       live = false;
     };
   }, [api]);
+
+  async function runHunt(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ioc.trim()) return;
+    setHunting(true);
+    try {
+      setHunt(await api.hunt(ioc.trim()));
+    } finally {
+      setHunting(false);
+    }
+  }
+
+  function openHost(name: string) {
+    const c = (cases ?? []).find((x) => x.name === name);
+    if (c) onSelect(c);
+  }
 
   if (cases === null) {
     return (
@@ -42,6 +61,52 @@ export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
         {cases.length} {cases.length === 1 ? "host" : "hosts"} ·{" "}
         {totalDocs.toLocaleString()} documents
       </p>
+
+      <form className="fleet-hunt" onSubmit={runHunt} role="search">
+        <IconSearch width={16} height={16} />
+        <input
+          className="q-input"
+          aria-label="hunt indicator across hosts"
+          placeholder="Hunt an IOC across all hosts — IP, path, hash…"
+          value={ioc}
+          onChange={(e) => setIoc(e.target.value)}
+        />
+        <button className="q-run" type="submit" disabled={hunting}>
+          {hunting ? "Hunting…" : "Hunt"}
+        </button>
+      </form>
+
+      {hunt && !hunting && (
+        <div className="hunt-result" aria-label="hunt result">
+          {hunt.host_count === 0 ? (
+            <p className="muted">
+              No host has <code>{hunt.value}</code>.
+            </p>
+          ) : (
+            <>
+              <p className="muted">
+                <code>{hunt.value}</code> found on <b>{hunt.host_count}</b> of{" "}
+                {cases.length} hosts · {hunt.total} hits
+              </p>
+              <ul className="hunt-hosts">
+                {hunt.hosts.map((h) => (
+                  <li key={h.host}>
+                    <button className="hunt-host" onClick={() => openHost(h.host)}>
+                      <span className="hunt-host-name">{h.host}</span>
+                      <span className="hunt-host-meta">
+                        <b>{h.count} hits</b> ·{" "}
+                        {h.datasets.map((d) => d.replace("macos.", "")).join(", ")}
+                      </span>
+                      <IconChevronRight />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
+
       <ul className="case-list" aria-label="cases">
         {cases.map((c) => (
           <li key={c.name}>

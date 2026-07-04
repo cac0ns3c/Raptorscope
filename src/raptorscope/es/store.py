@@ -5,6 +5,7 @@ Mirrors :class:`raptorscope.api.store.InMemoryStore`: every ``search``/``get``
 result is the ECS ``_source`` with the document ``_id`` injected, so the API
 layer is identical regardless of backend.
 """
+from ..api.store import _INDICATOR_FIELDS
 from .template import INDEX_PATTERN
 
 
@@ -129,6 +130,19 @@ class ESStore:
         if sort is not None:
             field, order = sort
             body["sort"] = [{field: {"order": order}}]
+        resp = self._client.search(index=self._pattern, body=body)
+        return [_hit(h) for h in resp["hits"]["hits"]]
+
+    def hunt(self, value: str, size: int = 100) -> list[dict]:
+        """Cross-host IOC correlation: substring-match ``value`` across the
+        indicator fields (all keyword/`wildcard` typed) over the whole fleet."""
+        should = [
+            {"wildcard": {f: {"value": f"*{value}*"}}} for f in _INDICATOR_FIELDS
+        ]
+        body = {
+            "size": min(size, self.MAX_WINDOW),
+            "query": {"bool": {"should": should, "minimum_should_match": 1}},
+        }
         resp = self._client.search(index=self._pattern, body=body)
         return [_hit(h) for h in resp["hits"]["hits"]]
 

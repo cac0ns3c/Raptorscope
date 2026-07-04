@@ -5,6 +5,7 @@ import type {
   ArtifactPage,
   Case,
   CopilotResult,
+  HuntResult,
   DocContent,
   DocMeta,
   Overview,
@@ -34,6 +35,7 @@ export interface ApiClient {
   login(username: string, password: string): Promise<{ token: string }>;
   listDocs(): Promise<DocMeta[]>;
   getDoc(id: string): Promise<DocContent>;
+  hunt(value: string, limit?: number): Promise<HuntResult>;
   aiStatus(): Promise<AIStatus>;
   aiTriage(
     caseName: string,
@@ -98,6 +100,8 @@ export function createHttpClient(
       }),
     listDocs: () => req(`/docs`),
     getDoc: (id) => req(`/docs/${c(id)}`),
+    hunt: (value, limit = 200) =>
+      req(`/hunt?q=${encodeURIComponent(value)}&limit=${limit}`),
     aiStatus: () => req(`/ai/status`),
     aiTriage: (name, ruleId, docId) =>
       req(`/cases/${c(name)}/ai/triage`, {

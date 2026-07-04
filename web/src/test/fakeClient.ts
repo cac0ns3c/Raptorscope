@@ -192,6 +192,21 @@ export function makeFakeClient(): ApiClient {
       title: id === "kibana" ? "Using Kibana" : "Overview",
       markdown: `# ${id}\n\nSample documentation body for **${id}**.`,
     }),
+    hunt: async (value) => {
+      const shared = /45\.9|tmp|helper/i.test(value);
+      const hosts = shared
+        ? [
+            { host: DIRTY, count: 3, datasets: ["macos.process", "macos.persistence"], samples: [{ dataset: "macos.process", summary: `${value} beacon`, doc_id: "1" }] },
+            { host: CLEAN, count: 1, datasets: ["macos.process"], samples: [{ dataset: "macos.process", summary: `${value}`, doc_id: "2" }] },
+          ]
+        : [];
+      return {
+        value,
+        total: hosts.reduce((s, h) => s + h.count, 0),
+        host_count: hosts.length,
+        hosts,
+      };
+    },
     aiStatus: async () => ({ enabled: true, model: "claude-opus-4-8" }),
     aiTriage: async (_name, ruleId) => ({
       analysis: `**Assessment** — ${ruleId} is likely malicious.`,
