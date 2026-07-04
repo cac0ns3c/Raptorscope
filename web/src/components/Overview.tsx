@@ -1,15 +1,33 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { Markdown } from "../ui/Markdown";
 
+const summaryKey = (c: string) => `rs_summary:${c}`;
+
+function loadSummary(c: string): string | undefined {
+  try {
+    return window.localStorage.getItem(summaryKey(c)) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function Overview({ caseName }: { caseName: string }) {
   const api = useApi();
   const aiEnabled = useAiEnabled();
   const [summary, setSummary] = useState<{ loading: boolean; text?: string }>();
+
+  // Restore a previously generated summary for this case; it persists across
+  // tab/case switches and reloads until the analyst re-runs it.
+  useEffect(() => {
+    const cached = loadSummary(caseName);
+    setSummary(cached ? { loading: false, text: cached } : undefined);
+  }, [caseName]);
+
   const { data, loading, error } = useAsync(
     () => api.getOverview(caseName),
     [caseName],
@@ -19,7 +37,14 @@ export function Overview({ caseName }: { caseName: string }) {
     setSummary({ loading: true });
     api
       .aiSummary(caseName)
-      .then((r) => setSummary({ loading: false, text: r.summary }))
+      .then((r) => {
+        setSummary({ loading: false, text: r.summary });
+        try {
+          window.localStorage.setItem(summaryKey(caseName), r.summary);
+        } catch {
+          /* ignore storage failures */
+        }
+      })
       .catch(() => setSummary({ loading: false, text: "Summary failed." }));
   }
 
@@ -42,7 +67,11 @@ export function Overview({ caseName }: { caseName: string }) {
             onClick={summarize}
             disabled={summary?.loading}
           >
-            {summary?.loading ? "Summarizing…" : "✦ Summarize case (AI)"}
+            {summary?.loading
+              ? "Summarizing…"
+              : summary?.text
+                ? "✦ Re-summarize case (AI)"
+                : "✦ Summarize case (AI)"}
           </button>
           {summary?.text && (
             <div className="ai-panel">
