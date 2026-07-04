@@ -22,6 +22,37 @@ def _dig(doc: dict, path: str):
     return cur
 
 
+def _summary(doc: dict) -> str:
+    """A one-line, dataset-aware description for the timeline."""
+    ds = _dig(doc, "event.dataset")
+    if ds == "macos.persistence":
+        ptype = _dig(doc, "raptorscope.persistence.type")
+        label = _dig(doc, "raptorscope.persistence.label")
+        return f"{ptype}: {label} ({_dig(doc, 'file.path')})"
+    if ds == "macos.process":
+        return (
+            f"{_dig(doc, 'process.name')} [{_dig(doc, 'process.pid')}] "
+            f"{_dig(doc, 'process.executable')}"
+        )
+    if ds == "macos.quarantine":
+        return (
+            f"downloaded {_dig(doc, 'file.name')} "
+            f"from {_dig(doc, 'url.original')}"
+        )
+    if ds == "macos.tcc":
+        state = "allowed" if _dig(doc, "raptorscope.tcc.allowed") else "denied"
+        return (
+            f"{_dig(doc, 'raptorscope.tcc.service')} -> "
+            f"{_dig(doc, 'raptorscope.tcc.client')} ({state})"
+        )
+    if ds == "macos.inventory":
+        return (
+            f"{_dig(doc, 'raptorscope.app.name')} "
+            f"{_dig(doc, 'raptorscope.app.version')} ({_dig(doc, 'file.path')})"
+        )
+    return _dig(doc, "file.path") or ds or ""
+
+
 def create_app(store: Store) -> FastAPI:
     app = FastAPI(title="Raptorscope API", version="0.1.0")
 
@@ -88,5 +119,22 @@ def create_app(store: Store) -> FastAPI:
             "total": len(hits),
             "items": hits[offset : offset + limit],
         }
+
+    @app.get("/cases/{case}/timeline")
+    def timeline(case: str, limit: int = 100):
+        require_case(case)
+        docs = store.search(host=case, size=100000)
+        rows = [
+            {
+                "timestamp": d.get("@timestamp") or "",
+                "dataset": _dig(d, "event.dataset"),
+                "category": _dig(d, "event.category"),
+                "summary": _summary(d),
+                "doc_id": d.get("_id"),
+            }
+            for d in docs
+        ]
+        rows.sort(key=lambda r: r["timestamp"], reverse=True)
+        return rows[:limit]
 
     return app
