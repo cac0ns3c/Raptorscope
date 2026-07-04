@@ -123,8 +123,22 @@ behind an injectable `AIClient` seam, so the test suite runs with no key and no
 network. Model output (derived from collected artifacts) is sanitized with
 DOMPurify before rendering.
 
+**Configurable** — point it at any Anthropic-API-compatible endpoint (a gateway
+such as LiteLLM / Cloudflare AI Gateway, or a self-hosted router), any model, any
+key:
+
+| Env var | Purpose |
+|---------|---------|
+| `RAPTORSCOPE_AI_KEY` (or `ANTHROPIC_API_KEY`) | API key — **required to enable AI** |
+| `RAPTORSCOPE_AI_MODEL` (or `ANTHROPIC_MODEL`) | model id (default `claude-opus-4-8`) |
+| `RAPTORSCOPE_AI_BASE_URL` (or `ANTHROPIC_BASE_URL`) | endpoint override for a proxy/gateway |
+
 ```bash
-ANTHROPIC_API_KEY=sk-ant-… PYTHONPATH=src .venv/bin/python -m raptorscope serve --collection <dir>
+# default (Anthropic)
+ANTHROPIC_API_KEY=sk-ant-… raptorscope serve --collection <dir>
+# via a gateway with a different model
+RAPTORSCOPE_AI_KEY=… RAPTORSCOPE_AI_BASE_URL=https://gateway/v1 \
+  RAPTORSCOPE_AI_MODEL=claude-sonnet-5 raptorscope serve --collection <dir>
 ```
 
 ### GUI (`web/`)

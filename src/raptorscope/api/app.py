@@ -311,7 +311,10 @@ def create_app(
 
     @app.get("/ai/status")
     def ai_status():
-        return {"enabled": ai is not None, "model": MODEL if ai is not None else None}
+        return {
+            "enabled": ai is not None,
+            "model": getattr(ai, "model", MODEL) if ai is not None else None,
+        }
 
     @router.post("/cases/{case}/ai/triage")
     def ai_triage(case: str, body: TriageBody):

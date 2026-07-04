@@ -105,14 +105,34 @@ class AnthropicAI:
 def build_ai_from_env() -> AIClient | None:
     """Return an ``AnthropicAI`` if an API key is configured, else ``None``.
 
-    AI features are opt-in: with no key the endpoints report ``enabled: false``
-    and return 503 rather than failing.
+    AI features are opt-in and fully configurable via env — point the client at
+    any Anthropic-API-compatible endpoint (a gateway/proxy such as LiteLLM,
+    Cloudflare AI Gateway, or a self-hosted router), pick any model, and supply
+    the key:
+
+    - ``RAPTORSCOPE_AI_KEY`` (or ``ANTHROPIC_API_KEY``) — required; enables AI.
+    - ``RAPTORSCOPE_AI_MODEL`` (or ``ANTHROPIC_MODEL``) — model id (default
+      ``claude-opus-4-8``).
+    - ``RAPTORSCOPE_AI_BASE_URL`` (or ``ANTHROPIC_BASE_URL``) — endpoint override.
+
+    With no key the endpoints report ``enabled: false`` and return 503.
     """
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    key = os.environ.get("RAPTORSCOPE_AI_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
         return None
     try:
         import anthropic
     except ImportError:
         return None
-    model = os.environ.get("RAPTORSCOPE_AI_MODEL", MODEL)
-    return AnthropicAI(anthropic.Anthropic(), model=model)
+    model = (
+        os.environ.get("RAPTORSCOPE_AI_MODEL")
+        or os.environ.get("ANTHROPIC_MODEL")
+        or MODEL
+    )
+    base_url = os.environ.get("RAPTORSCOPE_AI_BASE_URL") or os.environ.get(
+        "ANTHROPIC_BASE_URL"
+    )
+    kwargs: dict = {"api_key": key}
+    if base_url:
+        kwargs["base_url"] = base_url
+    return AnthropicAI(anthropic.Anthropic(**kwargs), model=model)

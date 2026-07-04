@@ -98,3 +98,19 @@ def test_ai_unknown_case_404():
     assert _ai_client().post(
         "/cases/nope/ai/summary"
     ).status_code == 404
+
+
+def test_build_ai_is_configurable(monkeypatch):
+    from raptorscope.ai.client import build_ai_from_env
+
+    for k in ["ANTHROPIC_API_KEY", "RAPTORSCOPE_AI_KEY", "ANTHROPIC_BASE_URL"]:
+        monkeypatch.delenv(k, raising=False)
+    assert build_ai_from_env() is None  # no key -> disabled
+
+    monkeypatch.setenv("RAPTORSCOPE_AI_KEY", "sk-test")
+    monkeypatch.setenv("RAPTORSCOPE_AI_MODEL", "claude-test-model")
+    monkeypatch.setenv("RAPTORSCOPE_AI_BASE_URL", "https://gateway.example/v1")
+    ai = build_ai_from_env()
+    assert ai is not None
+    assert ai.model == "claude-test-model"
+    assert "gateway.example" in str(ai._client.base_url)
