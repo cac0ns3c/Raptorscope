@@ -35,22 +35,45 @@ def triage_alert(ai: AIClient, alert: dict, doc: dict) -> dict:
     return {"analysis": ai.text(_PERSONA, prompt, max_tokens=1400)}
 
 
-def summarize_case(ai: AIClient, overview: dict, alerts: list[dict]) -> dict:
-    """Produce a first-hour incident narrative for the case."""
-    top = alerts[:20]
+def summarize_case(
+    ai: AIClient,
+    overview: dict,
+    alerts: list[dict],
+    events: list[dict],
+) -> dict:
+    """Produce a chronological, timestamped incident narrative for the case."""
+    top_alerts = alerts[:25]
+    timeline = events[:120]  # ascending by timestamp
     prompt = (
-        "Write a first-hour triage brief for this macOS host.\n\n"
-        f"Case: {overview.get('case')}\n"
+        "Write the incident narrative for this macOS host the way a senior DFIR "
+        "analyst writes it in a case report: as a STORY, in chronological order, "
+        "citing the exact ISO-8601 timestamps, users, hosts, file paths, and IPs "
+        "from the evidence below.\n\n"
+        f"Host: {overview.get('case')}\n"
         f"Document counts by dataset: {json.dumps(overview.get('datasets', {}))}\n"
         f"Persistence by type: {json.dumps(overview.get('persistence_types', {}))}\n"
-        f"Unsigned: {json.dumps(overview.get('unsigned', {}))}\n"
-        f"Fired detections ({len(alerts)} total, showing {len(top)}):\n"
-        f"{json.dumps(top, indent=2)}\n\n"
-        "Write 2-4 tight paragraphs: what stands out, the most likely storyline "
-        "tying the alerts together, and a prioritized recommendation. Lead with the "
-        "bottom line. Be concrete about hosts, paths, and techniques; don't hedge."
+        f"Unsigned counts: {json.dumps(overview.get('unsigned', {}))}\n\n"
+        f"Timeline of normalized events (ascending, {len(timeline)} of "
+        f"{len(events)} shown):\n{json.dumps(timeline, indent=2)}\n\n"
+        f"Fired detections ({len(alerts)} total, showing {len(top_alerts)}):\n"
+        f"{json.dumps(top_alerts, indent=2)}\n\n"
+        "Structure your answer with these exact section headers:\n"
+        "## Executive summary\n"
+        "Two or three sentences: what happened and the verdict.\n"
+        "## Timeline\n"
+        "A chronological bulleted list — every bullet begins with the ISO-8601 "
+        "timestamp, then describes what happened at that moment in analyst language.\n"
+        "## The story\n"
+        "Two to four flowing paragraphs narrating the intrusion end to end — initial "
+        "access, execution, persistence, command-and-control, and impact — weaving "
+        "the timestamps into the prose so it reads as a coherent account.\n"
+        "## Assessment & recommendations\n"
+        "Confidence level, the key IOCs (IPs, paths, labels), and prioritized "
+        "response actions.\n\n"
+        "Ground every claim in the evidence. Use the real timestamps and paths; "
+        "never invent artifacts or times that aren't in the data."
     )
-    return {"summary": ai.text(_PERSONA, prompt, max_tokens=1600)}
+    return {"summary": ai.text(_PERSONA, prompt, max_tokens=2400)}
 
 
 _QUERY_SCHEMA = {

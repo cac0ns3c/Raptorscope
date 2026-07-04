@@ -360,7 +360,21 @@ def create_app(
         docs = store.search(host=case, size=100000)
         fired = run_rules(docs, rules)
         fired.sort(key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or ""))
-        return _ai_call(lambda: ai_service.summarize_case(ai, _overview(case), fired))
+        # Chronological (ascending) event timeline so the model can tell the story.
+        events = sorted(
+            (
+                {
+                    "timestamp": d.get("@timestamp") or "",
+                    "dataset": _dig(d, "event.dataset"),
+                    "summary": _summary(d),
+                }
+                for d in docs
+            ),
+            key=lambda e: e["timestamp"],
+        )
+        return _ai_call(
+            lambda: ai_service.summarize_case(ai, _overview(case), fired, events)
+        )
 
     @router.post("/cases/{case}/ai/nl-query")
     def ai_nl_query(case: str, body: QuestionBody):
