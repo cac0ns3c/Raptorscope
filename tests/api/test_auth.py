@@ -54,6 +54,19 @@ def test_token_expires():
     assert cfg.valid_token(tok, now=1000 - 5) is False  # issued in the future
 
 
+def test_from_env_uses_a_strong_random_secret_by_default(monkeypatch):
+    for k in ["RAPTORSCOPE_AUTH_SECRET", "RAPTORSCOPE_AUTH_USERS"]:
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("RAPTORSCOPE_AUTH_USER", "analyst")
+    monkeypatch.setenv("RAPTORSCOPE_AUTH_PASS", "s3cret")
+    cfg = AuthConfig.from_env()
+    assert cfg.secret != "raptorscope"
+    assert len(cfg.secret) >= 32
+    # explicit secret is honored (deterministic tokens across restarts)
+    monkeypatch.setenv("RAPTORSCOPE_AUTH_SECRET", "fixed-secret")
+    assert AuthConfig.from_env().secret == "fixed-secret"
+
+
 def test_multi_user():
     cfg = AuthConfig(users={"alice": "pw1", "bob": "pw2"})
     assert cfg.enabled

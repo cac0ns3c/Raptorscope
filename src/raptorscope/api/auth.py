@@ -14,6 +14,7 @@ Configure via ``raptorscope serve --auth-user/--auth-pass`` or env:
 import hashlib
 import hmac
 import os
+import secrets
 import time
 from dataclasses import dataclass, field
 
@@ -90,9 +91,13 @@ class AuthConfig:
         p = os.environ.get("RAPTORSCOPE_AUTH_PASS", "")
         if u and p:
             users[u] = p
+        # Never sign tokens with a guessable constant: use the configured secret,
+        # else a strong per-process random one (tokens then reset on restart,
+        # which is fine — they expire anyway).
+        secret = os.environ.get("RAPTORSCOPE_AUTH_SECRET") or secrets.token_hex(32)
         return cls(
             users=users,
-            secret=os.environ.get("RAPTORSCOPE_AUTH_SECRET", "raptorscope"),
+            secret=secret,
             ttl_seconds=int(os.environ.get("RAPTORSCOPE_AUTH_TTL", _DEFAULT_TTL)),
         )
 
