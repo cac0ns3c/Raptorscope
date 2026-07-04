@@ -35,18 +35,24 @@ export function Overview({ caseName }: { caseName: string }) {
   );
 
   function summarize() {
-    setSummary({ loading: true });
+    setSummary({ loading: true, text: "" });
+    let acc = "";
     api
-      .aiSummary(caseName)
-      .then((r) => {
-        setSummary({ loading: false, text: r.summary });
+      .aiSummaryStream(caseName, (chunk) => {
+        acc += chunk;
+        setSummary({ loading: true, text: acc }); // render incrementally
+      })
+      .then(() => {
+        setSummary({ loading: false, text: acc });
         try {
-          window.localStorage.setItem(summaryKey(caseName), r.summary);
+          window.localStorage.setItem(summaryKey(caseName), acc);
         } catch {
           /* ignore storage failures */
         }
       })
-      .catch(() => setSummary({ loading: false, text: "Summary failed." }));
+      .catch(() =>
+        setSummary({ loading: false, text: acc || "Summary failed." }),
+      );
   }
 
   if (loading)

@@ -112,7 +112,7 @@ In-process `run_rules` reads all case docs.
 - Stream `triage`/`summary`/`copilot` (SSE) so long copilot runs render
   incrementally; add `output_config.effort` tuning and prompt caching of the
   system persona. Extend `AIClient` with a streaming primitive; SPA reads the stream.
-- [ ] Streaming seam + SSE endpoints + SPA + tests (fake stream). *(not started)*
+- [x] **PARTIAL (C1)** — `AIClient.stream_text` seam, SSE `/ai/summary/stream` endpoint, and incremental rendering in the Overview (persists on completion). Live-validated against real Claude. Copilot/triage streaming remain a follow-on.
 
 ### C2 — prompt-injection hardening (input side)
 Case data (attacker-controllable artifact fields) flows into prompts.

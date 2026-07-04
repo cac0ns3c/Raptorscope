@@ -11,6 +11,10 @@ class FakeAI:
     def text(self, system, user, max_tokens=1024):
         return "ANALYSIS: " + user[:60]
 
+    def stream_text(self, system, user, max_tokens=1024):
+        for chunk in ["**Bottom", " line** — ", "staged persistence."]:
+            yield chunk
+
     def json(self, system, user, schema, max_tokens=1024):
         if "iocs" in schema.get("properties", {}):
             return {
@@ -186,3 +190,25 @@ def test_iocs_extracts_and_dedupes():
     assert sum(1 for i in iocs if i["value"] == "45.9.148.99") == 1
     assert {i["type"] for i in iocs} == {"ip", "path"}
     assert all({"type", "value", "context"} <= i.keys() for i in iocs)
+
+
+def test_summary_stream_emits_sse():
+    r = _ai_client().post("/cases/mac-victim/ai/summary/stream")
+    assert r.status_code == 200
+    assert "text/event-stream" in r.headers["content-type"]
+    body = r.text
+    assert "data:" in body
+    assert "Bottom" in body  # streamed chunk content
+    assert '"done": true' in body  # terminal event
+
+
+def test_summary_stream_error_event(monkeypatch):
+    class BoomStream(FakeAI):
+        def stream_text(self, system, user, max_tokens=1024):
+            raise RuntimeError("stream boom")
+            yield  # pragma: no cover
+
+    c = TestClient(create_app(InMemoryStore(seed_docs()), ai=BoomStream()))
+    r = c.post("/cases/mac-victim/ai/summary/stream")
+    assert r.status_code == 200
+    assert '"error": true' in r.text

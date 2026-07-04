@@ -54,16 +54,11 @@ def triage_alert(ai: AIClient, alert: dict, doc: dict) -> dict:
     return {"analysis": ai.text(_PERSONA, prompt, max_tokens=1400)}
 
 
-def summarize_case(
-    ai: AIClient,
-    overview: dict,
-    alerts: list[dict],
-    events: list[dict],
-) -> dict:
-    """Produce a chronological, timestamped incident narrative for the case."""
+def summary_prompt(overview: dict, alerts: list[dict], events: list[dict]) -> str:
+    """Build the case-summary prompt (shared by the blocking + streaming paths)."""
     top_alerts = alerts[:25]
     timeline = events[:120]  # ascending by timestamp
-    prompt = (
+    return (
         "Write the incident narrative for this macOS host the way a senior DFIR "
         "analyst writes it in a case report: as a STORY, in chronological order, "
         "citing the exact ISO-8601 timestamps, users, hosts, file paths, and IPs "
@@ -100,7 +95,23 @@ def summarize_case(
         "time — treat their ordering as approximate and say so if it affects the "
         "sequence you infer."
     )
+
+
+def summarize_case(
+    ai: AIClient,
+    overview: dict,
+    alerts: list[dict],
+    events: list[dict],
+) -> dict:
+    """Produce a chronological, timestamped incident narrative for the case."""
+    prompt = summary_prompt(overview, alerts, events)
     return {"summary": ai.text(_PERSONA, prompt, max_tokens=4096)}
+
+
+def stream_summary(ai: AIClient, overview, alerts, events):
+    """Yield the incident-narrative text incrementally (for SSE)."""
+    prompt = summary_prompt(overview, alerts, events)
+    yield from ai.stream_text(_PERSONA, prompt, max_tokens=4096)
 
 
 _QUERY_SCHEMA = {

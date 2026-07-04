@@ -214,6 +214,11 @@ export function makeFakeClient(): ApiClient {
     aiSummary: async () => ({
       summary: "**Bottom line** — one host shows staged persistence and a beacon.",
     }),
+    aiSummaryStream: async (_name, onChunk) => {
+      for (const chunk of ["**Bottom", " line** — ", "staged persistence and a beacon."]) {
+        onChunk(chunk);
+      }
+    },
     aiIocs: async () => ({
       iocs: [
         { type: "ip", value: "45.9.148.99", context: "C2 beacon" },

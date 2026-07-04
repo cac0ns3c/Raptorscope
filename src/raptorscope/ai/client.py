@@ -8,7 +8,7 @@ with no network and no API key.
 """
 import json
 import os
-from typing import Callable, Protocol, runtime_checkable
+from typing import Callable, Iterator, Protocol, runtime_checkable
 
 MODEL = "claude-opus-4-8"
 
@@ -16,6 +16,10 @@ MODEL = "claude-opus-4-8"
 @runtime_checkable
 class AIClient(Protocol):
     def text(self, system: str, user: str, max_tokens: int = 1024) -> str: ...
+
+    def stream_text(
+        self, system: str, user: str, max_tokens: int = 1024
+    ) -> Iterator[str]: ...
 
     def json(
         self, system: str, user: str, schema: dict, max_tokens: int = 1024
@@ -50,6 +54,17 @@ class AnthropicAI:
             messages=[{"role": "user", "content": user}],
         )
         return self._blocks_text(resp.content)
+
+    def stream_text(
+        self, system: str, user: str, max_tokens: int = 1024
+    ) -> Iterator[str]:
+        with self._client.messages.stream(
+            model=self.model,
+            max_tokens=max_tokens,
+            system=system,
+            messages=[{"role": "user", "content": user}],
+        ) as stream:
+            yield from stream.text_stream
 
     def json(
         self, system: str, user: str, schema: dict, max_tokens: int = 1024

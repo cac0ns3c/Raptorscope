@@ -11,8 +11,10 @@ import os
 import time
 import uuid
 
+import json as _json
+
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
 _log = logging.getLogger("raptorscope.ai")
@@ -432,10 +434,7 @@ def create_app(
             lambda: ai_service.triage_alert(ai, alert, store.get(body.doc_id) or {})
         )
 
-    @router.post("/cases/{case}/ai/summary", dependencies=[require_analyst])
-    def ai_summary(case: str):
-        require_case(case)
-        _require_ai()
+    def _summary_inputs(case: str):
         docs = store.search(host=case, size=100000)
         fired = _fired(case)
         fired.sort(key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or ""))
@@ -452,9 +451,31 @@ def create_app(
             ),
             key=lambda e: e["timestamp"],
         )
-        return _ai_call(
-            lambda: ai_service.summarize_case(ai, _overview(case), fired, events)
-        )
+        return _overview(case), fired, events
+
+    @router.post("/cases/{case}/ai/summary", dependencies=[require_analyst])
+    def ai_summary(case: str):
+        require_case(case)
+        _require_ai()
+        ov, fired, events = _summary_inputs(case)
+        return _ai_call(lambda: ai_service.summarize_case(ai, ov, fired, events))
+
+    @router.post("/cases/{case}/ai/summary/stream", dependencies=[require_analyst])
+    def ai_summary_stream(case: str):
+        require_case(case)
+        _require_ai()
+        ov, fired, events = _summary_inputs(case)
+
+        def gen():
+            try:
+                for chunk in ai_service.stream_summary(ai, ov, fired, events):
+                    yield f"data: {_json.dumps({'text': chunk})}\n\n"
+                yield 'data: {"done": true}\n\n'
+            except Exception as e:  # noqa: BLE001 - surface as a stream error event
+                _log.warning("AI stream error: %s", e)
+                yield 'data: {"error": true}\n\n'
+
+        return StreamingResponse(gen(), media_type="text/event-stream")
 
     @router.post("/cases/{case}/ai/nl-query", dependencies=[require_analyst])
     def ai_nl_query(case: str, body: QuestionBody):

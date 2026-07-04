@@ -44,6 +44,11 @@ export interface ApiClient {
     docId: string,
   ): Promise<{ analysis: string }>;
   aiSummary(caseName: string): Promise<{ summary: string }>;
+  /** Stream the case summary incrementally; resolves when complete. */
+  aiSummaryStream(
+    caseName: string,
+    onChunk: (text: string) => void,
+  ): Promise<void>;
   aiIocs(caseName: string): Promise<IocResult>;
   aiNlQuery(caseName: string, question: string): Promise<{ query: SearchQuery }>;
   aiCopilot(caseName: string, question: string): Promise<CopilotResult>;
@@ -113,6 +118,35 @@ export function createHttpClient(
       }),
     aiSummary: (name) =>
       req(`/cases/${c(name)}/ai/summary`, { method: "POST" }),
+    aiSummaryStream: async (name, onChunk) => {
+      const headers = new Headers({ "Content-Type": "application/json" });
+      const token = tokenRef?.current;
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+      const resp = await fetch(`${base}/cases/${c(name)}/ai/summary/stream`, {
+        method: "POST",
+        headers,
+      });
+      if (resp.status === 401) throw new AuthError("unauthorized");
+      if (!resp.ok || !resp.body) throw new Error(`stream failed: ${resp.status}`);
+      const reader = resp.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const blocks = buf.split("\n\n");
+        buf = blocks.pop() ?? "";
+        for (const block of blocks) {
+          const line = block.trim();
+          if (!line.startsWith("data:")) continue;
+          const payload = JSON.parse(line.slice(5).trim());
+          if (payload.error) throw new Error("stream error");
+          if (payload.done) return;
+          if (payload.text) onChunk(payload.text as string);
+        }
+      }
+    },
     aiIocs: (name) => req(`/cases/${c(name)}/ai/iocs`, { method: "POST" }),
     aiNlQuery: (name, question) =>
       req(`/cases/${c(name)}/ai/nl-query`, {
