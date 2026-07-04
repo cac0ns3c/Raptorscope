@@ -1,23 +1,33 @@
-title: macOS unsigned process running
+title: macOS unsigned or untrusted process running
 id: 39c5fe4a-000e-4000-a000-0000000c0def
 status: experimental
 description: >
-  A running process whose executable has no valid code signature. The vast
-  majority of macOS binaries are signed; an unsigned running process (especially
-  combined with a temp path or network activity) is a strong indicator of
-  dropped or tampered code.
+  A running process whose executable has an absent or untrusted code signature
+  (trusted:false — covers unsigned, ad-hoc/self-signed, and revoked signatures).
+  The vast majority of macOS binaries are validly signed, so an untrusted running
+  process, especially from a temp path or with network activity, is a strong
+  indicator of dropped or tampered code.
+  NOTE: stock MacOS.Sys.Pslist emits only a Hash and no signature, so this rule
+  requires a signing-enriched process feed
+  (profile/custom-vql/MacOS.Raptorscope.SignedProcesses.yaml). Without it the
+  field is absent and the rule stays silent — it never false-fires on missing
+  signature data, it only alerts when a process is known-untrusted.
 logsource:
   product: macos
   service: process
 detection:
   selection:
     event.dataset: macos.process
-    process.code_signature.exists: false
-  condition: selection
+    process.code_signature.trusted: false
+  filter_dev:
+    process.executable|startswith:
+      - /opt/homebrew/
+      - /usr/local/Cellar/
+      - /usr/local/bin/
+  condition: selection and not filter_dev
 falsepositives:
-  - Locally-built developer binaries and some open-source tools
+  - Locally-built developer binaries outside the filtered dev prefixes
 level: medium
 tags:
-  - attack.execution
   - attack.defense_evasion
-  - attack.t1036
+  - attack.t1036.001

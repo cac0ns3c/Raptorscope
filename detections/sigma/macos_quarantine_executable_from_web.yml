@@ -3,20 +3,29 @@ id: b1a7e6d2-0006-4000-a000-0000000c0de7
 status: experimental
 description: >
   A file recorded in LSQuarantine whose name ends in a directly-executable
-  extension (.command, .sh, .term, .pkg). Combined with a web origin this is a
-  common macOS social-engineering delivery for stagers and fake installers.
+  extension (.command, .sh, .term, .pkg) — a common macOS social-engineering
+  delivery for stagers and fake installers. Real QuarantineEventsV2 has no
+  filename column, so this also matches the download URL (url.full), which is the
+  only place the extension appears on a real capture.
 logsource:
   product: macos
   service: quarantine
 detection:
-  selection:
+  ext_name:
     event.dataset: macos.quarantine
     file.name|endswith:
       - .command
       - .sh
       - .term
       - .pkg
-  condition: selection
+  ext_url:
+    event.dataset: macos.quarantine
+    url.full|endswith:
+      - .command
+      - .sh
+      - .term
+      - .pkg
+  condition: ext_name or ext_url
 falsepositives:
   - Legitimate installer packages (.pkg) from trusted vendors
 level: medium

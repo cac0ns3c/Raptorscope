@@ -30,6 +30,8 @@ ARTIFACT_ALIASES = {
     # Custom VQL artifacts (profile/custom-vql/) for what has no built-in.
     "MacOS.Raptorscope.ConfigProfiles": "config_profiles",
     "MacOS.Raptorscope.BTM": "btm_items",
+    # Signature-enriched processes so trusted:false detections work on real data.
+    "MacOS.Raptorscope.SignedProcesses": "processes",
 }
 
 

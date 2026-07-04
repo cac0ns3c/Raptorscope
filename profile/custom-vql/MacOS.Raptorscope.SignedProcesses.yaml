@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Custom Velociraptor artifact — running processes enriched with code-signature
+# trust.
+#
+# Stock MacOS.Sys.Pslist emits only a `Hash` (no signature), so the
+# `macos_process_unsigned` detection (which keys on code_signature.trusted) can
+# never fire on a real capture from Pslist alone. This artifact re-lists the
+# processes and adds a `CodeSignature` object — {Exists, Trusted, SubjectName} —
+# by shelling out to `codesign` per executable, so signature-based detections
+# work on real hosts. Alias it to the `processes` stem via
+# raptorscope.collection.ARTIFACT_ALIASES; `normalize_processes` already consumes
+# the `CodeSignature` object.
+name: MacOS.Raptorscope.SignedProcesses
+description: |
+  Running processes with code-signature trust enrichment. Untrusted/unsigned
+  running code (MITRE T1036.001 / defense evasion).
+type: CLIENT
+sources:
+  - query: |
+      LET procs = SELECT Pid, Ppid, Name, Exe, CommandLine, Username,
+                         CreatedTime, Hash
+        FROM Artifact.MacOS.Sys.Pslist()
+      -- Per executable: `codesign --verify --strict` exits 0 only for a valid,
+      -- trusted signature; `codesign -dv` prints the signing Authority. Absent
+      -- signatures surface as "code object is not signed" on stderr.
+      SELECT Pid, Ppid, Name, Exe, CommandLine, Username, CreatedTime, Hash,
+        dict(
+          Exists=NOT (verify.Stderr =~ "code object is not signed"),
+          Trusted=(verify.ReturnCode = 0),
+          SubjectName=parse_string_with_regex(
+            string=disp.Stderr,
+            regex="Authority=(?P<A>[^\\n]+)").A
+        ) AS CodeSignature
+      FROM foreach(row=procs, query={
+        SELECT *,
+          { SELECT * FROM execve(argv=["codesign", "--verify", "--strict", Exe]) } AS verify,
+          { SELECT * FROM execve(argv=["codesign", "-dv", Exe]) } AS disp
+        FROM scope()
+      })

@@ -39,11 +39,14 @@ artifacts:
     custom_vql: profile/custom-vql/MacOS.Raptorscope.BTM.yaml
     question: who's persisting (BTM)
   # --- Execution ---
-  - artifact: MacOS.System.Processes
+  # Stock Pslist emits only a Hash; the custom VQL adds code-signature trust so
+  # the untrusted-process detection works on real captures (see custom-vql/).
+  - artifact: MacOS.Raptorscope.SignedProcesses
     stem: processes
     dataset: macos.process
     normalizer: normalize_processes
-    question: what ran
+    custom_vql: profile/custom-vql/MacOS.Raptorscope.SignedProcesses.yaml
+    question: what ran (with signature trust)
   # --- Ingress ---
   - artifact: MacOS.System.QuarantineEvents
     stem: quarantine
