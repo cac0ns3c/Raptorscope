@@ -32,6 +32,8 @@ ARTIFACT_ALIASES = {
     "MacOS.Raptorscope.BTM": "btm_items",
     # Signature-enriched processes so trusted:false detections work on real data.
     "MacOS.Raptorscope.SignedProcesses": "processes",
+    # Signature-enriched Autoruns for untrusted-persistence detections.
+    "MacOS.Raptorscope.SignedAutoruns": "autoruns",
 }
 
 

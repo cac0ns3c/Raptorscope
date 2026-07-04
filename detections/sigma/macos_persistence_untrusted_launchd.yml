@@ -1,0 +1,30 @@
+title: macOS launch agent or daemon with an untrusted code signature
+id: 4b1c8e2a-00f0-4000-a000-0000000c0df0
+status: experimental
+description: >
+  A launch agent or launch daemon persistence item whose program has an absent or
+  untrusted code signature (unsigned, ad-hoc/self-signed, or revoked). Legitimate
+  launchd persistence is validly signed, so an untrusted one is a strong indicator
+  of a dropped or tampered persistence payload.
+  NOTE: stock MacOS.Detection.Autoruns emits only a Hash, so this rule requires the
+  signing-enriched feed (profile/custom-vql/MacOS.Raptorscope.SignedAutoruns.yaml).
+  Without it the field is absent and the rule stays silent — it never false-fires
+  on missing signature data.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type:
+      - launch_agent
+      - launch_daemon
+    process.code_signature.trusted: false
+  condition: selection
+falsepositives:
+  - Locally-built or ad-hoc-signed developer launch items
+level: high
+tags:
+  - attack.persistence
+  - attack.t1543.001
+  - attack.t1543.004

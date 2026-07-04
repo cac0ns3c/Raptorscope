@@ -13,7 +13,7 @@ See docs/spikes/2026-07-04-real-velociraptor-validation.md for the schema deltas
 """
 import os
 
-from .ecs import ecs_base
+from .ecs import code_signature, ecs_base
 
 # Autoruns `Source` (lowercased) -> our persistence type.
 _SOURCE_TYPE = {
@@ -106,6 +106,13 @@ def normalize_autoruns(rows: list[dict], host: dict) -> list[dict]:
         elif program:
             cmdline = " ".join([program, *args[1:]]) if args else program
             doc["process"] = {"executable": program, "command_line": cmdline}
+
+        # Signature enrichment: MacOS.Raptorscope.SignedAutoruns adds a
+        # CodeSignature object (stock Autoruns emits only a Hash). Attach it even
+        # for items with no explicit program (e.g. login items = an .app bundle).
+        sig = code_signature(r.get("CodeSignature"))
+        if sig is not None:
+            doc.setdefault("process", {})["code_signature"] = sig
 
         persistence: dict = {
             "type": ptype,

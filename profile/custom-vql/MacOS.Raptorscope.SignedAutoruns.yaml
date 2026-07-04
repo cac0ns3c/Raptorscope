@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Custom Velociraptor artifact — Autoruns persistence enriched with code-signature
+# trust.
+#
+# Stock MacOS.Detection.Autoruns emits a Hash but no signature, so persistence
+# detections that key on code_signature.trusted (untrusted launch item, hidden +
+# unsigned login item) can't fire on a real capture. This artifact re-runs
+# Autoruns and adds a CodeSignature object per persistence Program by shelling out
+# to `codesign`. Alias it to the `autoruns` stem; normalize_autoruns already
+# consumes the CodeSignature object when present.
+name: MacOS.Raptorscope.SignedAutoruns
+description: |
+  Autoruns persistence with code-signature trust enrichment — surfaces unsigned
+  or untrusted launch agents/daemons and login items (MITRE T1543 / T1547).
+type: CLIENT
+sources:
+  - query: |
+      LET items = SELECT * FROM Artifact.MacOS.Detection.Autoruns()
+      -- Resolve the payload program (LaunchdConfig.Program / ProgramArguments[0]
+      -- / Program) and check its signature. `codesign --verify --strict` exits 0
+      -- only for a valid, trusted signature.
+      SELECT *,
+        dict(
+          Exists=NOT (verify.Stderr =~ "code object is not signed"),
+          Trusted=(verify.ReturnCode = 0),
+          SubjectName=parse_string_with_regex(
+            string=disp.Stderr,
+            regex="Authority=(?P<A>[^\\n]+)").A
+        ) AS CodeSignature
+      FROM foreach(row=items, query={
+        LET prog = LaunchdConfig.Program || LaunchdConfig.ProgramArguments[0] || Program
+        SELECT *,
+          { SELECT * FROM execve(argv=["codesign", "--verify", "--strict", prog]) } AS verify,
+          { SELECT * FROM execve(argv=["codesign", "-dv", prog]) } AS disp
+        FROM scope()
+      })

@@ -1,0 +1,26 @@
+title: macOS hidden and unsigned login item
+id: 7d2f9a41-00f1-4000-a000-0000000c0df1
+status: experimental
+description: >
+  A login item that is BOTH hidden and has an untrusted code signature. Legitimate
+  helpers are sometimes hidden, and unsigned items exist, but the combination —
+  a hidden login item running untrusted code — is a strong persistence signal and
+  suppresses the legitimate-hidden-helper false positive.
+  NOTE: requires the signing-enriched feed
+  (profile/custom-vql/MacOS.Raptorscope.SignedAutoruns.yaml); otherwise silent.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: login_item
+    raptorscope.persistence.hidden: true
+    process.code_signature.trusted: false
+  condition: selection
+falsepositives:
+  - Rare hidden third-party login helpers that ship unsigned
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.015
