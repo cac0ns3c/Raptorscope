@@ -20,7 +20,9 @@ describe("CasePicker", () => {
     renderWithApi(<CasePicker onSelect={onSelect} />);
     await screen.findByText("mac-victim");
     await userEvent.click(screen.getByText("mac-victim"));
-    expect(onSelect).toHaveBeenCalledWith("mac-victim");
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "mac-victim" }),
+    );
   });
 
   it("shows an empty state when there are no cases", async () => {

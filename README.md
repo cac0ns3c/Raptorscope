@@ -13,7 +13,9 @@ Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md`
   macOS artifact set (below).
 - **Phase 3 (backend API):** done — FastAPI query layer (cases, overview,
   per-artifact views, timeline, alerts) over a `Store` abstraction.
-- Phases 4–5 (GUI, packaging) are deferred; see `docs/superpowers/plans/`.
+- **Phase 4 (GUI):** done — React/TypeScript SPA under `web/` (case picker,
+  overview, per-artifact tables, timeline, alerts with pivot-to-evidence).
+- Phase 5 (packaging/docs/demo) is deferred; see `docs/superpowers/plans/`.
 
 ## v1 artifact coverage
 
@@ -68,6 +70,25 @@ evaluated in-process (`detect/evaluate.py`) against the case's docs.
 | `GET /cases/{case}/artifacts/{dataset}` | paginated docs (`?limit=&offset=`) |
 | `GET /cases/{case}/timeline` | events across datasets, newest first |
 | `GET /cases/{case}/alerts` | fired detections with `doc_id` pivot-to-evidence |
+
+### GUI (`web/`)
+
+A Vite + React + TypeScript SPA that consumes the query API. It talks only to a
+typed `ApiClient` provided via context, so every component/interaction test runs
+on an in-memory fake client — no network. The app: pick a case → tabbed workspace
+(Overview / Artifacts / Timeline / Alerts); clicking an alert pivots into the
+Artifacts tab for that dataset with the evidence row highlighted.
+
+```bash
+cd web
+npm install
+npm run dev        # Vite dev server; proxies /api -> http://127.0.0.1:8000
+npm test           # Vitest component + interaction tests
+npm run build      # tsc typecheck + production bundle
+
+# in another terminal, serve the API the SPA calls:
+PYTHONPATH=../src ../.venv/bin/python -m raptorscope serve --collection <dir> --port 8000
+```
 
 A collection is a directory (or zip) of `<artifact>.json` files (one per artifact,
 named by the stems in `cli._NORMALIZERS`) plus an optional `host.json` for

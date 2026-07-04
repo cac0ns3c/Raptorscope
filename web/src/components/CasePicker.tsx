@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { Case } from "../api/types";
 import { useApi } from "../context/ApiContext";
 
-export function CasePicker({ onSelect }: { onSelect: (name: string) => void }) {
+export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
   const api = useApi();
   const [cases, setCases] = useState<Case[] | null>(null);
 
@@ -27,7 +27,7 @@ export function CasePicker({ onSelect }: { onSelect: (name: string) => void }) {
     <ul className="case-list" aria-label="cases">
       {cases.map((c) => (
         <li key={c.name}>
-          <button className="case-card" onClick={() => onSelect(c.name)}>
+          <button className="case-card" onClick={() => onSelect(c)}>
             <span className="case-name">{c.name}</span>
             <span className="case-meta">{c.doc_count} docs</span>
             <span className="case-datasets">{c.datasets.length} datasets</span>
