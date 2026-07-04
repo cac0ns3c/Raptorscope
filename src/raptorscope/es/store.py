@@ -5,7 +5,7 @@ Mirrors :class:`raptorscope.api.store.InMemoryStore`: every ``search``/``get``
 result is the ECS ``_source`` with the document ``_id`` injected, so the API
 layer is identical regardless of backend.
 """
-from ..api.store import _INDICATOR_FIELDS
+from ..api.store import _INDICATOR_FIELDS, decode_cursor, encode_cursor
 from .template import INDEX_PATTERN
 
 
@@ -145,6 +145,54 @@ class ESStore:
         }
         resp = self._client.search(index=self._pattern, body=body)
         return [_hit(h) for h in resp["hits"]["hits"]]
+
+    def page(
+        self,
+        host: str | None = None,
+        dataset: str | None = None,
+        size: int = 50,
+        cursor: str | None = None,
+        sort_field: str = "@timestamp",
+        order: str = "asc",
+    ) -> dict:
+        """Deep pagination past the 10k window via Point-in-Time + search_after.
+
+        Returns ``{items, cursor}``; pass the cursor back for the next page. The
+        cursor carries the PIT id and the last sort values. The PIT is closed when
+        the final (short) page is reached.
+        """
+        size = min(size, self.MAX_WINDOW)
+        pit_id = after = None
+        if cursor:
+            st = decode_cursor(cursor)
+            pit_id, after = st.get("pit"), st.get("after")
+        if pit_id is None:
+            pit_id = self._client.open_point_in_time(
+                index=self._pattern, keep_alive="1m"
+            )["id"]
+        body: dict = {
+            "size": size,
+            "query": {"bool": {"filter": self._filter(host, dataset)}},
+            "pit": {"id": pit_id, "keep_alive": "1m"},
+            # A tiebreaker (`_shard_doc`, PIT-only) makes the ordering total/stable.
+            "sort": [{sort_field: {"order": order}}, {"_shard_doc": "asc"}],
+        }
+        if after is not None:
+            body["search_after"] = after
+        resp = self._client.search(body=body)  # PIT carries the index — omit it
+        pit_id = resp.get("pit_id", pit_id)
+        hits = resp["hits"]["hits"]
+        items = [_hit(h) for h in hits]
+        if len(hits) < size:  # last page — release the PIT
+            try:
+                self._client.close_point_in_time(id=pit_id)
+            except Exception:  # noqa: BLE001 - best-effort cleanup
+                pass
+            return {"items": items, "cursor": None}
+        return {
+            "items": items,
+            "cursor": encode_cursor({"pit": pit_id, "after": hits[-1]["sort"]}),
+        }
 
     def get(self, doc_id: str) -> dict | None:
         body = {"size": 1, "query": {"ids": {"values": [doc_id]}}}

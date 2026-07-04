@@ -313,6 +313,15 @@ def create_app(
             ),
         }
 
+    @router.get("/cases/{case}/artifacts/{dataset}/page")
+    def artifact_page(case: str, dataset: str, limit: int = 50, cursor: str = ""):
+        """Deep cursor pagination (PIT + search_after on ES) past the 10k window."""
+        require_case(case)
+        res = store.page(
+            host=case, dataset=dataset, size=limit, cursor=cursor or None
+        )
+        return {"dataset": dataset, "items": res["items"], "cursor": res["cursor"]}
+
     @router.get("/cases/{case}/timeline")
     def timeline(case: str, limit: int = 100):
         require_case(case)

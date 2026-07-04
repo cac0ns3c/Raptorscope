@@ -7,8 +7,18 @@ The API talks only to this ``Store`` interface, so contract tests run against an
 same ECS docs the normalizers emit; ``search``/``get`` results carry an injected
 ``_id`` for pivot-to-evidence.
 """
+import base64
+import json
 from collections import Counter
 from typing import Protocol, runtime_checkable
+
+
+def encode_cursor(state: dict) -> str:
+    return base64.urlsafe_b64encode(json.dumps(state).encode()).decode()
+
+
+def decode_cursor(cursor: str) -> dict:
+    return json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
 
 
 def _host_of(doc: dict) -> str | None:
@@ -64,6 +74,14 @@ class Store(Protocol):
         sort: tuple[str, str] | None = None,
         offset: int = 0,
     ) -> list[dict]: ...
+
+    def page(
+        self,
+        host: str | None = None,
+        dataset: str | None = None,
+        size: int = 50,
+        cursor: str | None = None,
+    ) -> dict: ...
 
     def get(self, doc_id: str) -> dict | None: ...
 
@@ -157,6 +175,25 @@ class InMemoryStore:
             field, order = sort
             hits.sort(key=lambda d: d.get(field) or "", reverse=(order == "desc"))
         return hits[offset : offset + size]
+
+    def page(
+        self,
+        host: str | None = None,
+        dataset: str | None = None,
+        size: int = 50,
+        cursor: str | None = None,
+    ) -> dict:
+        """Cursor pagination (in-memory analog of ES PIT + search_after): returns
+        ``{items, cursor}`` where a non-null cursor resumes the next page."""
+        offset = decode_cursor(cursor).get("offset", 0) if cursor else 0
+        hits = [d for d in self._docs if self._match(d, host, dataset)]
+        items = hits[offset : offset + size]
+        nxt = (
+            encode_cursor({"offset": offset + size})
+            if offset + size < len(hits)
+            else None
+        )
+        return {"items": items, "cursor": nxt}
 
     def get(self, doc_id: str) -> dict | None:
         return self._by_id.get(doc_id)

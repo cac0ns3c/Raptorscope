@@ -89,7 +89,7 @@ No standard built-ins exist for these.
 `es/store.py` caps at `MAX_WINDOW = 10000`.
 - Replace with cursor pagination (PIT + `search_after`) in `ESStore.search`; add
   `?cursor=` to `/artifacts` and `/search`; SPA infinite-scroll / next-page.
-- [x] **PARTIAL (B2)** — ES-side `offset`+`size` paging on `search`; artifacts endpoint pages ES-side (no full-dataset pull); validated live. Deep >10k paging (PIT + search_after) still to do.
+- [x] **DONE (B2)** — ES-side `offset` paging plus deep cursor pagination past the 10k window via **PIT + search_after** (`Store.page`, `/artifacts/{dataset}/page?cursor=`). Fake-ES unit tests validate the PIT state machine; the real ES PIT path is live-validated (full walk = count).
 
 ### B3 — ES-native detections (scale path)
 In-process `run_rules` reads all case docs.
