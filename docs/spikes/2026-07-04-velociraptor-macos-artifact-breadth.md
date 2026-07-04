@@ -47,3 +47,22 @@ unsigned `SystemUpdater.app` staged under `/Users/Shared/.updater/`.
 
 Dataset `macos.persistence`, `persistence.type = cron`. Fires: `analyst` crontab
 running `bash -c 'curl … | bash'` every 5 minutes.
+
+---
+
+## config / MDM profiles — `MacOS.System.Profiles`
+
+`velociraptor artifacts collect MacOS.System.Profiles --format json`
+(`profiles -C -o stdout-xml`)
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `ProfileIdentifier` | string | `raptorscope.persistence.label` |
+| `PayloadType` | string | `raptorscope.persistence.payload_type` |
+| `SignerCN` | string \| null | `process.code_signature.subject_name`; drives `.signed` |
+| `InstallDate` | ISO8601 | `@timestamp` |
+| `Path` | string | `file.path` |
+
+Dataset `macos.persistence`, `persistence.type = config_profile`. `signed` bool
+= `SignerCN is not null`. Fires: unsigned `com.systemhelper.support` web-content
+filter profile.

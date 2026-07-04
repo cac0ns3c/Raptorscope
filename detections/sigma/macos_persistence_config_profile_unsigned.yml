@@ -1,0 +1,22 @@
+title: macOS unsigned configuration profile installed
+id: 8d4b3eaf-0003-4000-a000-0000000c0de4
+status: experimental
+description: >
+  A configuration/MDM profile installed without a signer. Legitimate MDM and
+  enterprise profiles are signed; an unsigned profile carrying a content-filter,
+  proxy, or certificate payload is a persistence / traffic-interception risk.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: config_profile
+    raptorscope.persistence.signed: false
+  condition: selection
+falsepositives:
+  - Manually installed developer or test profiles
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1176

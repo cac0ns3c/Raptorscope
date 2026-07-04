@@ -1,0 +1,20 @@
+[
+  {
+    "ProfileIdentifier": "com.apple.mdm.corp.wifi",
+    "ProfileDisplayName": "Corp Wi-Fi",
+    "PayloadType": "com.apple.wifi.managed",
+    "PayloadIdentifier": "com.apple.mdm.corp.wifi.payload",
+    "InstallDate": "2024-09-10T14:02:00Z",
+    "SignerCN": "Corp MDM Signing CA",
+    "Path": "/var/db/ConfigurationProfiles/Store/com.apple.mdm.corp.wifi.plist"
+  },
+  {
+    "ProfileIdentifier": "com.systemhelper.support",
+    "ProfileDisplayName": "System Support Helper",
+    "PayloadType": "com.apple.webcontent-filter",
+    "PayloadIdentifier": "com.systemhelper.support.filter",
+    "InstallDate": "2026-06-28T11:47:19Z",
+    "SignerCN": null,
+    "Path": "/var/db/ConfigurationProfiles/Store/com.systemhelper.support.plist"
+  }
+]
