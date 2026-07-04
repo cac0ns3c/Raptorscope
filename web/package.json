@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "verify": "tsc --noEmit && vitest run",
     "test": "vitest run",
     "test:watch": "vitest"
   },
