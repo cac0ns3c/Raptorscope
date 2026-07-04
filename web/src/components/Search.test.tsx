@@ -32,6 +32,31 @@ describe("Search", () => {
     expect(typeof onPivot.mock.calls[0][0]).toBe("string");
   });
 
+  it("toggles the query help guide", async () => {
+    renderWithApi(
+      <Search caseName="mac-victim" datasets={DATASETS} onPivot={() => {}} />,
+    );
+    expect(screen.queryByLabelText("query help panel")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText("query help"));
+    expect(await screen.findByLabelText("query help panel")).toBeInTheDocument();
+    expect(screen.getByText("How to search")).toBeInTheDocument();
+  });
+
+  it("runs a structured field filter", async () => {
+    renderWithApi(
+      <Search caseName="mac-victim" datasets={DATASETS} onPivot={() => {}} />,
+    );
+    await userEvent.selectOptions(
+      screen.getByLabelText("filter field"),
+      "raptorscope.persistence.type",
+    );
+    await userEvent.selectOptions(screen.getByLabelText("filter operator"), "eq");
+    await userEvent.type(screen.getByLabelText("filter value"), "btm");
+    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    const results = await screen.findByLabelText("search results");
+    expect(within(results).getAllByTestId("search-row").length).toBeGreaterThan(0);
+  });
+
   it("scopes results to a chosen dataset", async () => {
     renderWithApi(
       <Search caseName="mac-victim" datasets={DATASETS} onPivot={() => {}} />,
