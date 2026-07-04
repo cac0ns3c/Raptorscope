@@ -9,12 +9,19 @@ import zipfile
 # _NORMALIZERS registry uses). Lets a real collection zip — whose result files
 # are named by artifact — ingest without renaming. See profile/raptorscope-macos.yaml.
 ARTIFACT_ALIASES = {
+    # Placeholder names used by the synthetic fixtures / sample collection.
     "MacOS.System.LaunchServices": "launch_items",
     "MacOS.System.LoginItems": "login_items",
     "MacOS.System.Crontab": "cron_items",
     "MacOS.System.Profiles": "config_profiles",
     "MacOS.System.BackgroundTaskManagement": "btm_items",
     "MacOS.System.Processes": "processes",
+    # Real Velociraptor built-in artifact names (confirmed against the docs; see
+    # docs/spikes/2026-07-04-real-velociraptor-validation.md). The persistence
+    # family really comes from the single MacOS.Detection.Autoruns artifact whose
+    # per-source columns differ from the synthetic fixtures — that mapper still
+    # needs rework, tracked in the spike note.
+    "MacOS.Sys.Pslist": "processes",
     "MacOS.System.QuarantineEvents": "quarantine",
     "MacOS.System.TCC": "tcc",
     "MacOS.System.Packages": "installed_apps",

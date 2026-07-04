@@ -19,7 +19,12 @@ def normalize_tcc(rows: list[dict], host: dict) -> list[dict]:
         path = r.get("Path") or ""
         client = r.get("Client")
         client_type = r.get("ClientType")
-        allowed = int(r.get("AuthValue") or 0) >= 2
+        # Real MacOS.System.TCC emits a boolean ``Allowed``; the synthetic fixture
+        # uses the raw ``AuthValue`` (2 = allowed).
+        if "Allowed" in r:
+            allowed = bool(r.get("Allowed"))
+        else:
+            allowed = int(r.get("AuthValue") or 0) >= 2
 
         doc = ecs_base(host, "macos.tcc")
         doc["@timestamp"] = r.get("LastModified") or ""
