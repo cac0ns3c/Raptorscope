@@ -14,6 +14,10 @@ detection:
     event.dataset: macos.persistence
     raptorscope.persistence.label|startswith: "com.apple."
   filter_system:
+    # Keep all of /Library: legit Apple daemons (com.apple.softwareupdated, …)
+    # live in /Library/LaunchDaemons, so narrowing this filter false-fires on
+    # them. A *spoofed* com.apple.* item in a system dir carries a suspicious
+    # payload and is already caught by the shell-download / suspicious-path rules.
     file.path|startswith:
       - /System/
       - /Library/

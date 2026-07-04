@@ -13,10 +13,21 @@ detection:
     event.dataset: macos.persistence
     raptorscope.persistence.type: config_profile
     raptorscope.persistence.signed: false
-  condition: selection
+  # Scope to interception/persistence payloads — an unsigned MDM profile alone is
+  # noisy (MDM profiles are stored unwrapped and look unsigned).
+  payloads:
+    raptorscope.persistence.payload_type|contains:
+      - webcontent-filter
+      - proxy
+      - security
+      - vpn
+  condition: selection and payloads
 falsepositives:
   - Manually installed developer or test profiles
+  - MDM-delivered profiles are stored unwrapped and may appear unsigned; scoping
+    by payload type reduces but does not fully eliminate this
 level: medium
 tags:
   - attack.persistence
-  - attack.t1176
+  - attack.t1547
+  - attack.t1553
