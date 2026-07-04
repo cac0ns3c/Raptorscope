@@ -52,7 +52,7 @@ build-web:
 	cd web && npm run build
 
 es:
-	docker compose up -d
+	docker compose up -d 2>/dev/null || docker-compose up -d
 
 kibana: es
 	./kibana/provision.sh
