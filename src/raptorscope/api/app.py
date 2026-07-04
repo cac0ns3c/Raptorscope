@@ -10,7 +10,6 @@ import logging
 import os
 import time
 import uuid
-from collections import Counter
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -239,32 +238,7 @@ def create_app(
     @router.get("/cases/{case}/overview")
     def overview(case: str):
         require_case(case)
-        docs = store.search(host=case, size=100000)
-        datasets = Counter(_dig(d, "event.dataset") for d in docs)
-        ptypes = Counter(
-            _dig(d, "raptorscope.persistence.type")
-            for d in docs
-            if _dig(d, "event.dataset") == "macos.persistence"
-        )
-        unsigned_proc = sum(
-            1
-            for d in docs
-            if _dig(d, "event.dataset") == "macos.process"
-            and _dig(d, "process.code_signature.trusted") is not True
-        )
-        unsigned_app = sum(
-            1
-            for d in docs
-            if _dig(d, "event.dataset") == "macos.inventory"
-            and _dig(d, "raptorscope.app.signed") is False
-        )
-        return {
-            "case": case,
-            "total": len(docs),
-            "datasets": dict(datasets),
-            "persistence_types": dict(ptypes),
-            "unsigned": {"process": unsigned_proc, "inventory": unsigned_app},
-        }
+        return {"case": case, "total": store.count(host=case), **store.aggregate(host=case)}
 
     @router.get("/cases/{case}/artifacts/{dataset}")
     def artifact_view(case: str, dataset: str, limit: int = 50, offset: int = 0):
@@ -330,33 +304,7 @@ def create_app(
 
     # ---- AI features (opt-in; require ANTHROPIC_API_KEY or an injected client) ----
     def _overview(case: str) -> dict:
-        docs = store.search(host=case, size=100000)
-        return {
-            "case": case,
-            "total": len(docs),
-            "datasets": dict(Counter(_dig(d, "event.dataset") for d in docs)),
-            "persistence_types": dict(
-                Counter(
-                    _dig(d, "raptorscope.persistence.type")
-                    for d in docs
-                    if _dig(d, "event.dataset") == "macos.persistence"
-                )
-            ),
-            "unsigned": {
-                "process": sum(
-                    1
-                    for d in docs
-                    if _dig(d, "event.dataset") == "macos.process"
-                    and _dig(d, "process.code_signature.trusted") is not True
-                ),
-                "inventory": sum(
-                    1
-                    for d in docs
-                    if _dig(d, "event.dataset") == "macos.inventory"
-                    and _dig(d, "raptorscope.app.signed") is False
-                ),
-            },
-        }
+        return {"case": case, "total": store.count(host=case), **store.aggregate(host=case)}
 
     def _search(case, q="", dataset=None, field=None, op="contains", value=None, limit=20):
         docs = store.search(host=case, dataset=dataset, size=100000)

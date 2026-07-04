@@ -47,6 +47,61 @@ class ESStore:
         body = {"query": {"bool": {"filter": self._filter(host, dataset)}}}
         return self._client.count(index=self._pattern, body=body)["count"]
 
+    def aggregate(self, host: str | None = None) -> dict:
+        """Overview building blocks via ES aggregations — no full-doc scan."""
+        body = {
+            "size": 0,
+            "query": {"bool": {"filter": self._filter(host, None)}},
+            "aggs": {
+                "datasets": {"terms": {"field": "event.dataset", "size": 100}},
+                "ptypes": {
+                    "filter": {"term": {"event.dataset": "macos.persistence"}},
+                    "aggs": {
+                        "vals": {
+                            "terms": {
+                                "field": "raptorscope.persistence.type",
+                                "size": 100,
+                            }
+                        }
+                    },
+                },
+                "unsigned_process": {
+                    "filter": {
+                        "bool": {
+                            "filter": [{"term": {"event.dataset": "macos.process"}}],
+                            "must_not": [
+                                {"term": {"process.code_signature.trusted": True}}
+                            ],
+                        }
+                    }
+                },
+                "unsigned_inventory": {
+                    "filter": {
+                        "bool": {
+                            "filter": [
+                                {"term": {"event.dataset": "macos.inventory"}},
+                                {"term": {"raptorscope.app.signed": False}},
+                            ]
+                        }
+                    }
+                },
+            },
+        }
+        aggs = self._client.search(index=self._pattern, body=body)["aggregations"]
+        return {
+            "datasets": {
+                b["key"]: b["doc_count"] for b in aggs["datasets"]["buckets"]
+            },
+            "persistence_types": {
+                b["key"]: b["doc_count"]
+                for b in aggs["ptypes"]["vals"]["buckets"]
+            },
+            "unsigned": {
+                "process": aggs["unsigned_process"]["doc_count"],
+                "inventory": aggs["unsigned_inventory"]["doc_count"],
+            },
+        }
+
     # ES rejects ``from + size`` above ``index.max_result_window`` (default 10k).
     # A single collected host is far under that, so we cap at the window rather
     # than carry PIT/scroll machinery. (Raise the setting + revisit if needed.)

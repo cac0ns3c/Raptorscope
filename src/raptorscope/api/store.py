@@ -7,6 +7,7 @@ The API talks only to this ``Store`` interface, so contract tests run against an
 same ECS docs the normalizers emit; ``search``/``get`` results carry an injected
 ``_id`` for pivot-to-evidence.
 """
+from collections import Counter
 from typing import Protocol, runtime_checkable
 
 
@@ -18,6 +19,15 @@ def _dataset_of(doc: dict) -> str | None:
     return (doc.get("event") or {}).get("dataset")
 
 
+def _dig(doc: dict, path: str):
+    cur = doc
+    for key in path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    return cur
+
+
 @runtime_checkable
 class Store(Protocol):
     def hosts(self) -> list[str]: ...
@@ -25,6 +35,8 @@ class Store(Protocol):
     def datasets(self, host: str | None = None) -> list[str]: ...
 
     def count(self, host: str | None = None, dataset: str | None = None) -> int: ...
+
+    def aggregate(self, host: str | None = None) -> dict: ...
 
     def search(
         self,
@@ -71,6 +83,35 @@ class InMemoryStore:
 
     def count(self, host: str | None = None, dataset: str | None = None) -> int:
         return sum(1 for d in self._docs if self._match(d, host, dataset))
+
+    def aggregate(self, host: str | None = None) -> dict:
+        """Overview building blocks (dataset counts, persistence-type breakdown,
+        unsigned tallies) — the in-memory equivalent of the ES aggregations."""
+        docs = [d for d in self._docs if self._match(d, host, None)]
+        return {
+            "datasets": dict(Counter(_dataset_of(d) for d in docs)),
+            "persistence_types": dict(
+                Counter(
+                    _dig(d, "raptorscope.persistence.type")
+                    for d in docs
+                    if _dataset_of(d) == "macos.persistence"
+                )
+            ),
+            "unsigned": {
+                "process": sum(
+                    1
+                    for d in docs
+                    if _dataset_of(d) == "macos.process"
+                    and _dig(d, "process.code_signature.trusted") is not True
+                ),
+                "inventory": sum(
+                    1
+                    for d in docs
+                    if _dataset_of(d) == "macos.inventory"
+                    and _dig(d, "raptorscope.app.signed") is False
+                ),
+            },
+        }
 
     def search(
         self,
