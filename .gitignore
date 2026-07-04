@@ -7,3 +7,7 @@ dist/
 web/node_modules/
 web/dist/
 deploy/tls/certs/
+web/test-results/
+web/playwright-report/
+web/blob-report/
+web/.playwright/

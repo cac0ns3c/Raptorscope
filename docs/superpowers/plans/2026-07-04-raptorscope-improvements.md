@@ -154,7 +154,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 - Dockerized ES service in CI for an **index-template + ingest smoke** (spec §6);
   Playwright **e2e** driving the SPA against a seeded backend (couldn't run locally
   — Node 26/Chromium; runs cleanly on CI Linux).
-- [x] **PARTIAL (E1)** — CI `integration` job: live Elasticsearch service → ingest smoke + ES-native detector parity (locks Phase B). Playwright e2e still a follow-up (Node-26/Chromium issue locally; runs on CI Linux).
+- [x] **DONE (E1)** — CI `integration` job (live ES ingest smoke + ES-native parity) **and** a Playwright `e2e` job driving the built SPA against the offline sample (case picker, fleet hunt, tab navigation, search). Config + specs typecheck and `playwright test --list` discovers all 3; the browser run executes on CI Linux (Node-26/Chromium can't launch in this sandbox).
 
 ### E2 — coverage & evaluator robustness
 - Coverage gates (pytest-cov, vitest coverage); **property/fuzz tests** for the
