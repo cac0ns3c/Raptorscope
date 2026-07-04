@@ -79,4 +79,14 @@ def create_app(store: Store) -> FastAPI:
             "unsigned": {"process": unsigned_proc, "inventory": unsigned_app},
         }
 
+    @app.get("/cases/{case}/artifacts/{dataset}")
+    def artifact_view(case: str, dataset: str, limit: int = 50, offset: int = 0):
+        require_case(case)
+        hits = store.search(host=case, dataset=dataset, size=100000)
+        return {
+            "dataset": dataset,
+            "total": len(hits),
+            "items": hits[offset : offset + limit],
+        }
+
     return app
