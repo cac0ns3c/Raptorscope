@@ -11,6 +11,8 @@ from collections import Counter
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 
+from ..ai import service as ai_service
+from ..ai.client import AIClient, MODEL, build_ai_from_env
 from ..detect.evaluate import load_rules, run_rules
 from .auth import AuthConfig, make_auth_dependency
 from .docs import get_doc, list_docs
@@ -20,6 +22,15 @@ from .store import Store
 class Credentials(BaseModel):
     username: str
     password: str
+
+
+class TriageBody(BaseModel):
+    rule_id: str
+    doc_id: str
+
+
+class QuestionBody(BaseModel):
+    question: str
 
 _LEVEL_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "informational": 4}
 
@@ -99,6 +110,7 @@ def create_app(
     store: Store,
     rules_dir: str = "detections/sigma",
     auth: AuthConfig | None = None,
+    ai: AIClient | None = None,
 ) -> FastAPI:
     # Disable the built-in Swagger/ReDoc UIs so `/docs` serves our own guides.
     app = FastAPI(
@@ -108,6 +120,7 @@ def create_app(
         redoc_url=None,
     )
     rules = load_rules(rules_dir)
+    ai = ai if ai is not None else build_ai_from_env()
     auth = auth or AuthConfig()
     require_token = make_auth_dependency(auth)
     # All /cases/* routes require a valid token when auth is enabled.
@@ -246,6 +259,112 @@ def create_app(
                 continue
             hits.append(d)
         return {"total": len(hits), "items": hits[:limit]}
+
+    # ---- AI features (opt-in; require ANTHROPIC_API_KEY or an injected client) ----
+    def _overview(case: str) -> dict:
+        docs = store.search(host=case, size=100000)
+        return {
+            "case": case,
+            "total": len(docs),
+            "datasets": dict(Counter(_dig(d, "event.dataset") for d in docs)),
+            "persistence_types": dict(
+                Counter(
+                    _dig(d, "raptorscope.persistence.type")
+                    for d in docs
+                    if _dig(d, "event.dataset") == "macos.persistence"
+                )
+            ),
+            "unsigned": {
+                "process": sum(
+                    1
+                    for d in docs
+                    if _dig(d, "event.dataset") == "macos.process"
+                    and _dig(d, "process.code_signature.trusted") is not True
+                ),
+                "inventory": sum(
+                    1
+                    for d in docs
+                    if _dig(d, "event.dataset") == "macos.inventory"
+                    and _dig(d, "raptorscope.app.signed") is False
+                ),
+            },
+        }
+
+    def _search(case, q="", dataset=None, field=None, op="contains", value=None, limit=20):
+        docs = store.search(host=case, dataset=dataset, size=100000)
+        needle = (q or "").strip().lower()
+        hits = []
+        for d in docs:
+            if needle and needle not in _leaf_text(d):
+                continue
+            if field and value is not None and not _apply_op(_dig(d, field), op, value):
+                continue
+            hits.append(d)
+        return {"total": len(hits), "items": hits[:limit]}
+
+    def _require_ai():
+        if ai is None:
+            raise HTTPException(
+                status_code=503,
+                detail="AI features are not configured (set ANTHROPIC_API_KEY).",
+            )
+
+    @app.get("/ai/status")
+    def ai_status():
+        return {"enabled": ai is not None, "model": MODEL if ai is not None else None}
+
+    @router.post("/cases/{case}/ai/triage")
+    def ai_triage(case: str, body: TriageBody):
+        require_case(case)
+        _require_ai()
+        docs = store.search(host=case, size=100000)
+        fired = run_rules(docs, rules)
+        alert = next(
+            (a for a in fired if a["rule_id"] == body.rule_id and a["doc_id"] == body.doc_id),
+            None,
+        )
+        if alert is None:
+            raise HTTPException(status_code=404, detail="alert not found")
+        return ai_service.triage_alert(ai, alert, store.get(body.doc_id) or {})
+
+    @router.post("/cases/{case}/ai/summary")
+    def ai_summary(case: str):
+        require_case(case)
+        _require_ai()
+        docs = store.search(host=case, size=100000)
+        fired = run_rules(docs, rules)
+        fired.sort(key=lambda a: (_LEVEL_RANK.get(a["level"], 9), a["dataset"] or ""))
+        return ai_service.summarize_case(ai, _overview(case), fired)
+
+    @router.post("/cases/{case}/ai/nl-query")
+    def ai_nl_query(case: str, body: QuestionBody):
+        require_case(case)
+        _require_ai()
+        return ai_service.compile_query(ai, body.question, store.datasets(host=case))
+
+    @router.post("/cases/{case}/ai/copilot")
+    def ai_copilot(case: str, body: QuestionBody):
+        require_case(case)
+        _require_ai()
+
+        def dispatch(name: str, inp: dict):
+            if name == "search_case":
+                return _search(
+                    case,
+                    q=inp.get("q", ""),
+                    dataset=inp.get("dataset") or None,
+                    field=inp.get("field") or None,
+                    op=inp.get("op", "contains"),
+                    value=inp.get("value"),
+                    limit=int(inp.get("limit", 20)),
+                )
+            if name == "list_alerts":
+                return run_rules(store.search(host=case, size=100000), rules)[:50]
+            if name == "get_overview":
+                return _overview(case)
+            return {"error": f"unknown tool {name}"}
+
+        return ai_service.run_copilot(ai, body.question, dispatch)
 
     app.include_router(router)
     return app
