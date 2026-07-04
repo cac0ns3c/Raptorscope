@@ -17,6 +17,7 @@ EMITTED_FIELDS = {
     "raptorscope.persistence.type",
     "raptorscope.persistence.label",
     "raptorscope.persistence.run_at_load",
+    "raptorscope.persistence.hidden",
 }
 
 

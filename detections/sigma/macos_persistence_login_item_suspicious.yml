@@ -1,0 +1,25 @@
+title: macOS login item from suspicious path
+id: 6b2f1c8d-0001-4000-a000-0000000c0de2
+status: experimental
+description: >
+  A per-user Login Item whose bundle resides in a world-writable or hidden
+  staging directory (/tmp, /private/tmp, /Users/Shared) — a common persistence
+  location for macOS adware and stagers.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: login_item
+    file.path|contains:
+      - /tmp/
+      - /private/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Rare legitimate helpers staged under /Users/Shared by enterprise tooling
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.015

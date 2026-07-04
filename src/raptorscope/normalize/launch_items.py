@@ -6,25 +6,11 @@ Source column names are confirmed against
 """
 import os
 
-from .ecs import ecs_base
+from .ecs import code_signature, ecs_base
 
 
 def _persistence_type(path: str) -> str:
     return "launch_agent" if "LaunchAgents" in (path or "") else "launch_daemon"
-
-
-def _code_signature(raw) -> dict | None:
-    """Map a Velociraptor ``CodeSignature`` object to ECS ``code_signature``."""
-    if not isinstance(raw, dict):
-        return None
-    sig: dict = {}
-    if "Exists" in raw:
-        sig["exists"] = bool(raw.get("Exists"))
-    if raw.get("SubjectName") is not None:
-        sig["subject_name"] = raw.get("SubjectName")
-    if "Trusted" in raw:
-        sig["trusted"] = bool(raw.get("Trusted"))
-    return sig or None
 
 
 def normalize_launch_items(rows: list[dict], host: dict) -> list[dict]:
@@ -48,7 +34,7 @@ def normalize_launch_items(rows: list[dict], host: dict) -> list[dict]:
                 "executable": executable,
                 "command_line": cmdline or executable,
             }
-            sig = _code_signature(r.get("CodeSignature"))
+            sig = code_signature(r.get("CodeSignature"))
             if sig is not None:
                 process["code_signature"] = sig
             doc["process"] = process

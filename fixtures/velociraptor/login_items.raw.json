@@ -1,0 +1,28 @@
+[
+  {
+    "Name": "Dropbox",
+    "Path": "/Applications/Dropbox.app",
+    "Program": "/Applications/Dropbox.app/Contents/MacOS/Dropbox",
+    "User": "analyst",
+    "Hidden": false,
+    "Mtime": "2025-01-12T09:03:44Z",
+    "CodeSignature": {
+      "Exists": true,
+      "Trusted": true,
+      "SubjectName": "Developer ID Application: Dropbox, Inc. (G7HH3F8CAK)"
+    }
+  },
+  {
+    "Name": "SystemUpdater",
+    "Path": "/Users/Shared/.updater/SystemUpdater.app",
+    "Program": "/Users/Shared/.updater/SystemUpdater.app/Contents/MacOS/SystemUpdater",
+    "User": "analyst",
+    "Hidden": true,
+    "Mtime": "2026-06-29T23:51:02Z",
+    "CodeSignature": {
+      "Exists": false,
+      "Trusted": false,
+      "SubjectName": null
+    }
+  }
+]
