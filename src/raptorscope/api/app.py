@@ -406,6 +406,12 @@ def create_app(
             lambda: ai_service.compile_query(ai, body.question, store.datasets(host=case))
         )
 
+    @router.post("/cases/{case}/ai/iocs")
+    def ai_iocs(case: str):
+        require_case(case)
+        _require_ai()
+        return _ai_call(lambda: ai_service.extract_iocs(ai, _fired(case)))
+
     @router.post("/cases/{case}/ai/copilot")
     def ai_copilot(case: str, body: QuestionBody):
         require_case(case)

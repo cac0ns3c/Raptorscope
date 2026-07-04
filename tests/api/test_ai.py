@@ -12,6 +12,14 @@ class FakeAI:
         return "ANALYSIS: " + user[:60]
 
     def json(self, system, user, schema, max_tokens=1024):
+        if "iocs" in schema.get("properties", {}):
+            return {
+                "iocs": [
+                    {"type": "ip", "value": "45.9.148.99", "context": "C2 beacon"},
+                    {"type": "ip", "value": "45.9.148.99", "context": "dup"},
+                    {"type": "path", "value": "/private/tmp/.cache/helper", "context": "implant"},
+                ]
+            }
         return {
             "q": "/private/tmp",
             "dataset": "macos.process",
@@ -168,3 +176,13 @@ def test_login_is_rate_limited():
     for _ in range(2):
         c.post("/login", json=body)
     assert c.post("/login", json=body).status_code == 429
+
+
+def test_iocs_extracts_and_dedupes():
+    r = _ai_client().post("/cases/mac-victim/ai/iocs")
+    assert r.status_code == 200
+    iocs = r.json()["iocs"]
+    # duplicate (ip, 45.9.148.99) collapsed to one
+    assert sum(1 for i in iocs if i["value"] == "45.9.148.99") == 1
+    assert {i["type"] for i in iocs} == {"ip", "path"}
+    assert all({"type", "value", "context"} <= i.keys() for i in iocs)

@@ -125,7 +125,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 - Rate-limit `/ai/*` and `/login`; per-request token ceilings; **structured IOC
   extraction** (`messages.parse` → typed IOCs) surfaced in the UI and exportable;
   persist triage results per case (like the summary).
-- [x] **PARTIAL** — rate limiter (`/login`,`/ai/*`) + per-alert triage persistence DONE; structured IOC extraction pending.
+- [x] **DONE (C3)** — rate limiter (`/login`,`/ai/*`), per-alert triage persistence, and structured IOC extraction (`/ai/iocs`, `messages.parse`-style schema) with an inline fleet-hunt pivot per IOC. Live: real Claude extracted 17 typed IOCs; the first IP correlated across 2 hosts.
 
 ---
 

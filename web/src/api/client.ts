@@ -8,6 +8,7 @@ import type {
   HuntResult,
   DocContent,
   DocMeta,
+  IocResult,
   Overview,
   SearchQuery,
   SearchResult,
@@ -43,6 +44,7 @@ export interface ApiClient {
     docId: string,
   ): Promise<{ analysis: string }>;
   aiSummary(caseName: string): Promise<{ summary: string }>;
+  aiIocs(caseName: string): Promise<IocResult>;
   aiNlQuery(caseName: string, question: string): Promise<{ query: SearchQuery }>;
   aiCopilot(caseName: string, question: string): Promise<CopilotResult>;
 }
@@ -111,6 +113,7 @@ export function createHttpClient(
       }),
     aiSummary: (name) =>
       req(`/cases/${c(name)}/ai/summary`, { method: "POST" }),
+    aiIocs: (name) => req(`/cases/${c(name)}/ai/iocs`, { method: "POST" }),
     aiNlQuery: (name, question) =>
       req(`/cases/${c(name)}/ai/nl-query`, {
         method: "POST",

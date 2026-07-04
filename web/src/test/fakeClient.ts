@@ -214,6 +214,12 @@ export function makeFakeClient(): ApiClient {
     aiSummary: async () => ({
       summary: "**Bottom line** — one host shows staged persistence and a beacon.",
     }),
+    aiIocs: async () => ({
+      iocs: [
+        { type: "ip", value: "45.9.148.99", context: "C2 beacon" },
+        { type: "path", value: "/private/tmp/.cache/helper", context: "implant" },
+      ],
+    }),
     aiNlQuery: async (_name, question) => ({
       query: { q: question.includes("tmp") ? "/private/tmp" : question, dataset: "macos.process" },
     }),

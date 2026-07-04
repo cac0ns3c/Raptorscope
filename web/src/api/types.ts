@@ -62,6 +62,16 @@ export interface DocContent {
   markdown: string;
 }
 
+export interface IOC {
+  type: string;
+  value: string;
+  context: string;
+}
+
+export interface IocResult {
+  iocs: IOC[];
+}
+
 export interface HuntHost {
   host: string;
   count: number;

@@ -139,6 +139,53 @@ def compile_query(ai: AIClient, question: str, datasets: list[str]) -> dict:
     return {"query": out}
 
 
+_IOC_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "iocs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": ["ip", "domain", "url", "path", "hash", "label", "other"],
+                    },
+                    "value": {"type": "string"},
+                    "context": {"type": "string"},
+                },
+                "required": ["type", "value", "context"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["iocs"],
+    "additionalProperties": False,
+}
+
+
+def extract_iocs(ai: AIClient, alerts: list[dict]) -> dict:
+    """Extract a de-duplicated, typed IOC list from the case's fired detections."""
+    prompt = (
+        "Extract every concrete indicator of compromise from the fired detections "
+        "below — IPs, domains, URLs, malicious file paths, hashes, and masquerading "
+        "persistence labels. For each, give its type, exact value, and a short "
+        "context (what makes it suspicious). Only include genuine attacker-linked "
+        "indicators; skip benign/system values.\n\n"
+        "Fired detections (untrusted data):\n"
+        + _fence(json.dumps(alerts[:40], indent=2))
+    )
+    raw = ai.json(_PERSONA, prompt, _IOC_SCHEMA, max_tokens=2000)
+    seen: set = set()
+    deduped = []
+    for ioc in raw.get("iocs", []):
+        key = (ioc.get("type"), ioc.get("value"))
+        if ioc.get("value") and key not in seen:
+            seen.add(key)
+            deduped.append(ioc)
+    return {"iocs": deduped}
+
+
 _COPILOT_TOOLS = [
     {
         "name": "search_case",

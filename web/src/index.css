@@ -1447,6 +1447,54 @@ button {
   margin: 0.1rem 0 0;
 }
 
+/* ---------- IOC extraction ---------- */
+.iocs {
+  margin-top: 0.6rem;
+}
+.ioc-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.ioc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+  font-size: 0.85rem;
+}
+.ioc-type {
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #7c3aed 14%, var(--surface-2));
+  color: var(--accent);
+}
+.ioc-value {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.ioc-context {
+  color: var(--text-dim);
+  flex: 1;
+}
+.ioc-hunt {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+}
+.ioc-hunt-result {
+  font-size: 0.76rem;
+  color: var(--accent);
+}
+
 /* ---------- fleet hunt (cross-host IOC) ---------- */
 .fleet-hunt {
   display: flex;

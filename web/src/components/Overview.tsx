@@ -5,6 +5,7 @@ import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { Markdown } from "../ui/Markdown";
+import { Iocs } from "./Iocs";
 
 const summaryKey = (c: string) => `rs_summary:${c}`;
 
@@ -78,6 +79,7 @@ export function Overview({ caseName }: { caseName: string }) {
               <Markdown text={summary.text} />
             </div>
           )}
+          <Iocs caseName={caseName} />
         </div>
       )}
 
