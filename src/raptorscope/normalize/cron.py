@@ -33,7 +33,8 @@ def normalize_cron(rows: list[dict], host: dict) -> list[dict]:
                 "label": r.get("Path"),
                 "run_at_load": False,
                 "schedule": r.get("Schedule"),
-            }
+            },
+            "time": {"source": "mtime"},
         }
         docs.append(doc)
     return docs

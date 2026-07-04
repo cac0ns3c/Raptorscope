@@ -47,6 +47,9 @@ def normalize_btm(rows: list[dict], host: dict) -> list[dict]:
         if r.get("Hash"):
             h = r["Hash"]
             persistence["hash"] = h.get("SHA256") if isinstance(h, dict) else str(h)
-        doc["raptorscope"] = {"persistence": persistence}
+        doc["raptorscope"] = {
+            "persistence": persistence,
+            "time": {"source": "mtime"},
+        }
         docs.append(doc)
     return docs

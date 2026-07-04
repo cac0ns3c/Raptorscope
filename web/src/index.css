@@ -1447,6 +1447,23 @@ button {
   margin: 0.1rem 0 0;
 }
 
+/* ---------- timeline provenance ---------- */
+.ts-provenance {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  cursor: help;
+  vertical-align: middle;
+}
+
 /* ---------- AI features ---------- */
 .ai-btn {
   background: linear-gradient(180deg, #6a4cf0, #7c3aed) !important;

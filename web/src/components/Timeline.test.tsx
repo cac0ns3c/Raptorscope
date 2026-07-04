@@ -16,6 +16,8 @@ describe("Timeline", () => {
     // dataset badges are present
     expect(within(list).getAllByText(/persistence|process|tcc|quarantine|inventory/).length)
       .toBeGreaterThan(0);
+    // persistence rows carry an mtime provenance badge
+    expect(within(list).getAllByText("mtime").length).toBeGreaterThan(0);
   });
 
   it("shows an empty state for a case with no events", async () => {

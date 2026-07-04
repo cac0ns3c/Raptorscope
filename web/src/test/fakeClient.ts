@@ -113,12 +113,15 @@ function timelineFor(docs: Record<string, Doc[]>): TimelineRow[] {
   const rows: TimelineRow[] = [];
   for (const list of Object.values(docs)) {
     for (const d of list) {
+      const dataset = (d.event as { dataset: string }).dataset;
       rows.push({
         timestamp: (d["@timestamp"] as string) ?? "",
-        dataset: (d.event as { dataset: string }).dataset,
+        dataset,
         category: null,
-        summary: `${(d.event as { dataset: string }).dataset} ${d._id}`,
+        summary: `${dataset} ${d._id}`,
         doc_id: d._id,
+        // persistence artifacts are dated by file mtime
+        time_source: dataset === "macos.persistence" ? "mtime" : null,
       });
     }
   }

@@ -44,7 +44,8 @@ def normalize_launch_items(rows: list[dict], host: dict) -> list[dict]:
                 "type": _persistence_type(path),
                 "label": r.get("Label"),
                 "run_at_load": bool(r.get("RunAtLoad")),
-            }
+            },
+            "time": {"source": "mtime"},  # plist file-modified time, not event time
         }
         docs.append(doc)
     return docs

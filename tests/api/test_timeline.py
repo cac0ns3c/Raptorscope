@@ -14,6 +14,7 @@ def test_timeline_sorted_desc_and_mixed(client):
         assert row["doc_id"]
         assert row["summary"]
         assert row["dataset"]
+        assert "time_source" in row  # provenance surfaced (mtime vs event)
 
 
 def test_timeline_respects_limit(client):

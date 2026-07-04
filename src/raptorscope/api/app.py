@@ -223,6 +223,7 @@ def create_app(
                 "category": _dig(d, "event.category"),
                 "summary": _summary(d),
                 "doc_id": d.get("_id"),
+                "time_source": _dig(d, "raptorscope.time.source"),
             }
             for d in docs
         ]
@@ -367,6 +368,7 @@ def create_app(
                     "timestamp": d.get("@timestamp") or "",
                     "dataset": _dig(d, "event.dataset"),
                     "summary": _summary(d),
+                    "time_source": _dig(d, "raptorscope.time.source"),
                 }
                 for d in docs
             ),

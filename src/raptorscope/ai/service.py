@@ -71,7 +71,11 @@ def summarize_case(
         "Confidence level, the key IOCs (IPs, paths, labels), and prioritized "
         "response actions.\n\n"
         "Ground every claim in the evidence. Use the real timestamps and paths; "
-        "never invent artifacts or times that aren't in the data."
+        "never invent artifacts or times that aren't in the data.\n\n"
+        "Provenance caveat: events whose `time_source` is `mtime` are dated by the "
+        "artifact's file-modification time, not a confirmed creation/execution "
+        "time — treat their ordering as approximate and say so if it affects the "
+        "sequence you infer."
     )
     return {"summary": ai.text(_PERSONA, prompt, max_tokens=4096)}
 

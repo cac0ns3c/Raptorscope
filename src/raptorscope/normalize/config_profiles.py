@@ -37,7 +37,9 @@ def normalize_config_profiles(rows: list[dict], host: dict) -> list[dict]:
                 "run_at_load": True,
                 "payload_type": r.get("PayloadType"),
                 "signed": bool(signed),
-            }
+            },
+            # InstallDate is a true event time; Mtime is file-modified provenance.
+            "time": {"source": "event" if r.get("InstallDate") else "mtime"},
         }
         docs.append(doc)
     return docs

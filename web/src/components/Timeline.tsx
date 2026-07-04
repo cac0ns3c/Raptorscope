@@ -28,8 +28,16 @@ export function Timeline({
     <ol className="timeline" aria-label="timeline">
       {data.map((row) => (
         <li key={row.doc_id} className="timeline-row" data-dataset={row.dataset}>
-          <time className="ts" data-testid="tl-ts">
-            {row.timestamp}
+          <time className="ts">
+            <span data-testid="tl-ts">{row.timestamp}</span>
+            {row.time_source === "mtime" && (
+              <span
+                className="ts-provenance"
+                title="Dated by file modification time (mtime), not a confirmed event time — ordering is approximate."
+              >
+                mtime
+              </span>
+            )}
           </time>
           <span className="dot" aria-hidden="true" />
           <span className="tl-main">

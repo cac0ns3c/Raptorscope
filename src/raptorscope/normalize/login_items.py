@@ -33,7 +33,8 @@ def normalize_login_items(rows: list[dict], host: dict) -> list[dict]:
                 "label": r.get("Name"),
                 "run_at_load": True,
                 "hidden": bool(r.get("Hidden")),
-            }
+            },
+            "time": {"source": "mtime"},
         }
         docs.append(doc)
     return docs

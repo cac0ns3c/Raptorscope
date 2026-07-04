@@ -38,7 +38,12 @@ export interface SearchResult {
   items: Doc[];
 }
 
-export interface TimelineRow {
+export interface TimelineRowExtra {
+  /** "mtime" when the timestamp is a file-modification time, not a true event time. */
+  time_source?: string | null;
+}
+
+export interface TimelineRow extends TimelineRowExtra {
   timestamp: string;
   dataset: string;
   category: string[] | null;
