@@ -235,6 +235,12 @@ export function makeFakeClient(): ApiClient {
         { tool: "search_case", input: { q: "/private/tmp" } },
       ],
     }),
+    aiCopilotStream: async (_name, _question, onEvent) => {
+      onEvent({ type: "tool", tool: "get_overview", input: {} });
+      onEvent({ type: "tool", tool: "search_case", input: { q: "/private/tmp" } });
+      onEvent({ type: "text", text: "**Verdict** — " });
+      onEvent({ type: "text", text: "suspicious activity found." });
+    },
   };
 }
 

@@ -4,6 +4,7 @@ import type {
   Alert,
   ArtifactPage,
   Case,
+  CopilotEvent,
   CopilotResult,
   HuntResult,
   DocContent,
@@ -52,6 +53,12 @@ export interface ApiClient {
   aiIocs(caseName: string): Promise<IocResult>;
   aiNlQuery(caseName: string, question: string): Promise<{ query: SearchQuery }>;
   aiCopilot(caseName: string, question: string): Promise<CopilotResult>;
+  /** Stream copilot events (tool calls, then the verdict text). */
+  aiCopilotStream(
+    caseName: string,
+    question: string,
+    onEvent: (e: CopilotEvent) => void,
+  ): Promise<void>;
 }
 
 /** Raised on a 401 so the UI can show the login screen. */
@@ -72,6 +79,42 @@ export function createHttpClient(
     if (resp.status === 401) throw new AuthError("unauthorized");
     if (!resp.ok) throw new Error(`request failed: ${resp.status} ${path}`);
     return (await resp.json()) as T;
+  }
+
+  // POST an SSE stream; invoke onPayload for each `data:` JSON, resolve on done.
+  async function streamSse(
+    path: string,
+    onPayload: (p: Record<string, unknown>) => void,
+    body?: unknown,
+  ): Promise<void> {
+    const headers = new Headers({ "Content-Type": "application/json" });
+    const token = tokenRef?.current;
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    const resp = await fetch(`${base}${path}`, {
+      method: "POST",
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (resp.status === 401) throw new AuthError("unauthorized");
+    if (!resp.ok || !resp.body) throw new Error(`stream failed: ${resp.status}`);
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const blocks = buf.split("\n\n");
+      buf = blocks.pop() ?? "";
+      for (const block of blocks) {
+        const line = block.trim();
+        if (!line.startsWith("data:")) continue;
+        const payload = JSON.parse(line.slice(5).trim());
+        if (payload.error) throw new Error("stream error");
+        if (payload.done) return;
+        onPayload(payload);
+      }
+    }
   }
 
   return {
@@ -118,35 +161,16 @@ export function createHttpClient(
       }),
     aiSummary: (name) =>
       req(`/cases/${c(name)}/ai/summary`, { method: "POST" }),
-    aiSummaryStream: async (name, onChunk) => {
-      const headers = new Headers({ "Content-Type": "application/json" });
-      const token = tokenRef?.current;
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      const resp = await fetch(`${base}/cases/${c(name)}/ai/summary/stream`, {
-        method: "POST",
-        headers,
-      });
-      if (resp.status === 401) throw new AuthError("unauthorized");
-      if (!resp.ok || !resp.body) throw new Error(`stream failed: ${resp.status}`);
-      const reader = resp.body.getReader();
-      const dec = new TextDecoder();
-      let buf = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        const blocks = buf.split("\n\n");
-        buf = blocks.pop() ?? "";
-        for (const block of blocks) {
-          const line = block.trim();
-          if (!line.startsWith("data:")) continue;
-          const payload = JSON.parse(line.slice(5).trim());
-          if (payload.error) throw new Error("stream error");
-          if (payload.done) return;
-          if (payload.text) onChunk(payload.text as string);
-        }
-      }
-    },
+    aiSummaryStream: (name, onChunk) =>
+      streamSse(`/cases/${c(name)}/ai/summary/stream`, (p) => {
+        if (p.text) onChunk(p.text as string);
+      }),
+    aiCopilotStream: (name, question, onEvent) =>
+      streamSse(
+        `/cases/${c(name)}/ai/copilot/stream`,
+        (p) => onEvent(p as unknown as CopilotEvent),
+        { question },
+      ),
     aiIocs: (name) => req(`/cases/${c(name)}/ai/iocs`, { method: "POST" }),
     aiNlQuery: (name, question) =>
       req(`/cases/${c(name)}/ai/nl-query`, {

@@ -45,6 +45,14 @@ class FakeAI:
             ],
         }
 
+    def agentic_stream(self, system, user, tools, dispatch, max_tokens=2048, max_iters=6):
+        dispatch("get_overview", {})
+        dispatch("search_case", {"q": "/private/tmp", "dataset": "macos.process"})
+        yield {"type": "tool", "tool": "get_overview", "input": {}}
+        yield {"type": "tool", "tool": "search_case", "input": {"q": "/private/tmp"}}
+        yield {"type": "text", "text": "VERDICT: "}
+        yield {"type": "text", "text": "the beacon is malicious."}
+
 
 def _ai_client():
     return TestClient(create_app(InMemoryStore(seed_docs()), ai=FakeAI()))
@@ -212,3 +220,20 @@ def test_summary_stream_error_event(monkeypatch):
     r = c.post("/cases/mac-victim/ai/summary/stream")
     assert r.status_code == 200
     assert '"error": true' in r.text
+
+
+def test_copilot_stream_emits_tool_and_text_events():
+    r = _ai_client().post(
+        "/cases/mac-victim/ai/copilot/stream",
+        json={"question": "Is this host compromised?"},
+    )
+    assert r.status_code == 200
+    assert "text/event-stream" in r.headers["content-type"]
+    body = r.text
+    # tool-call trace events
+    assert '"type": "tool"' in body
+    assert "get_overview" in body and "search_case" in body
+    # streamed verdict text + terminal
+    assert '"type": "text"' in body
+    assert "VERDICT" in body
+    assert '"done": true' in body

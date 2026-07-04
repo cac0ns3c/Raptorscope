@@ -101,6 +101,10 @@ export interface CopilotResult {
   citations: Citation[];
 }
 
+export type CopilotEvent =
+  | { type: "tool"; tool: string; input: Record<string, unknown> }
+  | { type: "text"; text: string };
+
 export interface Alert {
   rule_id: string;
   title: string;

@@ -491,11 +491,7 @@ def create_app(
         _require_ai()
         return _ai_call(lambda: ai_service.extract_iocs(ai, _fired(case)))
 
-    @router.post("/cases/{case}/ai/copilot", dependencies=[require_analyst])
-    def ai_copilot(case: str, body: QuestionBody):
-        require_case(case)
-        _require_ai()
-
+    def _copilot_dispatch(case: str):
         def dispatch(name: str, inp: dict):
             if name == "search_case":
                 return _search(
@@ -513,7 +509,32 @@ def create_app(
                 return _overview(case)
             return {"error": f"unknown tool {name}"}
 
-        return _ai_call(lambda: ai_service.run_copilot(ai, body.question, dispatch))
+        return dispatch
+
+    @router.post("/cases/{case}/ai/copilot", dependencies=[require_analyst])
+    def ai_copilot(case: str, body: QuestionBody):
+        require_case(case)
+        _require_ai()
+        return _ai_call(
+            lambda: ai_service.run_copilot(ai, body.question, _copilot_dispatch(case))
+        )
+
+    @router.post("/cases/{case}/ai/copilot/stream", dependencies=[require_analyst])
+    def ai_copilot_stream(case: str, body: QuestionBody):
+        require_case(case)
+        _require_ai()
+        dispatch = _copilot_dispatch(case)
+
+        def gen():
+            try:
+                for ev in ai_service.stream_copilot(ai, body.question, dispatch):
+                    yield f"data: {_json.dumps(ev)}\n\n"
+                yield 'data: {"done": true}\n\n'
+            except Exception as e:  # noqa: BLE001 - surface as a stream error event
+                _log.warning("AI copilot stream error: %s", e)
+                yield 'data: {"error": true}\n\n'
+
+        return StreamingResponse(gen(), media_type="text/event-stream")
 
     @router.get("/hunt", dependencies=[require_analyst])
     def hunt(q: str, limit: int = 200):

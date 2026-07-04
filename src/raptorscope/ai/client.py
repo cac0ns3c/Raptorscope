@@ -35,6 +35,16 @@ class AIClient(Protocol):
         max_iters: int = 6,
     ) -> dict: ...
 
+    def agentic_stream(
+        self,
+        system: str,
+        user: str,
+        tools: list[dict],
+        dispatch: Callable[[str, dict], object],
+        max_tokens: int = 2048,
+        max_iters: int = 6,
+    ) -> Iterator[dict]: ...
+
 
 class AnthropicAI:
     """Claude-backed ``AIClient``. Uses ``claude-opus-4-8`` by default."""
@@ -115,6 +125,50 @@ class AnthropicAI:
             messages.append({"role": "user", "content": results})
         # ran out of iterations — return whatever we have
         return {"answer": "(analysis truncated — iteration limit reached)", "citations": calls}
+
+    def agentic_stream(
+        self,
+        system: str,
+        user: str,
+        tools: list[dict],
+        dispatch: Callable[[str, dict], object],
+        max_tokens: int = 2048,
+        max_iters: int = 6,
+    ) -> Iterator[dict]:
+        """Agentic loop that yields ``{type: "tool"|"text", ...}`` events live —
+        tool calls as they happen, then the final answer streamed token by token."""
+        messages = [{"role": "user", "content": user}]
+        for _ in range(max_iters):
+            with self._client.messages.stream(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=system,
+                tools=tools,
+                messages=messages,
+            ) as stream:
+                for event in stream:
+                    if (
+                        event.type == "content_block_delta"
+                        and event.delta.type == "text_delta"
+                    ):
+                        yield {"type": "text", "text": event.delta.text}
+                resp = stream.get_final_message()
+            if resp.stop_reason != "tool_use":
+                return
+            messages.append({"role": "assistant", "content": resp.content})
+            results = []
+            for b in resp.content:
+                if getattr(b, "type", "") == "tool_use":
+                    out = dispatch(b.name, dict(b.input))
+                    yield {"type": "tool", "tool": b.name, "input": dict(b.input)}
+                    results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": b.id,
+                            "content": json.dumps(out)[:20000],
+                        }
+                    )
+            messages.append({"role": "user", "content": results})
 
 
 def build_ai_from_env() -> AIClient | None:

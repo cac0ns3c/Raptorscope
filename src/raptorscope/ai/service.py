@@ -250,3 +250,17 @@ def run_copilot(
         max_iters=6,
     )
     return {"answer": result.get("answer", ""), "citations": result.get("citations", [])}
+
+
+def stream_copilot(
+    ai: AIClient, question: str, dispatch: Callable[[str, dict], object]
+):
+    """Yield live copilot events: tool calls as they run, then the streamed verdict."""
+    yield from ai.agentic_stream(
+        _COPILOT_SYSTEM,
+        f"Investigate and answer: {question}",
+        _COPILOT_TOOLS,
+        dispatch,
+        max_tokens=2600,
+        max_iters=6,
+    )
