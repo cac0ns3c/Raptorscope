@@ -1,0 +1,21 @@
+title: macOS quarantined file downloaded over cleartext HTTP
+id: f5e1caf6-000a-4000-a000-0000000c0deb
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose download URL uses plaintext http://.
+  Reputable macOS software is delivered over https; a cleartext download is
+  tamper-prone and typical of ad-hoc malware distribution (often from a raw IP).
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  selection:
+    event.dataset: macos.quarantine
+    url.full|startswith: "http://"
+  condition: selection
+falsepositives:
+  - Internal tools distributed over plain HTTP on a trusted network
+level: medium
+tags:
+  - attack.initial_access
+  - attack.t1189

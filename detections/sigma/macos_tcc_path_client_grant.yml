@@ -1,0 +1,23 @@
+title: macOS TCC grant to a path-based (non-bundle) client
+id: 06f2db17-000b-4000-a000-0000000c0dec
+status: experimental
+description: >
+  A TCC authorization granted to a client identified by absolute path rather
+  than a bundle identifier. Legitimate apps are code-signed bundles identified
+  by bundle id; a path-based client that holds an allowed grant is often a
+  loose binary dropped for persistence or collection.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.client_type: path
+    raptorscope.tcc.allowed: true
+  condition: selection
+falsepositives:
+  - Developer CLI tools the user intentionally authorized (e.g. a terminal)
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1548

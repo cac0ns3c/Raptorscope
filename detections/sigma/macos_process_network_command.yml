@@ -1,0 +1,27 @@
+title: macOS process invoking a network download or beacon
+id: e4d0b9f5-0009-4000-a000-0000000c0dea
+status: experimental
+description: >
+  A running process whose command line fetches remote content or beacons out
+  (curl/wget, a raw http/https URL, or an explicit beacon flag). On an endpoint
+  this is a strong live-C2 / staging indicator, especially paired with an
+  untrusted signature or a temp path.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'curl '
+      - 'wget '
+      - "http://"
+      - "https://"
+      - "--beacon"
+  condition: selection
+falsepositives:
+  - Legitimate updaters and package managers that fetch over the network
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1105

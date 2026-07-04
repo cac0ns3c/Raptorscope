@@ -1,0 +1,27 @@
+title: macOS persistence item runs a shell download one-liner
+id: 17a3ec28-000c-4000-a000-0000000c0ded
+status: experimental
+description: >
+  A persistence entry (launch agent/daemon, login item, cron, BTM) whose command
+  line pipes a network fetch into a shell or decodes base64 — the canonical
+  "curl | bash" persistence + staging pattern, regardless of persistence type.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'curl '
+      - 'wget '
+      - base64
+      - "| bash"
+      - "| sh"
+  condition: selection
+falsepositives:
+  - Admin bootstrap scripts that legitimately fetch and run installers
+level: high
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1059.004
