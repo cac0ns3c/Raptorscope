@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 import { Alerts } from "./Alerts";
 import { renderWithApi } from "../test/renderWithApi";
+
+beforeEach(() => window.localStorage.clear());
 
 describe("Alerts", () => {
   it("renders alerts high-severity first", async () => {
@@ -34,5 +36,35 @@ describe("Alerts", () => {
     expect(
       await screen.findByText(/no detections fired/i),
     ).toBeInTheDocument();
+  });
+
+  it("dismisses an alert and hides it until shown", async () => {
+    renderWithApi(<Alerts caseName="mac-victim" />);
+    await screen.findByLabelText("alerts");
+    const before = screen.getAllByText(/^(high|medium|low)$/).length;
+    await userEvent.click(screen.getAllByRole("button", { name: "Dismiss" })[0]);
+    expect(screen.getAllByText(/^(high|medium|low)$/).length).toBe(before - 1);
+    // re-show dismissed
+    await userEvent.click(screen.getByRole("button", { name: /show 1 dismissed/i }));
+    expect(screen.getAllByText(/^(high|medium|low)$/).length).toBe(before);
+  });
+
+  it("acknowledges an alert and tags it", async () => {
+    renderWithApi(<Alerts caseName="mac-victim" />);
+    await screen.findByLabelText("alerts");
+    await userEvent.click(screen.getAllByRole("button", { name: "Ack" })[0]);
+    expect(screen.getByText("acknowledged")).toBeInTheDocument();
+    expect(screen.getByText(/1 acknowledged/)).toBeInTheDocument();
+  });
+
+  it("keeps a triage note without pivoting", async () => {
+    const onPivot = vi.fn();
+    renderWithApi(<Alerts caseName="mac-victim" onPivot={onPivot} />);
+    await screen.findByLabelText("alerts");
+    await userEvent.click(screen.getAllByRole("button", { name: "Note" })[0]);
+    const note = screen.getAllByLabelText(/^note for /)[0];
+    await userEvent.type(note, "looks real");
+    expect((note as HTMLInputElement).value).toBe("looks real");
+    expect(onPivot).not.toHaveBeenCalled();
   });
 });

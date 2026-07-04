@@ -644,11 +644,77 @@ button {
   text-align: left;
   transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
+.alert-card {
+  cursor: pointer;
+}
 .alert-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
   border-color: var(--border-strong);
   border-left-color: var(--sev, var(--accent));
+}
+.alert-card.is-ack {
+  opacity: 0.82;
+}
+.alert-card.is-dismissed {
+  opacity: 0.5;
+}
+.alerts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.82rem;
+}
+.alert-actions {
+  grid-column: 2;
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+.alert-actions button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--r-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.76rem;
+}
+.alert-actions button:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.triage-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: var(--pill);
+  padding: 0.08rem 0.45rem;
+}
+.triage-tag.ack {
+  color: var(--sev-low);
+  background: var(--sev-low-bg);
+}
+.triage-tag.dismissed {
+  color: var(--text-dim);
+  background: var(--surface-3);
+}
+.alert-note {
+  grid-column: 2;
+  margin-top: 0.4rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.35rem 0.55rem;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  outline: none;
+}
+.alert-note:focus {
+  border-color: var(--accent-strong);
 }
 .alert-card.sev-high { --sev: var(--sev-high); }
 .alert-card.sev-medium { --sev: var(--sev-medium); }
