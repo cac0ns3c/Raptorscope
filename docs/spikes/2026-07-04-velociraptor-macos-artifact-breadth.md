@@ -106,3 +106,22 @@ Dataset `macos.persistence`, `persistence.type = btm`. Fires: unsigned
 
 Dataset `macos.process`, `event.category = ["process"]`. Fires: unsigned
 `helper` beaconing from `/private/tmp/.cache/`.
+
+---
+
+## quarantine — `MacOS.System.QuarantineEvents`
+
+`velociraptor artifacts collect MacOS.System.QuarantineEvents --format json`
+(QuarantineEventsV2 db)
+
+| Column | Type | Maps to |
+|--------|------|---------|
+| `LSQuarantineTimeStamp` | ISO8601 | `@timestamp` |
+| `LSQuarantineAgentName` | string | `process.name` (downloading app) |
+| `LSQuarantineDataURLString` | string | `url.full` |
+| `LSQuarantineOriginURLString` | string | `url.original` (referrer) |
+| `LSQuarantineSenderName` | string \| null | `raptorscope.quarantine.sender` |
+| `Path` | string | `file.path`, `file.name` |
+
+Dataset `macos.quarantine`, `event.category = ["file"]`. Fires:
+`Invoice.pdf.command` double-extension payload downloaded from a raw-IP origin.

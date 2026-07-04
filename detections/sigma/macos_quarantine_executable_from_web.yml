@@ -1,0 +1,25 @@
+title: macOS quarantined executable or script downloaded
+id: b1a7e6d2-0006-4000-a000-0000000c0de7
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose name ends in a directly-executable
+  extension (.command, .sh, .term, .pkg). Combined with a web origin this is a
+  common macOS social-engineering delivery for stagers and fake installers.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  selection:
+    event.dataset: macos.quarantine
+    file.name|endswith:
+      - .command
+      - .sh
+      - .term
+      - .pkg
+  condition: selection
+falsepositives:
+  - Legitimate installer packages (.pkg) from trusted vendors
+level: medium
+tags:
+  - attack.initial_access
+  - attack.t1566.001

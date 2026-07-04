@@ -1,0 +1,18 @@
+[
+  {
+    "LSQuarantineTimeStamp": "2025-05-04T16:20:11Z",
+    "LSQuarantineAgentName": "Safari",
+    "LSQuarantineDataURLString": "https://download.mozilla.org/firefox/Firefox.dmg",
+    "LSQuarantineOriginURLString": "https://www.mozilla.org/firefox/download/",
+    "LSQuarantineSenderName": "Mozilla",
+    "Path": "/Users/analyst/Downloads/Firefox.dmg"
+  },
+  {
+    "LSQuarantineTimeStamp": "2026-07-02T21:03:55Z",
+    "LSQuarantineAgentName": "Google Chrome",
+    "LSQuarantineDataURLString": "http://45.9.148.99/Invoice.pdf.command",
+    "LSQuarantineOriginURLString": "http://45.9.148.99/promo",
+    "LSQuarantineSenderName": null,
+    "Path": "/Users/analyst/Downloads/Invoice.pdf.command"
+  }
+]
