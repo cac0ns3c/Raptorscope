@@ -165,7 +165,7 @@ Case data (attacker-controllable artifact fields) flows into prompts.
 - PyPI publish workflow, semver + `CHANGELOG.md`, published Docker images,
   and **collector-build automation** (profile → offline Velociraptor collector) in
   `make`/CI.
-- [ ] Release workflow + changelog + collector target.
+- [x] **PARTIAL (E3)** — `CHANGELOG.md`, version 0.2.0, wheel builds clean, and a PyPI Trusted-Publishing release workflow (tag-triggered). Collector-build automation still needs the Velociraptor binary (blocked, same as A3).
 
 ---
 
