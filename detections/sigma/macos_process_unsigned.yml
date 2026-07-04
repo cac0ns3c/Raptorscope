@@ -1,0 +1,23 @@
+title: macOS unsigned process running
+id: 39c5fe4a-000e-4000-a000-0000000c0def
+status: experimental
+description: >
+  A running process whose executable has no valid code signature. The vast
+  majority of macOS binaries are signed; an unsigned running process (especially
+  combined with a temp path or network activity) is a strong indicator of
+  dropped or tampered code.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.code_signature.exists: false
+  condition: selection
+falsepositives:
+  - Locally-built developer binaries and some open-source tools
+level: medium
+tags:
+  - attack.execution
+  - attack.defense_evasion
+  - attack.t1036

@@ -1,0 +1,31 @@
+title: macOS persistence masquerading as an Apple label
+id: 28b4fd39-000d-4000-a000-0000000c0dee
+status: experimental
+description: >
+  A persistence item using a com.apple.* label but installed outside the system
+  locations Apple actually uses (/System, /Library). Malware frequently names
+  launch items / BTM entries com.apple.* to blend in; an Apple-labelled item in a
+  user or temp path is masquerading.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.label|startswith: "com.apple."
+  filter_system:
+    file.path|startswith:
+      - /System/
+      - /Library/
+  filter_profiles:
+    # config/MDM profiles legitimately carry com.apple.* identifiers and are
+    # covered by their own unsigned-profile rule.
+    raptorscope.persistence.type: config_profile
+  condition: selection and not filter_system and not filter_profiles
+falsepositives:
+  - Rare third-party software that reuses an com.apple.* label under a user path
+level: high
+tags:
+  - attack.persistence
+  - attack.defense_evasion
+  - attack.t1036.005
