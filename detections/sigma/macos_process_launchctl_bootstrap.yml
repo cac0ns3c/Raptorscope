@@ -1,0 +1,42 @@
+title: macOS launchd persistence activated via launchctl from a world-writable path
+id: 9893e092-09f0-4376-bb3b-0840662600e9
+status: experimental
+description: >
+  A live process using launchctl to load a launchd job (modern `bootstrap
+  gui/<uid>` / `bootstrap system`, or the legacy `load -w` / `load -F`) whose
+  plist argument lives in a world-writable staging directory (/tmp, /private/tmp,
+  /Users/Shared). This observes the live activation of freshly-planted persistence,
+  complementary to the macos.persistence rules that parse already-registered items.
+  launchctl bootstrap/load runs constantly for legitimate software — Homebrew
+  `brew services`, pkg postinstall scripts, MDM-managed daemons, dotfiles login
+  scripts, Xcode — but those load from stable, non-world-writable locations
+  (/Library/LaunchDaemons, /opt/homebrew, ~/Library/LaunchAgents). Requiring both
+  a launchctl load verb AND a staging-path plist argument keeps this high-signal:
+  no legitimate installer bootstraps a service straight out of /tmp.
+logsource:
+  product: macos
+  service: process
+detection:
+  tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'launchctl '
+  load_action:
+    process.command_line|contains:
+      - 'bootstrap gui/'
+      - 'bootstrap system '
+      - 'load -w '
+      - 'load -F '
+  staging_path:
+    process.command_line|contains:
+      - '/tmp/'
+      - '/private/tmp/'
+      - '/Users/Shared/'
+  condition: tool and load_action and staging_path
+falsepositives:
+  - An installer or admin script that extracts a plist to /tmp or /Users/Shared and loads it in place instead of a stable LaunchDaemons/LaunchAgents path (discouraged, low-volume)
+level: high
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.t1543.001
+  - attack.t1543.004
