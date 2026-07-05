@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useState } from "react";
 
+import { AuthError } from "../api/client";
 import type { Doc, SearchQuery } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
@@ -59,12 +60,14 @@ export function Search({
   const [showHelp, setShowHelp] = useState(false);
   const [nl, setNl] = useState("");
   const [nlBusy, setNlBusy] = useState(false);
+  const [nlErr, setNlErr] = useState<string | null>(null);
   const [query, setQuery] = useState<SearchQuery | null>(null);
 
   async function askNl(e: React.FormEvent) {
     e.preventDefault();
     if (!nl.trim()) return;
     setNlBusy(true);
+    setNlErr(null);
     try {
       const { query: compiled } = await api.aiNlQuery(caseName, nl);
       setQ(compiled.q ?? "");
@@ -73,6 +76,9 @@ export function Search({
       setOp(compiled.op ?? "contains");
       setValue(compiled.value ?? "");
       setQuery({ ...compiled, limit: 200 });
+    } catch (err) {
+      // AuthError already routes to login via the rs:unauthorized event.
+      if (!(err instanceof AuthError)) setNlErr("Couldn't build a query — try rephrasing.");
     } finally {
       setNlBusy(false);
     }
@@ -111,6 +117,11 @@ export function Search({
             {nlBusy ? "…" : "Ask"}
           </button>
         </form>
+      )}
+      {nlErr && (
+        <div className="nl-error" role="alert">
+          {nlErr}
+        </div>
       )}
       <form className="query-bar" onSubmit={run} role="search">
         <span className="q-ico">

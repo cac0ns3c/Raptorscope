@@ -76,7 +76,13 @@ export function createHttpClient(
     const token = tokenRef?.current;
     if (token) headers.set("Authorization", `Bearer ${token}`);
     const resp = await fetch(`${base}${path}`, { ...init, headers });
-    if (resp.status === 401) throw new AuthError("unauthorized");
+    if (resp.status === 401) {
+      // Notify the AuthGate so a mid-session token expiry returns to login,
+      // instead of every screen silently showing "failed to load".
+      if (typeof window !== "undefined")
+        window.dispatchEvent(new Event("rs:unauthorized"));
+      throw new AuthError("unauthorized");
+    }
     if (!resp.ok) throw new Error(`request failed: ${resp.status} ${path}`);
     return (await resp.json()) as T;
   }
@@ -95,7 +101,13 @@ export function createHttpClient(
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (resp.status === 401) throw new AuthError("unauthorized");
+    if (resp.status === 401) {
+      // Notify the AuthGate so a mid-session token expiry returns to login,
+      // instead of every screen silently showing "failed to load".
+      if (typeof window !== "undefined")
+        window.dispatchEvent(new Event("rs:unauthorized"));
+      throw new AuthError("unauthorized");
+    }
     if (!resp.ok || !resp.body) throw new Error(`stream failed: ${resp.status}`);
     const reader = resp.body.getReader();
     const dec = new TextDecoder();

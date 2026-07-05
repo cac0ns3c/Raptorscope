@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { afterEach, vi } from "vitest";
 
-import { createHttpClient } from "../api/client";
+import { AuthError, createHttpClient } from "../api/client";
 import { makeFakeClient, DIRTY, CLEAN } from "./fakeClient";
 
 afterEach(() => {
@@ -46,6 +46,18 @@ describe("createHttpClient", () => {
     await expect(createHttpClient("/api").listCases()).rejects.toThrow(
       /request failed: 500/,
     );
+  });
+
+  it("dispatches rs:unauthorized and throws AuthError on 401", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false, status: 401, json: async () => ({}) })),
+    );
+    const seen = vi.fn();
+    window.addEventListener("rs:unauthorized", seen);
+    await expect(createHttpClient("/api").listCases()).rejects.toThrow(AuthError);
+    window.removeEventListener("rs:unauthorized", seen);
+    expect(seen).toHaveBeenCalledOnce();
   });
 });
 

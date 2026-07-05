@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useEffect, useState } from "react";
 
+import { AuthError } from "../api/client";
 import type { Case, HuntResult } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { IconChevronRight, IconHost, IconSearch } from "../ui/icons";
@@ -11,6 +12,7 @@ export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
   const [ioc, setIoc] = useState("");
   const [hunt, setHunt] = useState<HuntResult | null>(null);
   const [hunting, setHunting] = useState(false);
+  const [huntErr, setHuntErr] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -24,8 +26,12 @@ export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
     e.preventDefault();
     if (!ioc.trim()) return;
     setHunting(true);
+    setHuntErr(null);
     try {
       setHunt(await api.hunt(ioc.trim()));
+    } catch (err) {
+      // AuthError already routes to login via the rs:unauthorized event.
+      if (!(err instanceof AuthError)) setHuntErr("Hunt failed — try again.");
     } finally {
       setHunting(false);
     }
@@ -75,6 +81,12 @@ export function CasePicker({ onSelect }: { onSelect: (c: Case) => void }) {
           {hunting ? "Hunting…" : "Hunt"}
         </button>
       </form>
+
+      {huntErr && (
+        <div className="hunt-error" role="alert">
+          {huntErr}
+        </div>
+      )}
 
       {hunt && !hunting && (
         <div className="hunt-result" aria-label="hunt result">

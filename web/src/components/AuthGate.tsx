@@ -37,6 +37,17 @@ export function AuthGate({
 
   useEffect(probe, [api]);
 
+  // A 401 from ANY later data call (mid-session token expiry/revocation) routes
+  // back to the login screen — not just the mount-time probe.
+  useEffect(() => {
+    const onUnauth = () => {
+      setGated(true);
+      setStatus("login");
+    };
+    window.addEventListener("rs:unauthorized", onUnauth);
+    return () => window.removeEventListener("rs:unauthorized", onUnauth);
+  }, []);
+
   function logout() {
     tokenHolder.current = null;
     try {
