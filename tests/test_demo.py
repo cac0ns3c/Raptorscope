@@ -9,7 +9,7 @@ from raptorscope.detect.pairing import ALL_DATASETS
 def test_sample_collection_ingests():
     assert DEMO_SAMPLE.is_dir()
     docs = normalize_collection(str(DEMO_SAMPLE))
-    assert len(docs) == 22
+    assert len(docs) == 27
     assert {d["event"]["dataset"] for d in docs} == ALL_DATASETS
 
 

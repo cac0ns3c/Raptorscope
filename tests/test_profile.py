@@ -39,6 +39,7 @@ def test_real_artifact_filenames_ingest(tmp_path):
         "quarantine": "quarantine.raw.json",
         "tcc": "tcc.raw.json",
         "installed_apps": "installed_apps.raw.json",
+        "network": "network.raw.json",
     }
     velo_by_stem = {stem: art for art, stem in ARTIFACT_ALIASES.items()}
     for stem, fixture in stem_to_fix.items():
@@ -49,6 +50,6 @@ def test_real_artifact_filenames_ingest(tmp_path):
     )
 
     docs = normalize_collection(str(col))
-    assert len(docs) == 22
+    assert len(docs) == 27
     assert {d["event"]["dataset"] for d in docs} == ALL_DATASETS
-    assert ingest(str(col), es_url=None) == 22
+    assert ingest(str(col), es_url=None) == 27
