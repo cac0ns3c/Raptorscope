@@ -1,10 +1,67 @@
 # Raptorscope
 
-macOS DFIR analytics stack: Velociraptor macOS collections → ECS-normalized,
-detection-enriched triage in Elasticsearch with a dedicated GUI.
+**macOS DFIR analytics — turn a Velociraptor host collection into ECS-normalized,
+detection-enriched, AI-triaged incident evidence.**
+
+Raptorscope ingests a macOS collection, normalizes every artifact to Elastic
+Common Schema, runs 30 paired Sigma detections, and serves it through a FastAPI
+backend to a purpose-built React/TypeScript investigation UI and Claude-powered
+triage. **Offline-first** — a bundled sample case runs with zero infrastructure —
+and **scale-ready** — Elasticsearch with native detection, aggregations, and deep
+pagination.
+
+`30 detections` · `222 tests` · `dual detection engines, 0-divergence parity` ·
+`Claude-powered triage` · `RBAC + audit + metrics` · `CI: unit · live-ES · e2e ·
+supply-chain`
 
 Design spec: `docs/superpowers/specs/2026-07-03-raptorscope-design.md` ·
-Install: `docs/INSTALL.md` · Demo: `docs/DEMO.md` · Kibana: `docs/KIBANA.md`
+Install: `docs/INSTALL.md` · Demo: `docs/DEMO.md` · Kibana: `docs/KIBANA.md` ·
+Architecture: below
+
+## Highlights
+
+- **Dual detection engines, provably equivalent** — an in-process Sigma evaluator
+  (offline/demo) and an ES-native Lucene path (scale), verified **0/30 divergence**
+  against live Elasticsearch.
+- **30 paired detections, agent-reviewed** — every rule ships hit + benign
+  fixtures and is drift-guarded; the rule set was designed and *adversarially
+  reviewed* by orchestrated multi-agent workflows, then validated end-to-end.
+- **Claude-powered triage behind a testable seam** — per-alert triage, a
+  timestamped incident narrative (streamed), natural-language → query, an agentic
+  **copilot** with a live tool-call trace, and structured IOC extraction. The
+  injectable `AIClient` lets the whole suite run with no key or network, and is
+  configurable to any Anthropic-compatible endpoint. Prompt-injection hardened.
+- **Cross-host IOC hunt** — correlate an indicator across the whole fleet in one
+  query, with a pivot straight from an AI-extracted IOC.
+- **Production hardening** — RBAC (viewer/analyst/admin) in signed tokens,
+  append-only audit log, per-client rate limits, Prometheus `/metrics`,
+  `X-Request-ID` correlation, and a TLS reverse-proxy overlay.
+- **Honest fidelity** — normalizers reconciled against real Velociraptor schemas,
+  custom VQL where no built-in exists (config profiles, BTM, signature
+  enrichment), timestamp provenance (mtime vs. event), and documented
+  synthetic-vs-real gaps.
+- **Engineering rigor** — 169 Python + 53 web tests incl. property/fuzz tests; CI
+  runs unit, a **live-Elasticsearch integration** job, **Playwright e2e**, and
+  **supply-chain scanning** (pip-audit · npm-audit · SBOM · Trivy).
+
+## Architecture
+
+```mermaid
+flowchart LR
+  VR["Velociraptor<br/>macOS collection<br/>(zip / dir)"] --> N["normalizers → ECS<br/>9 mappers + custom VQL"]
+  N -->|"raptorscope-*"| ES[("Elasticsearch")]
+  N -.->|"offline demo"| MEM[("in-memory store")]
+  RULES["30 Sigma detections<br/>paired hit + benign"] --> DET
+  ES --> DET{{"detection engine<br/>in-process · ES-native Lucene"}}
+  MEM --> DET
+  DET --> API["FastAPI API<br/>RBAC · audit · rate-limit · metrics"]
+  ES --> API
+  MEM --> API
+  API --> SPA["React / TS SPA<br/>overview · timeline · alerts<br/>search · fleet hunt"]
+  API <--> AI["Claude AI<br/>triage · summary · NL-query<br/>copilot · IOC extraction"]
+  AI --> SPA
+  ES --> KB["Kibana dashboard"]
+```
 
 ## Quickstart
 
@@ -24,37 +81,27 @@ make stack          # docker compose --profile app up -d --build
 # SPA → http://localhost:8080 · API → :8000 · Kibana → :5601 · ES → :9200
 ```
 
-## Status
+## What it collects & detects
 
-- **Phase 1 (core pipeline):** done — the end-to-end spine (collection →
-  normalize → index → one paired detection).
-- **Phase 2 (artifact breadth):** done — mappers + paired detections for the v1
-  macOS artifact set (below).
-- **Phase 3 (backend API):** done — FastAPI query layer (cases, overview,
-  per-artifact views, timeline, alerts) over a `Store` abstraction.
-- **Phase 4 (GUI):** done — React/TypeScript SPA under `web/` (case picker,
-  overview, per-artifact tables, timeline, alerts with pivot-to-evidence).
-- **Phase 5 (packaging/docs/demo):** done — collection profile (`profile/`),
-  bundled sample case (`samples/`) + `raptorscope demo`, `Makefile`, install/demo
-  docs. **The v1 build is complete.**
+Five ECS datasets answer the first-hour macOS triage questions, each with paired
+Sigma detections. Every rule ships a malicious + benign fixture and is guarded
+against drift by `detect/pairing.py`.
 
-## v1 artifact coverage
+| ECS dataset        | Velociraptor source(s)                                   | Triage question       | Detections |
+|--------------------|----------------------------------------------------------|-----------------------|:----------:|
+| `macos.persistence`| `MacOS.Detection.Autoruns` (launchd/login/cron/BTM) + config profiles (custom VQL) | who's persisting      | 10 |
+| `macos.process`    | `MacOS.Sys.Pslist` (+ signature-enrichment VQL)          | what ran              | 8  |
+| `macos.quarantine` | `MacOS.System.QuarantineEvents` (LSQuarantine)           | what got in           | 4  |
+| `macos.tcc`        | `MacOS.System.TCC`                                        | what got permission   | 5  |
+| `macos.inventory`  | `MacOS.System.Packages`                                  | what's installed      | 3  |
 
-| Artifact (Velociraptor)              | Normalizer                     | ECS dataset        | Paired detection |
-|--------------------------------------|--------------------------------|--------------------|------------------|
-| Launch agents/daemons                | `normalize/launch_items.py`    | `macos.persistence`| suspicious plist path |
-| Login items                          | `normalize/login_items.py`     | `macos.persistence`| login item in staging dir |
-| cron / periodic                      | `normalize/cron.py`            | `macos.persistence`| suspicious cron command |
-| Config / MDM profiles                | `normalize/config_profiles.py` | `macos.persistence`| unsigned profile |
-| Background Task Management (BTM)      | `normalize/btm.py`             | `macos.persistence`| BTM item in staging dir |
-| Running processes                    | `normalize/processes.py`       | `macos.process`    | process from suspicious path |
-| LSQuarantine downloads               | `normalize/quarantine.py`      | `macos.quarantine` | quarantined executable/script |
-| TCC privacy grants                   | `normalize/tcc.py`             | `macos.tcc`        | sensitive grant to non-Apple client |
-| Installed applications               | `normalize/inventory.py`       | `macos.inventory`  | unsigned app outside /Applications |
-
-The persistence family shares `macos.persistence`, discriminated by
-`raptorscope.persistence.type`. Every dataset is guarded against detection drift
-by `detect/pairing.py` (`check_pairing(ALL_DATASETS, …)` must return `[]`).
+Detections span the ATT&CK matrix (initial-access → execution → persistence →
+privilege-escalation → defense-evasion → credential-access → collection → C2)
+with sub-technique-precise MITRE tags. The persistence family shares one dataset,
+discriminated by `raptorscope.persistence.type`. Where stock Velociraptor
+artifacts lack a field (code-signature trust, config-profile/BTM enumeration),
+`profile/custom-vql/` ships the artifact that supplies it — so signature-based
+rules fire on real captures rather than only on fixtures.
 
 ## Usage
 
