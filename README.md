@@ -65,8 +65,14 @@ flowchart LR
 
 ## Screenshots
 
-The purpose-built triage SPA (dark/light themed). These are captured
-automatically by the CI Playwright job (`spa-screenshots` artifact).
+A guided tour of the triage SPA — case picker → fleet-wide IOC hunt → overview
+dashboard → fired detections → timeline → search. Both the walkthrough GIF and the
+stills below are captured automatically by the CI Playwright job (the
+`spa-screenshots` artifact), so they stay current as the UI evolves.
+
+![Guided walkthrough of the Raptorscope triage SPA](docs/img/walkthrough.gif)
+
+Individual views:
 
 | Overview dashboard | Fleet-wide IOC hunt |
 |---|---|
