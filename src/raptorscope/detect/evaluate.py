@@ -62,13 +62,36 @@ def _block_matches(doc, block) -> bool:
     return False
 
 
+def _eval_of(low: str, results: dict) -> bool:
+    """Sigma quantifier: ``all of them`` / ``N of them`` / ``N of <prefix>*``.
+
+    Scope is all blocks (``them``) or those whose name matches the prefix pattern;
+    ``all`` requires every scoped block true, ``N``/``any`` at least N. Matches
+    pysigma/ES semantics so the two detection engines agree.
+    """
+    qty, _, pattern = low.partition(" of ")
+    qty, pattern = qty.strip(), pattern.strip()
+    if pattern in ("them", "these", "") or pattern == "all":
+        names = list(results)
+    else:
+        pat = pattern.rstrip("*")
+        names = [n for n in results if n.lower().startswith(pat)]
+    truthy = sum(1 for n in names if results.get(n))
+    if qty == "all":
+        return bool(names) and truthy == len(names)
+    if qty in ("any", "1"):
+        return truthy >= 1
+    try:
+        return truthy >= int(qty)
+    except ValueError:
+        return truthy >= 1
+
+
 def _eval_condition(cond: str, results: dict) -> bool:
     cond = (cond or "").strip()
     low = cond.lower()
-    if " of " in f" {low} ":  # "all of them" / "1 of them" / "any of these"
-        if low.startswith("all of"):
-            return bool(results) and all(results.values())
-        return any(results.values())
+    if " of " in f" {low} ":  # "all of them" / "2 of them" / "1 of selection*"
+        return _eval_of(low, results)
     tokens = cond.replace("(", " ( ").replace(")", " ) ").split()
     if not tokens:
         return all(results.values()) if results else True
