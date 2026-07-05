@@ -60,3 +60,26 @@ def test_profile_custom_vql_paths_resolve_to_named_artifacts():
         p = pathlib.Path(cv)
         assert p.exists(), f"{e['artifact']}: custom_vql path {cv} does not exist"
         assert yaml.safe_load(p.read_text())["name"] == e["artifact"]
+
+
+def _velociraptor_bin():
+    import os
+    import shutil
+
+    return os.environ.get("RAPTORSCOPE_VELOCIRAPTOR") or shutil.which("velociraptor")
+
+
+@pytest.mark.skipif(_velociraptor_bin() is None,
+                    reason="velociraptor binary not available "
+                           "(set RAPTORSCOPE_VELOCIRAPTOR or put it on PATH)")
+def test_velociraptor_artifacts_verify():
+    """Real static analysis via `velociraptor artifacts verify` when the binary is
+    present (RAPTORSCOPE_VELOCIRAPTOR or on PATH). Catches VQL errors the static
+    lint can't — unknown plugins/functions, subquery syntax, column typos."""
+    import subprocess
+
+    r = subprocess.run(
+        [_velociraptor_bin(), "artifacts", "verify", *[str(p) for p in ARTIFACTS]],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"artifacts verify failed:\n{r.stdout}\n{r.stderr}"

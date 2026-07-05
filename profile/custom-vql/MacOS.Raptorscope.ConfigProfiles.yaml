@@ -36,10 +36,10 @@ sources:
       SELECT
         OSPath,
         Mtime,
-        parse_plist(file=OSPath).PayloadIdentifier AS PayloadIdentifier,
-        parse_plist(file=OSPath).PayloadType AS PayloadType,
+        plist(file=OSPath).PayloadIdentifier AS PayloadIdentifier,
+        plist(file=OSPath).PayloadType AS PayloadType,
         -- `profiles` reports signed state; treat a present signer as signed.
-        if(condition=parse_plist(file=OSPath).SignerCN,
+        if(condition=plist(file=OSPath).SignerCN,
            then=TRUE, else=FALSE) AS Signed,
-        parse_plist(file=OSPath).SignerCN AS SignerCN
+        plist(file=OSPath).SignerCN AS SignerCN
       FROM store

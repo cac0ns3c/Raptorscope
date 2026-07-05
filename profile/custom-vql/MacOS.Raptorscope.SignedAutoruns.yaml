@@ -28,10 +28,13 @@ sources:
   - name: SignedAutoruns
     precondition: SELECT OS FROM info() WHERE OS = 'darwin'
     query: |
-      LET items = SELECT * FROM Artifact.MacOS.Detection.Autoruns()
       -- Resolve the payload program (LaunchdConfig.Program / ProgramArguments[0]
-      -- / Program) and check its signature. `codesign --verify --strict` exits 0
-      -- only for a valid, trusted signature.
+      -- / Program) as a column up front — a stored `query={}` block cannot hold a
+      -- bare LET, so it can't be computed inside the foreach.
+      LET items = SELECT *,
+             LaunchdConfig.Program || LaunchdConfig.ProgramArguments[0] || Program AS Prog
+        FROM Artifact.MacOS.Detection.Autoruns()
+      -- `codesign --verify --strict` exits 0 only for a valid, trusted signature.
       SELECT *,
         dict(
           Exists=NOT (verify.Stderr =~ "code object is not signed"),
@@ -41,9 +44,8 @@ sources:
             regex="Authority=(?P<A>[^\\n]+)").A
         ) AS CodeSignature
       FROM foreach(row=items, query={
-        LET prog = LaunchdConfig.Program || LaunchdConfig.ProgramArguments[0] || Program
         SELECT *,
-          { SELECT * FROM execve(argv=["codesign", "--verify", "--strict", prog]) } AS verify,
-          { SELECT * FROM execve(argv=["codesign", "-dv", prog]) } AS disp
+          { SELECT * FROM execve(argv=["codesign", "--verify", "--strict", Prog]) } AS verify,
+          { SELECT * FROM execve(argv=["codesign", "-dv", Prog]) } AS disp
         FROM scope()
       })
