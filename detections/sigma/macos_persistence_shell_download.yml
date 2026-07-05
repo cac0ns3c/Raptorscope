@@ -17,7 +17,12 @@ detection:
       - base64
       - "| bash"
       - "| sh"
-  condition: selection
+  # cron persistence with a download payload is covered by the dedicated
+  # cron_suspicious_command rule — exclude it here so the same event doesn't
+  # double-alert (both were level:high, attack.persistence).
+  filter_cron:
+    raptorscope.persistence.type: cron
+  condition: selection and not filter_cron
 falsepositives:
   - Admin bootstrap scripts that legitimately fetch and run installers
 level: high

@@ -12,12 +12,14 @@ logsource:
 detection:
   selection:
     event.dataset: macos.process
+    # Match the download TOOL / beacon flag, not a bare URL scheme — keying on
+    # http(s):// fired on essentially every git/npm/brew/curl invocation on a real
+    # host and drowned real alerts.
     process.command_line|contains:
       - 'curl '
       - 'wget '
-      - "http://"
-      - "https://"
-      - "--beacon"
+      - 'nscurl '
+      - '--beacon'
   condition: selection
 falsepositives:
   - Legitimate updaters and package managers that fetch over the network
