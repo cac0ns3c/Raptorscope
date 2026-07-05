@@ -34,3 +34,21 @@ def test_inmemory_page_orders_by_timestamp_like_es():
     page = store.page(host="h", dataset="macos.process", size=2)
     got = [d["@timestamp"] for d in page["items"]]
     assert got == ["2026-07-03T00:00:01Z", "2026-07-03T00:00:02Z"]
+
+
+def test_search_default_sort_is_deterministic_and_pages_are_disjoint():
+    # docs inserted out of order; search() with no explicit sort must be
+    # @timestamp-ascending, so offset windows don't overlap or drop rows.
+    docs = [
+        {"@timestamp": f"2026-07-03T00:00:0{9 - i}Z",
+         "event": {"dataset": "macos.process"}, "host": {"name": "h"},
+         "process": {"pid": i}}
+        for i in range(6)
+    ]
+    store = InMemoryStore(docs)
+    ts = [d["@timestamp"] for d in store.search(host="h", dataset="macos.process")]
+    assert ts == sorted(ts)  # ascending, deterministic
+    first = store.search(host="h", dataset="macos.process", size=3, offset=0)
+    second = store.search(host="h", dataset="macos.process", size=3, offset=3)
+    ids = [d["_id"] for d in first] + [d["_id"] for d in second]
+    assert len(set(ids)) == 6  # disjoint, full coverage

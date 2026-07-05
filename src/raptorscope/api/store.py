@@ -175,6 +175,10 @@ class InMemoryStore:
         if sort is not None:
             field, order = sort
             hits.sort(key=lambda d: d.get(field) or "", reverse=(order == "desc"))
+        else:
+            # Deterministic default (matches ESStore.search) so offset pages don't
+            # overlap/gap and the two backends return the same order.
+            hits.sort(key=lambda d: (d.get("@timestamp") or "", d.get("_id") or ""))
         return hits[offset : offset + size]
 
     def page(

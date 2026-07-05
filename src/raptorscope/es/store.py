@@ -127,9 +127,17 @@ class ESStore:
             "size": size,
             "query": {"bool": {"filter": self._filter(host, dataset)}},
         }
+        # Always sort deterministically (with a _doc tiebreaker) so offset paging
+        # is stable across requests and mirrors InMemoryStore.search; without an
+        # explicit sort ES falls back to _score order, which is non-deterministic.
         if sort is not None:
             field, order = sort
-            body["sort"] = [{field: {"order": order}}]
+            body["sort"] = [{field: {"order": order}}, {"_doc": {"order": "asc"}}]
+        else:
+            body["sort"] = [
+                {"@timestamp": {"order": "asc"}},
+                {"_doc": {"order": "asc"}},
+            ]
         resp = self._client.search(index=self._pattern, body=body)
         return [_hit(h) for h in resp["hits"]["hits"]]
 
