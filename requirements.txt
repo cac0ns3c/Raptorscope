@@ -1,8 +1,11 @@
+# Runtime deps with upper bounds so a fresh resolve can't pull a breaking major
+# version into the pipeline (esp. pySigma, whose 0.x/1.x/2.x APIs differ). These
+# ranges bracket the pinned, CVE-audited set in requirements.lock — keep them in sync.
 elasticsearch>=8.11,<9
-pysigma>=0.11
-pysigma-backend-elasticsearch>=1.1
-fastapi>=0.110
-uvicorn>=0.27
-anthropic>=0.40
+pysigma>=1.4,<2
+pysigma-backend-elasticsearch>=2.1,<3
+fastapi>=0.110,<1
+uvicorn>=0.27,<1
+anthropic>=0.40,<1
 pytest
 httpx
