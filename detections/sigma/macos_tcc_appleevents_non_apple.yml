@@ -27,5 +27,9 @@ falsepositives:
     backup and note-taking utilities) - real-world false-positive rate is high
 level: medium
 tags:
+  - attack.privilege_escalation
   - attack.execution
-  - attack.t1559.002
+  # t1559.002 is Windows DDE — wrong for macOS. AppleEvents automation via a TCC
+  # grant is TCC abuse (t1548.006) + inter-process communication (t1559).
+  - attack.t1548.006
+  - attack.t1559
