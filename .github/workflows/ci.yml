@@ -86,7 +86,7 @@ jobs:
           if [ -n "$webm" ]; then
             sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
             mkdir -p screenshots
-            ffmpeg -y -i "$webm" \
+            ffmpeg -y -ss 1.2 -i "$webm" \
               -vf "fps=12,scale=1000:-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a" \
               -loop 0 screenshots/walkthrough.gif
             ls -la screenshots/walkthrough.gif
