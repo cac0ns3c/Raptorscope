@@ -1,0 +1,38 @@
+title: macOS TCC privacy database tampered via sqlite3
+id: 6121b6b2-6aec-4f9e-a194-6a811c836103
+status: experimental
+description: >
+  A live process running sqlite3 against the TCC consent database
+  (com.apple.TCC/TCC.db) with a SQL write into the access table — mutating rows to
+  silently self-grant privacy permissions (Full Disk Access, Accessibility, Screen
+  Recording) that otherwise require a user prompt. Legitimate permission changes
+  flow through tccutil, never a shell writing TCC.db. Requiring the specific
+  com.apple.TCC/TCC.db path AND an INSERT/REPLACE/UPDATE-access/DELETE verb avoids
+  incidental sqlite3 use and read-only inspection.
+logsource:
+  product: macos
+  service: process
+detection:
+  tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'sqlite3'
+  tccdb:
+    process.command_line|contains: 'com.apple.TCC/TCC.db'
+  write:
+    process.command_line|contains:
+      - 'INSERT INTO'
+      - 'insert into'
+      - 'REPLACE INTO'
+      - 'replace into'
+      - 'UPDATE access'
+      - 'update access'
+      - 'DELETE FROM'
+      - 'delete from'
+  condition: tool and tccdb and write
+falsepositives:
+  - A CI/test rig that pre-grants automation permissions by writing the user TCC.db directly (niche; discouraged)
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.defense_evasion
+  - attack.t1548.006

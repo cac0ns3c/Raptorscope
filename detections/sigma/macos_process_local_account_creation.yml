@@ -1,0 +1,32 @@
+title: macOS local account creation or admin escalation via dscl or sysadminctl
+id: 6068d87e-445a-428e-aacd-bcd1b41115bf
+status: experimental
+description: >
+  A live process command line that creates a local user account or adds one to
+  the admin group via the directory-service CLIs (dscl . -create /Users/, dscl .
+  -append /Groups/admin, sysadminctl -addUser). Interactive users create accounts
+  through System Settings, so CLI account creation on an endpoint is a classic
+  backdoor / privilege-consolidation step. Underscore-prefixed accounts are
+  excluded — installers (Nix _nixbld*, pkg postinstall _daemon accounts)
+  legitimately create those.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'dscl . -create /Users/'
+      - 'dscl . -append /Groups/admin'
+      - 'sysadminctl -addUser'
+  filter_service:
+    process.command_line|contains:
+      - '-create /Users/_'
+      - '-addUser _'
+  condition: selection and not filter_service
+falsepositives:
+  - Centralized MDM / imaging automation that provisions named local accounts
+level: high
+tags:
+  - attack.persistence
+  - attack.t1136.001

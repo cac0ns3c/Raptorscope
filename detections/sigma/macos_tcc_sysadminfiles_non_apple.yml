@@ -1,0 +1,31 @@
+title: macOS SysAdminFiles TCC grant to a non-Apple client
+id: 07f301ca-52ef-48bf-bf97-7e3cb907dc72
+status: experimental
+description: >
+  An allowed kTCCServiceSystemPolicySysAdminFiles authorization held by a
+  non-Apple client. This grants read/modify access to administrator-managed
+  protected system files — a narrower token than Full-Disk-Access. It is rarely
+  issued and normally only to Apple system components, so a non-Apple client
+  holding it is a system-config-tampering / privileged-collection signal.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service: kTCCServiceSystemPolicySysAdminFiles
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
+      - /Library/Apple/
+  condition: selection and not filter_apple
+falsepositives:
+  - A device-management tool the admin intentionally authorized for admin-file access
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.defense_evasion
+  - attack.t1548.006

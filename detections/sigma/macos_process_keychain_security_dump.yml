@@ -1,0 +1,26 @@
+title: macOS Keychain credential dumping via security dump-keychain
+id: 24d54c4f-9f41-4c61-9ae0-5ad6dc4dec6d
+status: experimental
+description: >
+  A live process invoking Apple's `security` CLI with `dump-keychain`, which
+  serializes the login keychain (with -d, prints stored secrets in cleartext) —
+  the classic on-host path for harvesting saved credentials without a third-party
+  tool. Deliberately excludes find-generic-password / find-internet-password:
+  those single-secret lookups are used by legitimate dev tooling (git credential
+  helper, CI) and are argv-indistinguishable from attacker use.
+logsource:
+  product: macos
+  service: process
+detection:
+  tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'security '
+  dump:
+    process.command_line|contains: 'dump-keychain'
+  condition: tool and dump
+falsepositives:
+  - An admin or security researcher manually inspecting a keychain with dump-keychain (rare, low-volume)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1555.001

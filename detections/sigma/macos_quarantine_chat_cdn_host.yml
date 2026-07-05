@@ -1,0 +1,39 @@
+title: macOS quarantined download delivered from a chat/file-drop CDN
+id: 45a532f0-7c5e-46cb-af75-88f55fe30a99
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose download (data) or referring (origin) URL
+  points at a consumer chat CDN or ephemeral file-drop host that has become a
+  dominant macOS stealer/loader delivery channel — Discord attachment CDNs,
+  Telegram file hosts, and anonymous drops (transfer.sh, anonfiles, gofile,
+  bashupload). Reputable software ships from named vendor domains, not a Discord
+  attachment. Raw code hosts (raw.githubusercontent, gist, pastebin) are
+  deliberately excluded — developers fetch from them legitimately every day.
+  Downloads are HTTPS (the cleartext-http rule never sees them); host set is
+  distinct from the tunneling-host and url-shortener rules.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  data_host:
+    event.dataset: macos.quarantine
+    url.full|contains: &hosts
+      - cdn.discordapp.com
+      - media.discordapp.net
+      - api.telegram.org/file
+      - '//t.me/'
+      - transfer.sh
+      - anonfiles.com
+      - gofile.io
+      - bashupload.com
+  origin_host:
+    event.dataset: macos.quarantine
+    url.original|contains: *hosts
+  condition: data_host or origin_host
+falsepositives:
+  - A user downloading a shared file (mod, texture pack) from a Discord attachment link
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1105
+  - attack.t1102
