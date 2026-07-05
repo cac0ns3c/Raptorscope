@@ -3,6 +3,54 @@
 All notable changes to Raptorscope. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [0.3.0] — 2026-07-05
+
+### New dataset — `macos.network`
+- Sixth ECS dataset: host TCP/UDP connections (netstat, custom VQL) with the
+  owning process — listeners + established, `source`/`destination`/`network.*` +
+  `raptorscope.network.state`, direction derivation, collection-time provenance.
+- Reverse/bind-shell detections (a shell/nc/socat `LISTEN` or egress connection).
+- The cross-host IOC hunt now correlates on `destination.address`, so an indicator
+  lights up across quarantine **and** live connections.
+
+### Detections (15 → 38 rules)
+- Rule set authored + **adversarially false-positive-hunted** by multi-agent
+  workflows; candidates that fired on everyday dev activity (Nix, Homebrew,
+  Puppeteer, Sparkle, dev Developer-Tools grants) were dropped, and salvaged rules
+  ship a test asserting the exact FP scenario stays silent.
+- Fixed two rules that were **dead on real captures** — quarantine keyed on a
+  filename real `QuarantineEventsV2` never emits (now matches the download URL),
+  and the untrusted-process rule (now `code_signature.trusted:false`).
+- **Signature-enrichment custom VQL** (`SignedProcesses`, `SignedAutoruns`) so
+  `trusted:false` process/persistence rules fire on real hosts, not just fixtures.
+- New coverage: the execution/LOLBin surface (osascript, spctl/csrutil, xattr,
+  inline interpreters, base64→shell, launchctl-from-staging-path), sensitive TCC
+  grants, ingress (tunneling/anon-drop/URL-shortener/chat-CDN hosts), keychain
+  dump, dscl account creation, sqlite3 TCC tamper, inventory adware/unsigned apps.
+- **MITRE hygiene**: sub-technique-precise tags across all rules; corrected a
+  Windows-only technique tag misapplied to a macOS rule.
+
+### Hardening (code-review pass)
+- Rate-limited **429s are now audited, logged, and metered** (they were returning
+  before the observability middleware — the throttled abuse paths were invisible).
+- **Store equivalence**: `InMemoryStore` and `ESStore` now agree on `page()` and
+  `search()` ordering (deterministic `@timestamp` default sort + stable tiebreak);
+  `hunt()` escapes wildcard metacharacters so an IOC matches as a literal substring.
+- **Web**: a mid-session **401 routes back to login** (any call, not just the
+  mount-time probe); fleet-hunt and NL-query failures surface instead of silently
+  idling.
+- Correct Sigma **quantifier conditions** (`N of` / `all of` / prefix) in the
+  in-process evaluator, closing a latent parity gap vs pysigma/ES.
+- **Supply chain**: bounded `requirements.txt` majors (`pysigma<2`, …) to bracket
+  the CVE-audited `requirements.lock`, so a fresh resolve can't pull a breaking
+  major into the detection engine.
+
+### Tooling & docs
+- Project **subagents** — `code-reviewer`, `detection-engineer`, `pm`,
+  `security-engineer` — tailored to the repo's invariants (`.claude/agents/`).
+- Showcase README (architecture diagram + engineering highlights), plus
+  **CI-captured SPA screenshots and a guided-tour GIF** that regenerate each run.
+
 ## [0.2.0] — 2026-07-04
 
 ### Real-world fidelity
