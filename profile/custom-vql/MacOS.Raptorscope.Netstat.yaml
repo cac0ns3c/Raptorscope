@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Custom Velociraptor artifact — host network connections with owning process.
+#
+# The netstat() VQL plugin returns the live socket table (listeners + established)
+# with the owning Pid; there is no first-party macOS netstat artifact, so this thin
+# wrapper normalizes the columns raptorscope's normalize_network consumes. Alias to
+# the `network` stem. `lsof` is a later enrichment for process.executable (needed by
+# the staging-path egress detections — see the dataset plan).
+name: MacOS.Raptorscope.Netstat
+description: |
+  TCP/UDP connections (listeners + established) with owning process — the network
+  side of triage (reverse/bind shells, C2, exfil).
+type: CLIENT
+sources:
+  - query: |
+      SELECT Pid, Name, Family, Type, Status,
+             Laddr.IP AS LocalIP, Laddr.Port AS LocalPort,
+             Raddr.IP AS RemoteIP, Raddr.Port AS RemotePort,
+             timestamp(epoch=now()) AS Timestamp
+      FROM netstat()
+      WHERE Family =~ "INET"   -- IPv4/IPv6 only; drop unix domain sockets

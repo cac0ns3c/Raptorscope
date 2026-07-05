@@ -67,8 +67,26 @@ INDEX_TEMPLATE = {
                         },
                     }
                 },
+                "source": {
+                    "properties": {"ip": {"type": "ip"}, "port": {"type": "long"}}
+                },
+                "destination": {
+                    "properties": {
+                        "ip": {"type": "ip"},
+                        "address": {"type": "keyword"},
+                        "port": {"type": "long"},
+                    }
+                },
+                "network": {
+                    "properties": {
+                        "transport": {"type": "keyword"},
+                        "type": {"type": "keyword"},
+                        "direction": {"type": "keyword"},
+                    }
+                },
                 "raptorscope": {
                     "properties": {
+                        "network": {"properties": {"state": {"type": "keyword"}}},
                         "persistence": {
                             "properties": {
                                 "type": {"type": "keyword"},

@@ -1,0 +1,7 @@
+[
+  {"Pid": 214, "Name": "mDNSResponder", "Family": "INET", "Type": "UDP", "Status": "", "LocalIP": "0.0.0.0", "LocalPort": 5353, "RemoteIP": "", "RemotePort": 0, "Timestamp": "2026-07-03T10:00:00Z"},
+  {"Pid": 842, "Name": "Safari", "Family": "INET", "Type": "TCP", "Status": "ESTABLISHED", "LocalIP": "192.168.1.24", "LocalPort": 52344, "RemoteIP": "17.253.144.10", "RemotePort": 443, "Timestamp": "2026-07-03T10:01:00Z"},
+  {"Pid": 1, "Name": "launchd", "Family": "INET", "Type": "TCP", "Status": "LISTEN", "LocalIP": "0.0.0.0", "LocalPort": 22, "RemoteIP": "", "RemotePort": 0, "Timestamp": "2026-07-03T10:00:00Z"},
+  {"Pid": 6120, "Name": "bash", "Family": "INET", "Type": "TCP", "Status": "LISTEN", "LocalIP": "0.0.0.0", "LocalPort": 4444, "RemoteIP": "", "RemotePort": 0, "Timestamp": "2026-07-03T10:15:00Z"},
+  {"Pid": 6144, "Name": "bash", "Family": "INET", "Type": "TCP", "Status": "ESTABLISHED", "LocalIP": "192.168.1.24", "LocalPort": 51100, "RemoteIP": "45.9.148.99", "RemotePort": 443, "Timestamp": "2026-07-03T10:16:00Z"}
+]

@@ -12,6 +12,7 @@ from raptorscope.normalize.cron import normalize_cron
 from raptorscope.normalize.inventory import normalize_inventory
 from raptorscope.normalize.launch_items import normalize_launch_items
 from raptorscope.normalize.login_items import normalize_login_items
+from raptorscope.normalize.network import normalize_network
 from raptorscope.normalize.processes import normalize_processes
 from raptorscope.normalize.quarantine import normalize_quarantine
 from raptorscope.normalize.tcc import normalize_tcc
@@ -37,6 +38,7 @@ CASES = [
     (normalize_quarantine, "quarantine.raw.json", [0], [1]),
     (normalize_tcc, "tcc.raw.json", [0, 1], [2]),
     (normalize_inventory, "installed_apps.raw.json", [0], [1]),
+    (normalize_network, "network.raw.json", [0, 1, 2], [3, 4]),
 ]
 
 

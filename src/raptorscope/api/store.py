@@ -50,6 +50,7 @@ _INDICATOR_FIELDS = [
     "raptorscope.persistence.label",
     "raptorscope.persistence.hash",
     "raptorscope.tcc.client",
+    "destination.address",
     "host.name",
 ]
 

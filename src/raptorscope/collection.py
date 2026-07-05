@@ -34,6 +34,8 @@ ARTIFACT_ALIASES = {
     "MacOS.Raptorscope.SignedProcesses": "processes",
     # Signature-enriched Autoruns for untrusted-persistence detections.
     "MacOS.Raptorscope.SignedAutoruns": "autoruns",
+    # Host network connections (listeners + established) with owning process.
+    "MacOS.Raptorscope.Netstat": "network",
 }
 
 

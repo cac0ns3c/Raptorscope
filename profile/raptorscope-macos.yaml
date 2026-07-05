@@ -65,3 +65,10 @@ artifacts:
     dataset: macos.inventory
     normalizer: normalize_inventory
     question: what's installed
+  # --- Network --- (netstat has no first-party artifact; ship a thin custom VQL)
+  - artifact: MacOS.Raptorscope.Netstat
+    stem: network
+    dataset: macos.network
+    normalizer: normalize_network
+    custom_vql: profile/custom-vql/MacOS.Raptorscope.Netstat.yaml
+    question: what is it talking to (listeners + connections)

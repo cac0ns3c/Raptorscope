@@ -14,6 +14,7 @@ from .normalize.cron import normalize_cron
 from .normalize.inventory import normalize_inventory
 from .normalize.launch_items import normalize_launch_items
 from .normalize.login_items import normalize_login_items
+from .normalize.network import normalize_network
 from .normalize.processes import normalize_processes
 from .normalize.quarantine import normalize_quarantine
 from .normalize.tcc import normalize_tcc
@@ -30,6 +31,7 @@ _NORMALIZERS = {
     "quarantine": normalize_quarantine,
     "tcc": normalize_tcc,
     "installed_apps": normalize_inventory,
+    "network": normalize_network,
 }
 
 

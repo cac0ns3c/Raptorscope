@@ -39,6 +39,16 @@ EMITTED_FIELDS = {
     "raptorscope.app.bundle_id",
     "raptorscope.app.version",
     "raptorscope.app.signed",
+    # macos.network
+    "source.ip",
+    "source.port",
+    "destination.ip",
+    "destination.address",
+    "destination.port",
+    "network.transport",
+    "network.type",
+    "network.direction",
+    "raptorscope.network.state",
 }
 
 
@@ -50,6 +60,7 @@ ALL_DATASETS = {
     "macos.quarantine",
     "macos.tcc",
     "macos.inventory",
+    "macos.network",
 }
 
 

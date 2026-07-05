@@ -1,0 +1,33 @@
+title: macOS shell or interpreter with an outbound network connection
+id: 6a1b2c3d-00a0-4000-a000-0000000c0e02
+status: experimental
+description: >
+  A shell or raw network tool (bash/sh/zsh/nc/ncat/socat) owning an established
+  OUTBOUND connection to a non-loopback host — the classic reverse-shell pattern
+  (the payload dials back to the operator). Interactive shells do not normally hold
+  their own outbound sockets, so this is a strong C2 signal.
+  (python/curl/ssh are excluded — they legitimately connect out; the tight process
+  list keeps this high-signal.)
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    network.direction: egress
+    process.name:
+      - bash
+      - sh
+      - zsh
+      - nc
+      - ncat
+      - socat
+  condition: selection
+falsepositives:
+  - A developer piping a shell over nc/socat between their own machines
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1095
+  - attack.execution
+  - attack.t1059.004

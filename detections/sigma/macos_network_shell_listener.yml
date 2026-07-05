@@ -1,0 +1,32 @@
+title: macOS shell or interpreter bound to a listening socket
+id: 6a1b2c3d-00a0-4000-a000-0000000c0e01
+status: experimental
+description: >
+  A shell or raw network tool (bash/sh/zsh/nc/ncat/socat) owning a LISTENing
+  socket — i.e. a bind shell waiting for an inbound operator connection.
+  Legitimate network services are daemons (launchd, mDNSResponder, sshd), never an
+  interactive shell, so a shell in LISTEN state is a strong backdoor signal.
+  (python/perl web servers are deliberately excluded — dev servers listen legitimately.)
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    raptorscope.network.state: LISTEN
+    process.name:
+      - bash
+      - sh
+      - zsh
+      - nc
+      - ncat
+      - socat
+  condition: selection
+falsepositives:
+  - A developer intentionally running a throwaway listener (nc -l) for testing
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1095
+  - attack.execution
+  - attack.t1059.004
