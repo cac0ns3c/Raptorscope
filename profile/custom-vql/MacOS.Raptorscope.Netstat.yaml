@@ -1,18 +1,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Custom Velociraptor artifact — host network connections with owning process.
-#
-# The netstat() VQL plugin returns the live socket table (listeners + established)
-# with the owning Pid; there is no first-party macOS netstat artifact, so this thin
-# wrapper normalizes the columns raptorscope's normalize_network consumes. Alias to
-# the `network` stem. `lsof` is a later enrichment for process.executable (needed by
-# the staging-path egress detections — see the dataset plan).
+# Conforms to the Velociraptor artifact-contribution guidelines: named source,
+# darwin precondition, author + reference, typed timestamp column. Run
+# `velociraptor artifacts verify` before contributing.
 name: MacOS.Raptorscope.Netstat
+author: cac0ns3c (https://github.com/cac0ns3c/Raptorscope)
 description: |
-  TCP/UDP connections (listeners + established) with owning process — the network
-  side of triage (reverse/bind shells, C2, exfil).
+  Report the live TCP/UDP socket table (listeners + established) and enrich each
+  connection with its owning process — the network side of triage (reverse/bind
+  shells, C2 beacons, exfil). Wraps the `netstat()` plugin; there is no
+  first-party macOS netstat artifact.
+  Keywords: network, connections, netstat, listener, reverse shell, C2, macOS.
+  MITRE T1049 / T1571 / T1095.
+
+  ### Output
+  One row per socket (Pid, Name, Family, Type, Status, LocalIP, LocalPort,
+  RemoteIP, RemotePort, Timestamp). Consumed by raptorscope's `normalize_network`
+  (stem `network`). `lsof` enrichment for the executable path is a planned follow-up.
 type: CLIENT
+reference:
+  - https://attack.mitre.org/techniques/T1049/
+  - https://docs.velociraptor.app/vql_reference/plugin/netstat/
+column_types:
+  - name: Timestamp
+    type: timestamp
 sources:
-  - query: |
+  - name: Netstat
+    precondition: SELECT OS FROM info() WHERE OS = 'darwin'
+    query: |
       SELECT Pid, Name, Family, Type, Status,
              Laddr.IP AS LocalIP, Laddr.Port AS LocalPort,
              Raddr.IP AS RemoteIP, Raddr.Port AS RemotePort,

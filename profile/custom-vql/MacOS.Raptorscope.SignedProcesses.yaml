@@ -1,22 +1,32 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Custom Velociraptor artifact — running processes enriched with code-signature
-# trust.
-#
-# Stock MacOS.Sys.Pslist emits only a `Hash` (no signature), so the
-# `macos_process_unsigned` detection (which keys on code_signature.trusted) can
-# never fire on a real capture from Pslist alone. This artifact re-lists the
-# processes and adds a `CodeSignature` object — {Exists, Trusted, SubjectName} —
-# by shelling out to `codesign` per executable, so signature-based detections
-# work on real hosts. Alias it to the `processes` stem via
-# raptorscope.collection.ARTIFACT_ALIASES; `normalize_processes` already consumes
-# the `CodeSignature` object.
+# trust. Conforms to the Velociraptor artifact-contribution guidelines: named
+# source, darwin precondition, author + reference, typed timestamp column. Run
+# `velociraptor artifacts verify` before contributing.
 name: MacOS.Raptorscope.SignedProcesses
+author: cac0ns3c (https://github.com/cac0ns3c/Raptorscope)
 description: |
-  Running processes with code-signature trust enrichment. Untrusted/unsigned
-  running code (MITRE T1036.001 / defense evasion).
+  List running processes and enrich each with code-signature trust — stock
+  `MacOS.Sys.Pslist` emits only a `Hash`, so signature-based detections (untrusted
+  or unsigned running code) can't fire from it alone. This artifact adds a
+  `CodeSignature` object per executable via `codesign`.
+  Keywords: process, code signing, codesign, unsigned, untrusted, macOS. MITRE T1036.001.
+
+  ### Output
+  One row per process (Pid, Ppid, Name, Exe, CommandLine, Username, CreatedTime,
+  Hash, CodeSignature{Exists,Trusted,SubjectName}). Consumed by raptorscope's
+  `normalize_processes` (stem `processes`).
 type: CLIENT
+reference:
+  - https://attack.mitre.org/techniques/T1036/001/
+  - https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Introduction/Introduction.html
+column_types:
+  - name: CreatedTime
+    type: timestamp
 sources:
-  - query: |
+  - name: SignedProcesses
+    precondition: SELECT OS FROM info() WHERE OS = 'darwin'
+    query: |
       LET procs = SELECT Pid, Ppid, Name, Exe, CommandLine, Username,
                          CreatedTime, Hash
         FROM Artifact.MacOS.Sys.Pslist()

@@ -1,18 +1,32 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Custom Velociraptor artifact — macOS Background Task Management (BTM) items.
-#
-# macOS 13+ records launch agents/daemons and login items in the BTM database.
-# There is no standard built-in, so raptorscope ships this one. It parses
-# `sfltool dumpbtm` and emits the columns `normalize_btm` consumes (Path,
-# ItemName, DeveloperName, Disabled, Type, UUID, Hash, Mtime). Alias it to the
-# `btm_items` stem via raptorscope.collection.ARTIFACT_ALIASES.
+# Conforms to the Velociraptor artifact-contribution guidelines
+# (https://www.velociraptor-docs.org/dev/contributing-artifacts/): named source,
+# darwin precondition, author + reference, typed timestamp column. Reformat via the
+# GUI "Reformat VQL" and run `velociraptor artifacts verify` before contributing.
 name: MacOS.Raptorscope.BTM
+author: cac0ns3c (https://github.com/cac0ns3c/Raptorscope)
 description: |
   Enumerate macOS Background Task Management (BTM) persistence items via
-  `sfltool dumpbtm`. Persistence (MITRE T1543 / T1547).
+  `sfltool dumpbtm` — the launch agents/daemons and login items registered in the
+  macOS 13+ BTM database, with developer name, disposition, and hash. There is no
+  standard built-in for BTM, so raptorscope ships this one.
+  Keywords: persistence, launchd, login items, btm, sfltool, macOS. MITRE T1543 / T1547.
+
+  ### Output
+  One row per BTM item (Path, ItemName, DeveloperName, Disabled, Type, UUID, Hash,
+  Mtime). Consumed by raptorscope's `normalize_btm` (stem `btm_items`).
 type: CLIENT
+reference:
+  - https://attack.mitre.org/techniques/T1547/015/
+  - https://www.objective-see.org/blog/blog_0x7B.html
+column_types:
+  - name: Mtime
+    type: timestamp
 sources:
-  - query: |
+  - name: BTM
+    precondition: SELECT OS FROM info() WHERE OS = 'darwin'
+    query: |
       LET dump = SELECT Stdout FROM execve(argv=["sfltool", "dumpbtm"])
       -- One record per BTM item; fields parsed from the dumpbtm block.
       SELECT

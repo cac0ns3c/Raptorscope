@@ -1,23 +1,36 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Custom Velociraptor artifact — macOS configuration / MDM profiles.
-#
-# There is no standard built-in that dumps installed configuration profiles, so
-# raptorscope ships this one. It shells out to `profiles` and enumerates the
-# on-disk ConfigurationProfiles store, emitting the columns the
-# `normalize_config_profiles` mapper consumes (OSPath, PayloadIdentifier,
-# PayloadType, Signed, Mtime). Alias it to the `config_profiles` stem via
-# raptorscope.collection.ARTIFACT_ALIASES.
+# Conforms to the Velociraptor artifact-contribution guidelines: named source,
+# darwin precondition, author + reference, parameter with a default, typed
+# timestamp column. Run `velociraptor artifacts verify` before contributing.
 name: MacOS.Raptorscope.ConfigProfiles
+author: cac0ns3c (https://github.com/cac0ns3c/Raptorscope)
 description: |
-  Enumerate installed macOS configuration/MDM profiles from the
-  ConfigurationProfiles store, with signing status. Persistence + config
-  manipulation (MITRE T1547 / T1176).
+  Enumerate installed macOS configuration/MDM profiles from the on-disk
+  ConfigurationProfiles store, with signing status and payload identity — an
+  unsigned profile carrying a content-filter/proxy/certificate payload is a
+  persistence and traffic-interception risk. No standard built-in dumps these.
+  Keywords: configuration profile, MDM, PayloadType, signing, macOS. MITRE T1547 / T1176.
+
+  ### Output
+  One row per profile (OSPath, Mtime, PayloadIdentifier, PayloadType, Signed,
+  SignerCN). Consumed by raptorscope's `normalize_config_profiles` (stem
+  `config_profiles`).
 type: CLIENT
+reference:
+  - https://attack.mitre.org/techniques/T1176/
+  - https://support.apple.com/guide/deployment/intro-to-configuration-profiles-depc0aadd3fe/web
 parameters:
   - name: StoreGlob
+    description: Glob for the on-disk configuration-profile store plists.
     default: /var/db/ConfigurationProfiles/Store/*.plist
+column_types:
+  - name: Mtime
+    type: timestamp
 sources:
-  - query: |
+  - name: ConfigProfiles
+    precondition: SELECT OS FROM info() WHERE OS = 'darwin'
+    query: |
       LET store = SELECT OSPath, Mtime
         FROM glob(globs=StoreGlob)
       SELECT

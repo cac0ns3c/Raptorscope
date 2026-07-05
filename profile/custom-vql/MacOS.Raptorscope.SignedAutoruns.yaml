@@ -1,20 +1,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Custom Velociraptor artifact — Autoruns persistence enriched with code-signature
-# trust.
-#
-# Stock MacOS.Detection.Autoruns emits a Hash but no signature, so persistence
-# detections that key on code_signature.trusted (untrusted launch item, hidden +
-# unsigned login item) can't fire on a real capture. This artifact re-runs
-# Autoruns and adds a CodeSignature object per persistence Program by shelling out
-# to `codesign`. Alias it to the `autoruns` stem; normalize_autoruns already
-# consumes the CodeSignature object when present.
+# trust. Conforms to the Velociraptor artifact-contribution guidelines: named
+# source, darwin precondition, author + reference. Run `velociraptor artifacts
+# verify` before contributing.
 name: MacOS.Raptorscope.SignedAutoruns
+author: cac0ns3c (https://github.com/cac0ns3c/Raptorscope)
 description: |
-  Autoruns persistence with code-signature trust enrichment — surfaces unsigned
-  or untrusted launch agents/daemons and login items (MITRE T1543 / T1547).
+  Re-run `MacOS.Detection.Autoruns` and enrich each persistence item with
+  code-signature trust — stock Autoruns emits a `Hash` but no signature, so
+  detections for untrusted launch agents/daemons and hidden+unsigned login items
+  can't fire from it alone. This artifact adds a `CodeSignature` object per
+  persistence program via `codesign`.
+  Keywords: persistence, autoruns, launchd, login items, code signing, macOS.
+  MITRE T1543 / T1547.
+
+  ### Output
+  Autoruns rows plus a `CodeSignature{Exists,Trusted,SubjectName}` column.
+  Consumed by raptorscope's `normalize_autoruns` (stem `autoruns`).
 type: CLIENT
+reference:
+  - https://attack.mitre.org/techniques/T1543/001/
+  - https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Introduction/Introduction.html
+column_types:
+  - name: Mtime
+    type: timestamp
 sources:
-  - query: |
+  - name: SignedAutoruns
+    precondition: SELECT OS FROM info() WHERE OS = 'darwin'
+    query: |
       LET items = SELECT * FROM Artifact.MacOS.Detection.Autoruns()
       -- Resolve the payload program (LaunchdConfig.Program / ProgramArguments[0]
       -- / Program) and check its signature. `codesign --verify --strict` exits 0
