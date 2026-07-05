@@ -63,6 +63,21 @@ flowchart LR
   ES --> KB["Kibana dashboard"]
 ```
 
+## Screenshots
+
+The purpose-built triage SPA (dark/light themed). These are captured
+automatically by the CI Playwright job (`spa-screenshots` artifact).
+
+| Overview dashboard | Fleet-wide IOC hunt |
+|---|---|
+| [![Overview](docs/img/03-overview.png)](docs/img/03-overview.png) | [![Fleet hunt](docs/img/02-fleet-hunt.png)](docs/img/02-fleet-hunt.png) |
+| **Fired detections** | **Timeline** |
+| [![Alerts](docs/img/04-alerts.png)](docs/img/04-alerts.png) | [![Timeline](docs/img/05-timeline.png)](docs/img/05-timeline.png) |
+
+> The AI views (per-alert triage, streamed incident summary, agentic copilot) need
+> an `ANTHROPIC_API_KEY`, so they're not in the offline CI capture — run
+> `make demo` with a key to see them live.
+
 ## Quickstart
 
 ```bash
