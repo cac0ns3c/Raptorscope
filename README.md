@@ -4,13 +4,13 @@
 detection-enriched, AI-triaged incident evidence.**
 
 Raptorscope ingests a macOS collection, normalizes every artifact to Elastic
-Common Schema, runs 30 paired Sigma detections, and serves it through a FastAPI
+Common Schema, runs 37 paired Sigma detections, and serves it through a FastAPI
 backend to a purpose-built React/TypeScript investigation UI and Claude-powered
 triage. **Offline-first** — a bundled sample case runs with zero infrastructure —
 and **scale-ready** — Elasticsearch with native detection, aggregations, and deep
 pagination.
 
-`30 detections` · `222 tests` · `dual detection engines, 0-divergence parity` ·
+`37 detections` · `290 tests` · `dual detection engines, 0-divergence parity` ·
 `Claude-powered triage` · `RBAC + audit + metrics` · `CI: unit · live-ES · e2e ·
 supply-chain`
 
@@ -21,9 +21,9 @@ Architecture: below
 ## Highlights
 
 - **Dual detection engines, provably equivalent** — an in-process Sigma evaluator
-  (offline/demo) and an ES-native Lucene path (scale), verified **0/30 divergence**
+  (offline/demo) and an ES-native Lucene path (scale), verified **0/37 divergence**
   against live Elasticsearch.
-- **30 paired detections, agent-reviewed** — every rule ships hit + benign
+- **37 paired detections, agent-reviewed** — every rule ships hit + benign
   fixtures and is drift-guarded; the rule set was designed and *adversarially
   reviewed* by orchestrated multi-agent workflows, then validated end-to-end.
 - **Claude-powered triage behind a testable seam** — per-alert triage, a
@@ -40,7 +40,7 @@ Architecture: below
   custom VQL where no built-in exists (config profiles, BTM, signature
   enrichment), timestamp provenance (mtime vs. event), and documented
   synthetic-vs-real gaps.
-- **Engineering rigor** — 169 Python + 53 web tests incl. property/fuzz tests; CI
+- **Engineering rigor** — 237 Python + 53 web tests incl. property/fuzz tests; CI
   runs unit, a **live-Elasticsearch integration** job, **Playwright e2e**, and
   **supply-chain scanning** (pip-audit · npm-audit · SBOM · Trivy).
 
@@ -48,10 +48,10 @@ Architecture: below
 
 ```mermaid
 flowchart LR
-  VR["Velociraptor<br/>macOS collection<br/>(zip / dir)"] --> N["normalizers → ECS<br/>9 mappers + custom VQL"]
+  VR["Velociraptor<br/>macOS collection<br/>(zip / dir)"] --> N["normalizers → ECS<br/>10 mappers + custom VQL"]
   N -->|"raptorscope-*"| ES[("Elasticsearch")]
   N -.->|"offline demo"| MEM[("in-memory store")]
-  RULES["30 Sigma detections<br/>paired hit + benign"] --> DET
+  RULES["37 Sigma detections<br/>paired hit + benign"] --> DET
   ES --> DET{{"detection engine<br/>in-process · ES-native Lucene"}}
   MEM --> DET
   DET --> API["FastAPI API<br/>RBAC · audit · rate-limit · metrics"]
@@ -104,17 +104,18 @@ make stack          # docker compose --profile app up -d --build
 
 ## What it collects & detects
 
-Five ECS datasets answer the first-hour macOS triage questions, each with paired
+Six ECS datasets answer the first-hour macOS triage questions, each with paired
 Sigma detections. Every rule ships a malicious + benign fixture and is guarded
 against drift by `detect/pairing.py`.
 
 | ECS dataset        | Velociraptor source(s)                                   | Triage question       | Detections |
 |--------------------|----------------------------------------------------------|-----------------------|:----------:|
 | `macos.persistence`| `MacOS.Detection.Autoruns` (launchd/login/cron/BTM) + config profiles (custom VQL) | who's persisting      | 10 |
-| `macos.process`    | `MacOS.Sys.Pslist` (+ signature-enrichment VQL)          | what ran              | 8  |
-| `macos.quarantine` | `MacOS.System.QuarantineEvents` (LSQuarantine)           | what got in           | 4  |
-| `macos.tcc`        | `MacOS.System.TCC`                                        | what got permission   | 5  |
+| `macos.process`    | `MacOS.Sys.Pslist` (+ signature-enrichment VQL)          | what ran              | 11 |
+| `macos.quarantine` | `MacOS.System.QuarantineEvents` (LSQuarantine)           | what got in           | 5  |
+| `macos.tcc`        | `MacOS.System.TCC`                                        | what got permission   | 6  |
 | `macos.inventory`  | `MacOS.System.Packages`                                  | what's installed      | 3  |
+| `macos.network`    | `netstat` (custom VQL) — listeners + connections         | what it talks to      | 2  |
 
 Detections span the ATT&CK matrix (initial-access → execution → persistence →
 privilege-escalation → defense-evasion → credential-access → collection → C2)
