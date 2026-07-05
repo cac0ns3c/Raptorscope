@@ -72,11 +72,18 @@ jobs:
       - name: Install Playwright (chromium)
         working-directory: web
         run: npx playwright install --with-deps chromium
-      - name: Run e2e
+      - name: Run e2e (+ capture showcase screenshots)
         working-directory: web
         env:
           CI: "true"
         run: npm run e2e
+      - name: Upload SPA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spa-screenshots
+          path: web/screenshots/
+          if-no-files-found: warn
 
   # Supply-chain: pinned deps, dependency-vuln scans, SBOM, filesystem scan.
   # See docs/SUPPLY-CHAIN.md for the triaged findings (diskcache CVE, dev-only npm).
