@@ -136,8 +136,12 @@ class ESStore:
     def hunt(self, value: str, size: int = 100) -> list[dict]:
         """Cross-host IOC correlation: substring-match ``value`` across the
         indicator fields (all keyword/`wildcard` typed) over the whole fleet."""
+        # Escape wildcard metacharacters so the IOC matches as a LITERAL substring
+        # (mirrors InMemoryStore.hunt's ``value in str(v)``); otherwise a * / ? in
+        # an indicator would act as an ES glob and over-match.
+        esc = value.replace("\\", "\\\\").replace("*", "\\*").replace("?", "\\?")
         should = [
-            {"wildcard": {f: {"value": f"*{value}*"}}} for f in _INDICATOR_FIELDS
+            {"wildcard": {f: {"value": f"*{esc}*"}}} for f in _INDICATOR_FIELDS
         ]
         body = {
             "size": min(size, self.MAX_WINDOW),

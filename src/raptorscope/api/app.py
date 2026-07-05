@@ -205,6 +205,26 @@ def create_app(
     def prometheus_metrics():
         return PlainTextResponse(metrics.render())
 
+    # Registered FIRST so it is the INNERMOST middleware — a 429 it returns still
+    # passes back out through _access_log below (which is registered last and so
+    # wraps it), keeping throttled abuse in the access log, metrics, and audit trail.
+    @app.middleware("http")
+    async def _rate_limit(request, call_next):
+        path = request.url.path
+        key = request.client.host if request.client else "?"
+        bucket = None
+        if path == "/login":
+            bucket = login_bucket
+        elif "/ai/" in path and not path.endswith("/ai/status"):
+            bucket = ai_bucket
+        if bucket is not None and not bucket.allow(key):
+            return JSONResponse(
+                status_code=429, content={"detail": "rate limit exceeded"}
+            )
+        return await call_next(request)
+
+    # Registered LAST -> outermost: observes/audits EVERY response, including the
+    # 429s produced by _rate_limit above.
     @app.middleware("http")
     async def _access_log(request, call_next):
         rid = request.headers.get("x-request-id") or uuid.uuid4().hex[:12]
@@ -232,21 +252,6 @@ def create_app(
                 rid, user, request.method, path, response.status_code,
             )
         return response
-
-    @app.middleware("http")
-    async def _rate_limit(request, call_next):
-        path = request.url.path
-        key = request.client.host if request.client else "?"
-        bucket = None
-        if path == "/login":
-            bucket = login_bucket
-        elif "/ai/" in path and not path.endswith("/ai/status"):
-            bucket = ai_bucket
-        if bucket is not None and not bucket.allow(key):
-            return JSONResponse(
-                status_code=429, content={"detail": "rate limit exceeded"}
-            )
-        return await call_next(request)
     require_token = make_auth_dependency(auth)
     # Active/costly actions (AI, fleet hunt) require analyst+; viewers are read-only.
     require_analyst = Depends(make_role_dependency(auth, "analyst"))

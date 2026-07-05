@@ -188,6 +188,10 @@ class InMemoryStore:
         ``{items, cursor}`` where a non-null cursor resumes the next page."""
         offset = decode_cursor(cursor).get("offset", 0) if cursor else 0
         hits = [d for d in self._docs if self._match(d, host, dataset)]
+        # Mirror ESStore.page (sort by @timestamp asc; stable sort preserves
+        # insertion order on ties, the in-memory analog of ES's _shard_doc
+        # tiebreaker) so the two backends return identical pages.
+        hits.sort(key=lambda d: d.get("@timestamp") or "")
         items = hits[offset : offset + size]
         nxt = (
             encode_cursor({"offset": offset + size})
