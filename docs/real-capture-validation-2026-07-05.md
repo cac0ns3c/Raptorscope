@@ -15,7 +15,7 @@ is aggregate counts, column names, and the fixes the real data drove.
 | `MacOS.System.QuarantineEvents` | 135 | real downloads |
 | `MacOS.System.Packages` | 319 | installed apps |
 | `MacOS.Raptorscope.Netstat` | 66 | after the fix (0 before) |
-| `MacOS.System.TCC` | **0** | needs Full Disk Access for the collector |
+| `MacOS.System.TCC` | 114 | after granting FDA to the terminal (0 before) |
 | `MacOS.Raptorscope.ConfigProfiles` | **0** | `/var/db/ConfigurationProfiles/Store` is SIP/perm-protected |
 | `MacOS.Raptorscope.BTM` | **hung** | `sfltool dumpbtm` did not return (needs privileges / a timeout) |
 
@@ -87,6 +87,42 @@ A second pass with `sudo` (root) to collect the three that came back empty. Resu
 gated by macOS protections (FDA/SIP) or broken host tooling (`sfltool`), not by the
 pipeline. Validating TCC on real data is a one-time FDA grant away; ConfigProfiles
 and BTM need a privileged/alternate collection method.
+
+## TCC validated after FDA grant — 2 normalizer bugs the real columns exposed
+
+Granting **Full Disk Access to the terminal** unblocks TCC: Velociraptor is launched
+from the terminal, so TCC attributes the `TCC.db` read to the responsible process
+(the terminal's grant). `MacOS.System.TCC` then collects **114 rows** (was 0). The
+collector is validated — but the real columns exposed two normalizer bugs, both
+baked in from the synthetic fixture's shapes. Confirmed against the built-in artifact
+source (`velociraptor artifacts show MacOS.System.TCC`), which emits **strings**, not
+the fixture's ints:
+
+1. **Denials silently flipped to allows (security-critical).** Real `Allowed` is the
+   string `"Yes"`/`"No"` (`if(auth_value=2,"Yes","No")`), not a bool. The normalizer
+   did `bool(r["Allowed"])`, and `bool("No")` is `True` — so all 114 rows, including
+   the **13 denied** grants, normalized to `allowed=True`. TCC allow/deny *is* the
+   security signal. Fixed to compare the string.
+2. **Path-based clients never recognized.** Real `ClientType` is `"Console"` (bundle
+   id) / `"Service/Script"` (absolute path), not int `0/1`. The `client_type == 1`
+   check never matched a string, so `process.executable` was never set and every
+   client was labelled `bundle_id` — the **8 path clients** were invisible. Fixed to
+   accept both encodings; the TCC.db source path also moved from `Path` to `_OSPath`.
+
+Both are now guarded by `test_tcc_real_string_encodings` in
+`tests/normalize/test_real_columns.py` (real string shapes), alongside the retained
+int-shape fixture test.
+
+**Detection impact (verified on this real capture, 6 `macos.tcc` rules):**
+
+| Normalizer | TCC fires | Composition |
+|---|---:|---|
+| buggy (old) | 6 | **5 false positives** — 4 `sensitive_grant` + 1 `appleevents` fired on grants that are actually **denied** (`claudefordesktop`, `claude-code`, `/usr/bin/find`, `/usr/bin/osascript`), flipped to allowed by bug 1; plus `path_client_grant` never fired at all (bug 2) |
+| fixed | 4 | all on genuinely-**allowed** grants to the Claude CLI's own path-based binary — 1 `appleevents` + 3 `path_client_grant` (the rule's documented "developer CLI tool the user authorized" FP candidate, now correctly reachable) |
+
+So the fix removes 5 deny-flip false positives *and* makes the `path_client_grant`
+rule reachable on real data (it was structurally dead). **6 of 8 collectors are now
+validated on real data.**
 
 ## Guardrail
 

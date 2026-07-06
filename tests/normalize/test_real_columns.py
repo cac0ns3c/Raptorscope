@@ -27,7 +27,8 @@ def test_inventory_real_packages_columns():
 
 
 def test_tcc_real_allowed_boolean():
-    # MacOS.System.TCC: Service, Client, ClientType, Allowed(bool), LastModified
+    # MacOS.System.TCC (fixture/int shape): Service, Client, ClientType(int),
+    # Allowed(bool), LastModified
     rows = [
         {"Service": "kTCCServiceAccessibility", "Client": "/Users/Shared/.a/agent",
          "ClientType": 1, "Allowed": True, "LastModified": "2026-07-02T00:00:00Z"},
@@ -122,6 +123,37 @@ def test_processes_real_createtime_column():
         [{"Pid": "1", "Name": "launchd", "Exe": "/sbin/launchd", "CommandLine": "launchd",
           "CreateTime": "2026-06-27T10:06:14Z"}], HOST)
     assert docs[0]["@timestamp"] == "2026-06-27T10:06:14Z"
+
+
+def test_tcc_real_string_encodings():
+    # Real MacOS.System.TCC emits STRINGS, not the fixture's ints: Allowed is
+    # "Yes"/"No" (note bool("No") is True — the old code flipped every deny to
+    # allow), and ClientType is "Console" (bundle id) / "Service/Script" (abs path).
+    rows = [
+        {"Service": "kTCCServiceAccessibility", "Client": "/Users/Shared/.a/agent",
+         "ClientType": "Service/Script", "Allowed": "No",
+         "LastModified": "2026-07-02T00:00:00Z",
+         "_OSPath": "/Library/Application Support/com.apple.TCC/TCC.db"},
+        {"Service": "kTCCServiceCamera", "Client": "us.zoom.xos",
+         "ClientType": "Console", "Allowed": "Yes",
+         "LastModified": "2025-01-01T00:00:00Z",
+         "_OSPath": "/Library/Application Support/com.apple.TCC/TCC.db"},
+    ]
+    docs = normalize_tcc(rows, HOST)
+    by = {d["raptorscope"]["tcc"]["service"]: d for d in docs}
+    a11y = by["kTCCServiceAccessibility"]["raptorscope"]["tcc"]
+    cam = by["kTCCServiceCamera"]["raptorscope"]["tcc"]
+    # "No" must normalize to False (this is the security-critical regression)
+    assert a11y["allowed"] is False
+    assert cam["allowed"] is True
+    # "Service/Script" is an absolute-path client -> executable + path label
+    assert a11y["client_type"] == "path"
+    assert by["kTCCServiceAccessibility"]["process"]["executable"] == "/Users/Shared/.a/agent"
+    # "Console" is a bundle id -> no executable
+    assert cam["client_type"] == "bundle_id"
+    assert "process" not in by["kTCCServiceCamera"]
+    # TCC.db source path comes from _OSPath on real data
+    assert by["kTCCServiceCamera"]["file"]["name"] == "TCC.db"
 
 
 def test_network_real_estab_status_is_egress():
