@@ -40,7 +40,7 @@ Architecture: below
   custom VQL where no built-in exists (config profiles, BTM, signature
   enrichment), timestamp provenance (mtime vs. event), and documented
   synthetic-vs-real gaps.
-- **Engineering rigor** — 264 Python + 54 web tests incl. property/fuzz tests; CI
+- **Engineering rigor** — 268 Python + 60 web tests incl. property/fuzz tests; CI
   runs unit, a **live-Elasticsearch integration** job, **Playwright e2e**, and
   **supply-chain scanning** (pip-audit · npm-audit · SBOM · Trivy).
 
@@ -235,9 +235,27 @@ RAPTORSCOPE_AI_KEY=… RAPTORSCOPE_AI_BASE_URL=https://gateway/v1 \
 
 A Vite + React + TypeScript SPA that consumes the query API. It talks only to a
 typed `ApiClient` provided via context, so every component/interaction test runs
-on an in-memory fake client — no network. The app: pick a case → tabbed workspace
-(Overview / Artifacts / Timeline / Alerts); clicking an alert pivots into the
-Artifacts tab for that dataset with the evidence row highlighted.
+on an in-memory fake client — no network.
+
+Pick a case, then work a tabbed workspace — **Overview · Artifacts · Timeline ·
+Alerts · Search · Copilot** (the AI tab appears when a key is configured):
+
+- **Alerts** is a severity-first triage queue (high → medium → low) with per-alert
+  ack / dismiss / note and one-click AI triage.
+- **Overview** is a launchpad: dataset KPI tiles and the unsigned-process/app
+  counts drill straight into the relevant Artifacts, next to a persistence-by-type
+  breakdown and signing-integrity panel.
+- Any **alert, search hit, timeline event, or KPI tile** pivots into the Artifacts
+  table with the evidence row highlighted; the **detail drawer** flattens a
+  document to ECS fields with per-field copy-to-clipboard.
+- **Light/dark theme**, locale-formatted counts, and consistent loading / empty /
+  error states with **Retry**.
+
+**Accessibility is first-class**: keyboard-operable throughout — focus-trapped
+modals with Escape-to-close and focus restore, keyboard-activatable rows and
+sortable headers, a skip-to-content link, and stretched-link alert cards with
+valid ARIA — plus `aria-live` regions for async/streaming results and
+`prefers-reduced-motion` support.
 
 ```bash
 cd web
