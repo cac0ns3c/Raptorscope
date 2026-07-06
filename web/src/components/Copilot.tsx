@@ -34,7 +34,7 @@ export function Copilot({ caseName }: { caseName: string }) {
       });
       setDone(true);
     } catch {
-      setError("The copilot request failed.");
+      setError("The copilot request failed — check the provider API key and quota.");
     } finally {
       setBusy(false);
     }

@@ -101,12 +101,14 @@ const OVERVIEW: Overview = {
   unsigned: { process: 1, inventory: 1 },
 };
 
+// Deliberately NOT in severity order — the Alerts component sorts high-first, and
+// the "renders alerts high-severity first" test relies on this being shuffled.
 const ALERTS: Alert[] = [
+  { rule_id: "r-quar", title: "macOS quarantined executable or script downloaded", level: "medium", dataset: "macos.quarantine", doc_id: "q1", evidence: { "file.name": "Invoice.pdf.command" } },
   { rule_id: "r-persist", title: "macOS persistence program in suspicious path", level: "high", dataset: "macos.persistence", doc_id: "p3", evidence: { "file.path": "/Users/Shared/.cache/com.system.helper.plist" } },
+  { rule_id: "r-inv", title: "macOS unsigned application installed outside /Applications", level: "medium", dataset: "macos.inventory", doc_id: "inv1", evidence: { "file.path": "/Users/analyst/.local/Updater.app" } },
   { rule_id: "r-proc", title: "macOS process running from a suspicious path", level: "high", dataset: "macos.process", doc_id: "proc2", evidence: { "process.executable": "/private/tmp/.cache/helper" } },
   { rule_id: "r-tcc", title: "macOS sensitive TCC grant to a non-Apple client", level: "high", dataset: "macos.tcc", doc_id: "tcc2", evidence: { "raptorscope.tcc.client": "/Users/Shared/.helper/agent" } },
-  { rule_id: "r-quar", title: "macOS quarantined executable or script downloaded", level: "medium", dataset: "macos.quarantine", doc_id: "q1", evidence: { "file.name": "Invoice.pdf.command" } },
-  { rule_id: "r-inv", title: "macOS unsigned application installed outside /Applications", level: "medium", dataset: "macos.inventory", doc_id: "inv1", evidence: { "file.path": "/Users/analyst/.local/Updater.app" } },
 ];
 
 function timelineFor(docs: Record<string, Doc[]>): TimelineRow[] {

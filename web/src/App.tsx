@@ -62,6 +62,9 @@ export function App() {
 
   return (
     <div className="app">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <header className="topbar">
         <div className="brand">
           <span className="logo">
@@ -73,7 +76,7 @@ export function App() {
         <div className="topbar-actions">
           <button
             className="btn-change"
-            aria-label="toggle theme"
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
             onClick={toggle}
           >
             {theme === "dark" ? "☀" : "☾"}
@@ -113,7 +116,7 @@ export function App() {
       {showDocs && <Docs onClose={() => setShowDocs(false)} />}
 
       {!selected ? (
-        <main className="content landing">
+        <main className="content landing" id="main" tabIndex={-1}>
           <div className="hero">
             <span className="hero-mark">
               <IconLogo width={26} height={26} />
@@ -124,7 +127,7 @@ export function App() {
           <CasePicker onSelect={selectCase} />
         </main>
       ) : (
-        <main className="content">
+        <main className="content" id="main" tabIndex={-1}>
           <nav className="tabs" aria-label="views">
             {TABS.map((t) => (
               <button
@@ -169,7 +172,9 @@ export function App() {
               </div>
             )}
 
-            {tab === "timeline" && <Timeline caseName={selected.name} />}
+            {tab === "timeline" && (
+              <Timeline caseName={selected.name} onPivot={pivot} />
+            )}
 
             {tab === "alerts" && (
               <Alerts caseName={selected.name} onPivot={pivot} />

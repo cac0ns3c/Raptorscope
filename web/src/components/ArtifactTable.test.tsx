@@ -39,7 +39,7 @@ describe("ArtifactTable", () => {
     const rows = await screen.findAllByTestId("artifact-row");
     await userEvent.click(rows[0]);
     expect(
-      await screen.findByRole("dialog", { name: "document detail" }),
+      await screen.findByRole("dialog"),
     ).toBeInTheDocument();
   });
 

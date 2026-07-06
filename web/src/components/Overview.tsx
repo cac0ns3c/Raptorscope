@@ -51,7 +51,10 @@ export function Overview({ caseName }: { caseName: string }) {
         }
       })
       .catch(() =>
-        setSummary({ loading: false, text: acc || "Summary failed." }),
+        setSummary({
+          loading: false,
+          text: acc || "AI summary failed — check the provider API key and quota.",
+        }),
       );
   }
 

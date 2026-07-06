@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import type { DocMeta } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { useModalA11y } from "../hooks/useModalA11y";
 import { Markdown } from "../ui/Markdown";
 
 export function Docs({ onClose }: { onClose: () => void }) {
   const api = useApi();
   const [docs, setDocs] = useState<DocMeta[] | null>(null);
   const [active, setActive] = useState<string>("readme");
+  const ref = useModalA11y<HTMLDivElement>(onClose);
 
   useEffect(() => {
     let live = true;
@@ -26,11 +28,19 @@ export function Docs({ onClose }: { onClose: () => void }) {
   const { data } = useAsync(() => api.getDoc(active), [active]);
 
   return (
-    <div className="docs-overlay" role="dialog" aria-label="documentation">
-      <div className="docs-panel">
+    <div className="docs-overlay" onClick={onClose}>
+      <div
+        ref={ref}
+        className="docs-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="docs-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <aside className="docs-nav">
           <div className="docs-nav-head">
-            <span>Documentation</span>
+            <span id="docs-title">Documentation</span>
             <button className="docs-close" aria-label="close docs" onClick={onClose}>
               ✕
             </button>

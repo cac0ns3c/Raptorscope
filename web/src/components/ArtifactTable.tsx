@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Doc } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
 import { buildCsv, download } from "../util/tabular";
 import { columnsFor } from "./columns";
@@ -105,6 +106,7 @@ export function ArtifactTable({
                 <th
                   key={col.path}
                   className="sortable"
+                  tabIndex={0}
                   aria-sort={
                     sort?.path === col.path
                       ? sort.dir === 1
@@ -113,6 +115,12 @@ export function ArtifactTable({
                       : undefined
                   }
                   onClick={() => toggleSort(col.path)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleSort(col.path);
+                    }
+                  }}
                 >
                   {col.header}
                   {sort?.path === col.path && (
@@ -130,7 +138,8 @@ export function ArtifactTable({
                 key={doc._id}
                 data-testid="artifact-row"
                 className={`clickable ${doc._id === highlightId ? "highlight" : ""}`}
-                onClick={() => setSelected(doc)}
+                aria-label="open document detail"
+                {...rowActivation(() => setSelected(doc))}
               >
                 {columns.map((col) => {
                   const value = dig(doc, col.path);
@@ -143,12 +152,14 @@ export function ArtifactTable({
                       </td>
                     );
                   }
+                  const text = cell(value);
                   return (
                     <td
                       key={col.path}
                       className={MONO.has(col.path) ? "mono" : undefined}
+                      title={text || undefined}
                     >
-                      {cell(value)}
+                      {text}
                     </td>
                   );
                 })}

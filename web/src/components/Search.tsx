@@ -7,6 +7,7 @@ import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { IconSearch } from "../ui/icons";
+import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
 
 const FIELDS = [
@@ -261,7 +262,7 @@ export function Search({
       )}
       {query && !loading && data && (
         <>
-          <p className="q-count muted">
+          <p className="q-count muted" role="status" aria-live="polite">
             {data.total} {data.total === 1 ? "result" : "results"}
           </p>
           {data.total === 0 ? (
@@ -285,7 +286,8 @@ export function Search({
                           key={doc._id}
                           data-testid="search-row"
                           className="clickable"
-                          onClick={() => onPivot?.(dataset, doc._id)}
+                          aria-label="open in artifacts"
+                          {...rowActivation(() => onPivot?.(dataset, doc._id))}
                         >
                           <td>
                             <span className="badge" data-dataset={dataset}>

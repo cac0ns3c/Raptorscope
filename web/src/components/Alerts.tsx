@@ -11,6 +11,12 @@ import { Markdown } from "../ui/Markdown";
 
 type AiState = Record<string, { loading: boolean; text?: string }>;
 const aiTriageKey = (c: string) => `rs_triage:${c}`;
+// Severity ordering for the triage queue; unknown levels sort last.
+const SEV_ORDER = ["high", "medium", "low"];
+const sevRank = (level: string) => {
+  const i = SEV_ORDER.indexOf(level);
+  return i === -1 ? SEV_ORDER.length : i;
+};
 
 function loadTriage(c: string): AiState {
   try {
@@ -69,7 +75,10 @@ export function Alerts({
       .catch(() =>
         setAi((s) => ({
           ...s,
-          [key]: { loading: false, text: "AI triage failed." },
+          [key]: {
+            loading: false,
+            text: "AI triage failed — check the provider API key and quota.",
+          },
         })),
       );
   }
@@ -95,9 +104,10 @@ export function Alerts({
 
   const keyed = data.map((a) => ({ a, key: triageKey(caseName, a) }));
   const dismissed = keyed.filter(({ key }) => map[key]?.status === "dismissed");
-  const visible = keyed.filter(
-    ({ key }) => map[key]?.status !== "dismissed" || showDismissed,
-  );
+  // Triage queue is severity-first (high → medium → low); the API order isn't.
+  const visible = keyed
+    .filter(({ key }) => map[key]?.status !== "dismissed" || showDismissed)
+    .sort((x, y) => sevRank(x.a.level) - sevRank(y.a.level));
   const acked = keyed.filter(({ key }) => map[key]?.status === "ack").length;
 
   return (
@@ -128,10 +138,17 @@ export function Alerts({
                 }`}
                 role="button"
                 tabIndex={0}
+                aria-label={`${a.level} severity: ${a.title} — view evidence`}
                 onClick={() => onPivot?.(a.dataset, a.doc_id)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && onPivot?.(a.dataset, a.doc_id)
-                }
+                onKeyDown={(e) => {
+                  // Only the card itself pivots — ignore keys bubbling up from
+                  // the nested note input / action buttons (e.g. Space while typing).
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onPivot?.(a.dataset, a.doc_id);
+                  }
+                }}
               >
                 <span className="alert-ico">
                   <IconAlert />

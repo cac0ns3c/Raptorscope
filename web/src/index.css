@@ -15,7 +15,11 @@
   /* text */
   --text: #e7edf6;
   --text-muted: #93a1b8;
-  --text-dim: #64728c;
+  --text-dim: #8a97b0;
+
+  /* chrome surfaces (themeable) */
+  --topbar-bg: rgba(12, 17, 27, 0.82);
+  --row-hover: rgba(255, 255, 255, 0.04);
 
   /* accent */
   --accent: #6ea8fe;
@@ -63,13 +67,20 @@
   --border-strong: #c3cddd;
   --text: #14203a;
   --text-muted: #4a5876;
-  --text-dim: #7a869e;
+  --text-dim: #5f6d88;
   --accent: #2f6fe0;
   --accent-strong: #2f6fe0;
   --accent-soft: rgba(47, 111, 224, 0.1);
+  /* severity foregrounds must be re-tuned for light surfaces (the dark values
+     fail contrast on white); keep them distinct from the green success pills. */
+  --sev-high: #c62537;
+  --sev-medium: #9a5a00;
+  --sev-low: #0d7a54;
   --sev-high-bg: rgba(220, 60, 74, 0.12);
   --sev-medium-bg: rgba(200, 130, 20, 0.14);
   --sev-low-bg: rgba(20, 160, 110, 0.14);
+  --topbar-bg: rgba(255, 255, 255, 0.85);
+  --row-hover: rgba(20, 30, 60, 0.05);
   --shadow: 0 1px 2px rgba(20, 30, 60, 0.06), 0 8px 24px -14px rgba(20, 30, 60, 0.2);
   --shadow-lg: 0 14px 40px -18px rgba(20, 30, 60, 0.28);
   color-scheme: light;
@@ -124,6 +135,38 @@ button {
   border-radius: var(--r-sm);
 }
 
+/* Keyboard bypass: hidden until focused, then pinned to the top-left. */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.5rem 0.9rem;
+  background: var(--accent-strong);
+  color: #fff;
+  border-radius: var(--r-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.15s ease-out;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Respect users who prefer reduced motion (vestibular safety). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- app shell ---------- */
 .app {
   min-height: 100%;
@@ -140,7 +183,7 @@ button {
   gap: 0.9rem;
   padding: 0 1.25rem;
   height: 58px;
-  background: rgba(12, 17, 27, 0.82);
+  background: var(--topbar-bg);
   backdrop-filter: saturate(140%) blur(12px);
   border-bottom: 1px solid var(--border-soft);
 }
@@ -616,7 +659,10 @@ button {
   transition: background 0.12s;
 }
 .grid tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--row-hover);
+}
+.grid tbody tr.clickable {
+  cursor: pointer;
 }
 .grid tr.highlight td {
   background: var(--accent-soft);
@@ -697,6 +743,14 @@ button {
   align-items: center;
   gap: 0.7rem;
   padding: 0.4rem 0;
+}
+.timeline-row.clickable {
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background 0.12s;
+}
+.timeline-row.clickable:hover {
+  background: var(--row-hover);
 }
 .timeline-row .ts {
   color: var(--text-dim);
