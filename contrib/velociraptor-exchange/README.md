@@ -1,7 +1,10 @@
 # Velociraptor Artifact Exchange — submission package
 
-Exchange-ready copies of Raptorscope's four custom macOS VQL artifacts, staged for
-contribution to the **Velociraptor Artifact Exchange**
+**Submitted:** [Velocidex/velociraptor-docs#1284](https://github.com/Velocidex/velociraptor-docs/pull/1284)
+(all four artifacts, awaiting review).
+
+Exchange-ready copies of Raptorscope's four custom macOS VQL artifacts, contributed
+to the **Velociraptor Artifact Exchange**
 ([`Velocidex/velociraptor-docs`](https://github.com/Velocidex/velociraptor-docs),
 `content/exchange/artifacts/`).
 
