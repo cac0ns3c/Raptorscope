@@ -360,6 +360,18 @@ button {
   flex-direction: column;
   gap: 0.15rem;
   box-shadow: var(--shadow);
+  /* now a <button> — reset and add a drill-in affordance */
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.tile:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 .tile::before {
   content: "";
@@ -447,6 +459,10 @@ button {
   gap: 0.55rem;
 }
 .integrity li {
+  display: block;
+}
+.integrity-row {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -454,6 +470,14 @@ button {
   background: var(--surface-2);
   border: 1px solid var(--border-soft);
   border-radius: var(--r);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.integrity-row:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
 }
 .integrity .metric {
   color: var(--text-muted);
@@ -613,9 +637,38 @@ button {
   width: 15rem;
 }
 .detail-grid td {
-  padding: 0.4rem 1.1rem 0.4rem 0.6rem;
+  position: relative;
+  padding: 0.4rem 2.4rem 0.4rem 0.6rem;
   border-bottom: 1px solid var(--border-soft);
   word-break: break-word;
+}
+/* Per-field copy affordance: sits in the reserved right gutter, revealed on
+   row hover / keyboard focus so analysts can grab a hash/path/command. */
+.copy-btn {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.55rem;
+  opacity: 0;
+  display: grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.35rem;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1;
+  transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+.detail-grid tr:hover .copy-btn,
+.copy-btn:focus-visible {
+  opacity: 1;
+}
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--border-strong);
 }
 .detail-grid tr:hover td,
 .detail-grid tr:hover th {

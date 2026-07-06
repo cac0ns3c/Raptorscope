@@ -60,6 +60,13 @@ export function App() {
     setTab("artifacts");
   }
 
+  // Open a dataset in the Artifacts table (no specific row highlighted).
+  function openDataset(ds: string) {
+    setDataset(ds);
+    setHighlight(undefined);
+    setTab("artifacts");
+  }
+
   return (
     <div className="app">
       <a className="skip-link" href="#main">
@@ -143,7 +150,9 @@ export function App() {
           </nav>
 
           <div className="tab-body">
-            {tab === "overview" && <Overview caseName={selected.name} />}
+            {tab === "overview" && (
+              <Overview caseName={selected.name} onOpenDataset={openDataset} />
+            )}
 
             {tab === "artifacts" && (
               <div>

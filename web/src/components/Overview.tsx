@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
+import { fmtNum } from "../util/format";
 import { Markdown } from "../ui/Markdown";
 import { Iocs } from "./Iocs";
 
@@ -17,7 +18,13 @@ function loadSummary(c: string): string | undefined {
   }
 }
 
-export function Overview({ caseName }: { caseName: string }) {
+export function Overview({
+  caseName,
+  onOpenDataset,
+}: {
+  caseName: string;
+  onOpenDataset?: (dataset: string) => void;
+}) {
   const api = useApi();
   const aiEnabled = useAiEnabled();
   const [summary, setSummary] = useState<{ loading: boolean; text?: string }>();
@@ -94,10 +101,16 @@ export function Overview({ caseName }: { caseName: string }) {
 
       <div className="tiles">
         {Object.entries(data.datasets).map(([ds, count]) => (
-          <div className="tile" data-dataset={ds} key={ds}>
-            <span className="tile-count">{count}</span>
+          <button
+            className="tile"
+            data-dataset={ds}
+            key={ds}
+            onClick={() => onOpenDataset?.(ds)}
+            aria-label={`view ${count} ${ds.replace("macos.", "")} artifacts`}
+          >
+            <span className="tile-count">{fmtNum(count)}</span>
             <span className="tile-label">{ds.replace("macos.", "")}</span>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -123,21 +136,33 @@ export function Overview({ caseName }: { caseName: string }) {
           <h3>Signing integrity</h3>
           <ul className="integrity">
             <li>
-              <span className="metric">Unsigned processes</span>
-              <span className={`count ${data.unsigned.process ? "flag" : ""}`}>
-                {data.unsigned.process}
-              </span>
+              <button
+                className="integrity-row"
+                onClick={() => onOpenDataset?.("macos.process")}
+                aria-label={`view ${data.unsigned.process} unsigned processes`}
+              >
+                <span className="metric">Unsigned processes</span>
+                <span className={`count ${data.unsigned.process ? "flag" : ""}`}>
+                  {fmtNum(data.unsigned.process)}
+                </span>
+              </button>
             </li>
             <li>
-              <span className="metric">Unsigned applications</span>
-              <span
-                className={`count ${data.unsigned.inventory ? "flag" : ""}`}
+              <button
+                className="integrity-row"
+                onClick={() => onOpenDataset?.("macos.inventory")}
+                aria-label={`view ${data.unsigned.inventory} unsigned applications`}
               >
-                {data.unsigned.inventory}
-              </span>
+                <span className="metric">Unsigned applications</span>
+                <span
+                  className={`count ${data.unsigned.inventory ? "flag" : ""}`}
+                >
+                  {fmtNum(data.unsigned.inventory)}
+                </span>
+              </button>
             </li>
           </ul>
-          <p className="total-line">{data.total} documents total</p>
+          <p className="total-line">{fmtNum(data.total)} documents total</p>
         </div>
       </div>
     </section>

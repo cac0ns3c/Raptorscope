@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 import { Overview } from "./Overview";
 import { renderWithApi } from "../test/renderWithApi";
@@ -19,6 +19,24 @@ describe("Overview", () => {
     for (const t of ["launch_agent", "login_item", "cron", "config_profile", "btm"]) {
       expect(within(ptypes).getByText(t)).toBeInTheDocument();
     }
+  });
+
+  it("drills into a dataset when a tile is clicked", async () => {
+    const onOpenDataset = vi.fn();
+    renderWithApi(<Overview caseName="mac-victim" onOpenDataset={onOpenDataset} />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /view 12 persistence artifacts/i }),
+    );
+    expect(onOpenDataset).toHaveBeenCalledWith("macos.persistence");
+  });
+
+  it("drills into processes from the unsigned-process counter", async () => {
+    const onOpenDataset = vi.fn();
+    renderWithApi(<Overview caseName="mac-victim" onOpenDataset={onOpenDataset} />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /view 1 unsigned processes/i }),
+    );
+    expect(onOpenDataset).toHaveBeenCalledWith("macos.process");
   });
 
   it("shows unsigned counters and the document total", async () => {
