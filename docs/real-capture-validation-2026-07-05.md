@@ -16,7 +16,7 @@ is aggregate counts, column names, and the fixes the real data drove.
 | `MacOS.System.Packages` | 319 | installed apps |
 | `MacOS.Raptorscope.Netstat` | 66 | after the fix (0 before) |
 | `MacOS.System.TCC` | 114 | after granting FDA to the terminal (0 before) |
-| `MacOS.Raptorscope.ConfigProfiles` | **0** | `/var/db/ConfigurationProfiles/Store` is SIP/perm-protected |
+| `MacOS.Raptorscope.ConfigProfiles` | 0 | source rewritten to `profiles show`; host is unmanaged (0 profiles), so real-data validation still pending |
 | `MacOS.Raptorscope.BTM` | 7 | after the parser rewrite (0 before — regex didn't match real `dumpbtm`) |
 
 Ingested: **1898 docs** through the normalizers + 38 detections.
@@ -166,6 +166,37 @@ can't be read even with FDA/root (confirmed `Operation not permitted`), so it ne
 different source (`profiles show` / `system_profiler SPConfigurationProfileDataType`,
 both of which run without elevation) — and this host is unmanaged (zero profiles), so
 validating it needs a managed host or an installed test `.mobileconfig`.
+
+## ConfigProfiles collector rewritten to the supported source (logic validated, real-data pending)
+
+`MacOS.Raptorscope.ConfigProfiles` no longer globs the SIP-restricted on-disk store
+(unreadable by design). It now shells out to **`profiles show -output stdout-xml`** —
+the supported macOS CLI for reading installed profiles — parses the emitted plist in
+memory (`plist(accessor="data", …)`), flattens the top-level scope arrays
+(`_computerlevel`/`_userlevel`) to one row per profile, and derives a boolean `Signed`
+from `ProfileVerificationState = "verified"`. `profiles` runs without elevation for
+user profiles; as root (the usual Velociraptor client context) it also returns
+device-level profiles.
+
+Validation status — **honest caveat, unlike TCC/BTM:** this host is unmanaged (zero
+profiles), and installing a test `.mobileconfig` needs GUI approval, so the exact
+Apple plist key names could not be confirmed against a live populated host. What *was*
+validated:
+
+- The artifact **verifies clean** and **collects 0 rows without crashing** on the
+  empty host (the parse/flatten path is null-safe).
+- The full parse→flatten→project logic was exercised against a **schema-accurate
+  sample plist** (two profiles under `_computerlevel`, one `verified`, one
+  `unsigned`): it produced two correct rows, `Signed` true/false as expected, with the
+  right `PayloadType` from `ProfileItems[0]`.
+- Those rows flow through `normalize_config_profiles` and fire the
+  `unsigned configuration profile` detection **only** on the unsigned profile — the
+  intended behaviour. Guarded by `test_config_profiles_profiles_cli_columns`.
+
+So the collector is code-complete and logic-validated against Apple's documented
+schema; confirming the live field names remains a one-managed-host (or one installed
+test profile) task. **ConfigProfiles stays counted as pending real-data validation
+(7/8), not validated.**
 
 ## Guardrail
 

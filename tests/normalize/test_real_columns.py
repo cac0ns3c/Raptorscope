@@ -125,6 +125,31 @@ def test_processes_real_createtime_column():
     assert docs[0]["@timestamp"] == "2026-06-27T10:06:14Z"
 
 
+def test_config_profiles_profiles_cli_columns():
+    # Rewritten MacOS.Raptorscope.ConfigProfiles source (`profiles show -output
+    # stdout-xml`): ProfileIdentifier, PayloadType, InstallDate, and a boolean
+    # Signed derived from ProfileVerificationState ("verified" -> True). No OSPath.
+    from raptorscope.normalize.config_profiles import normalize_config_profiles
+
+    rows = [
+        {"ProfileIdentifier": "com.corp.mdm.wifi", "ProfileName": "Corp Wi-Fi",
+         "InstallDate": "2026-05-01T12:00:00Z", "PayloadType": "com.apple.wifi.managed",
+         "Signed": True},
+        {"ProfileIdentifier": "com.evil.filter", "ProfileName": "Web Filter",
+         "InstallDate": "2026-06-28T11:47:19Z",
+         "PayloadType": "com.apple.webcontent-filter", "Signed": False},
+    ]
+    docs = normalize_config_profiles(rows, HOST)
+    by = {d["raptorscope"]["persistence"]["label"]: d for d in docs}
+    wifi = by["com.corp.mdm.wifi"]
+    evil = by["com.evil.filter"]
+    assert wifi["raptorscope"]["persistence"]["signed"] is True
+    assert wifi["@timestamp"] == "2026-05-01T12:00:00Z"
+    assert wifi["raptorscope"]["time"]["source"] == "event"  # InstallDate is event time
+    assert evil["raptorscope"]["persistence"]["signed"] is False
+    assert evil["raptorscope"]["persistence"]["payload_type"] == "com.apple.webcontent-filter"
+
+
 def test_btm_real_dumpbtm_columns():
     # Real MacOS.Raptorscope.BTM output (validated 2026-07-05): Path is a decoded
     # filesystem path, DeveloperName is null for unsigned items or a real string,

@@ -13,8 +13,11 @@ from .ecs import ecs_base
 
 def normalize_config_profiles(rows: list[dict], host: dict) -> list[dict]:
     """Accepts both the synthetic fixture columns and the custom-VQL output
-    (``profiles -C``): ``OSPath``/``Path``, ``PayloadIdentifier``, ``Mtime``, and
-    a boolean ``Signed``. See profile/custom-vql/MacOS.Raptorscope.ConfigProfiles.yaml.
+    (``profiles show -output stdout-xml``): ``ProfileIdentifier``/
+    ``PayloadIdentifier``, ``InstallDate``/``Mtime``, ``PayloadType``, and a boolean
+    ``Signed`` (from the profile's verification state). The legacy on-disk source
+    also carried ``OSPath``/``SignerCN``. See
+    profile/custom-vql/MacOS.Raptorscope.ConfigProfiles.yaml.
     """
     docs = []
     for r in rows:
