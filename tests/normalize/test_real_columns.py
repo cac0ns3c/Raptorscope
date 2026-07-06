@@ -125,6 +125,50 @@ def test_processes_real_createtime_column():
     assert docs[0]["@timestamp"] == "2026-06-27T10:06:14Z"
 
 
+def test_btm_real_dumpbtm_columns():
+    # Real MacOS.Raptorscope.BTM output (validated 2026-07-05): Path is a decoded
+    # filesystem path, DeveloperName is null for unsigned items or a real string,
+    # Disabled is a genuine boolean parsed from the disposition token, and there is
+    # no Hash. A disabled item must normalize to run_at_load=False.
+    from raptorscope.normalize.btm import normalize_btm
+
+    rows = [
+        {"Path": "/Applications/GarageBand.app/", "ItemName": "GarageBand",
+         "DeveloperName": None, "Disabled": True, "Type": "app (0x2)",
+         "UUID": "7DF1163B", "Identifier": "2.com.apple.garageband10",
+         "Mtime": "2026-01-28T14:07:40Z"},
+        {"Path": "/Users/x/Library/LaunchAgents/com.google.GoogleUpdater.wake.plist",
+         "ItemName": "GoogleUpdater", "DeveloperName": "Google LLC", "Disabled": False,
+         "Type": "legacy agent (0x10008)", "UUID": "50B469A1",
+         "Identifier": "8.com.google.GoogleUpdater.wake", "Mtime": "2026-03-05T18:51:32Z"},
+    ]
+    docs = normalize_btm(rows, HOST)
+    by = {d["raptorscope"]["persistence"]["label"]: d for d in docs}
+    gb = by["GarageBand"]["raptorscope"]["persistence"]
+    gu = by["GoogleUpdater"]["raptorscope"]["persistence"]
+    assert gb["run_at_load"] is False  # Disabled True -> not run at load
+    assert gb["developer"] is None
+    assert gu["run_at_load"] is True
+    assert gu["developer"] == "Google LLC"
+    assert by["GoogleUpdater"]["process"]["executable"].endswith(".wake.plist")
+    assert by["GarageBand"]["@timestamp"] == "2026-01-28T14:07:40Z"
+
+
+def test_btm_disposition_string_is_not_coerced():
+    # Defense-in-depth: if the raw disposition token ever leaks as Disabled (a
+    # string), bool("[enabled, …]") would be True and flip run_at_load. The
+    # normalizer must inspect the token, not coerce it.
+    from raptorscope.normalize.btm import normalize_btm
+
+    rows = [
+        {"Path": "/a", "ItemName": "on", "Disabled": "[enabled, allowed, notified] (0xb)"},
+        {"Path": "/b", "ItemName": "off", "Disabled": "[disabled, allowed, notified] (0xa)"},
+    ]
+    by = {d["raptorscope"]["persistence"]["label"]: d for d in normalize_btm(rows, HOST)}
+    assert by["on"]["raptorscope"]["persistence"]["run_at_load"] is True
+    assert by["off"]["raptorscope"]["persistence"]["run_at_load"] is False
+
+
 def test_tcc_real_string_encodings():
     # Real MacOS.System.TCC emits STRINGS, not the fixture's ints: Allowed is
     # "Yes"/"No" (note bool("No") is True — the old code flipped every deny to

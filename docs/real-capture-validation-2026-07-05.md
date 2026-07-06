@@ -17,7 +17,7 @@ is aggregate counts, column names, and the fixes the real data drove.
 | `MacOS.Raptorscope.Netstat` | 66 | after the fix (0 before) |
 | `MacOS.System.TCC` | 114 | after granting FDA to the terminal (0 before) |
 | `MacOS.Raptorscope.ConfigProfiles` | **0** | `/var/db/ConfigurationProfiles/Store` is SIP/perm-protected |
-| `MacOS.Raptorscope.BTM` | **hung** | `sfltool dumpbtm` did not return (needs privileges / a timeout) |
+| `MacOS.Raptorscope.BTM` | 7 | after the parser rewrite (0 before — regex didn't match real `dumpbtm`) |
 
 Ingested: **1898 docs** through the normalizers + 38 detections.
 
@@ -123,6 +123,49 @@ int-shape fixture test.
 So the fix removes 5 deny-flip false positives *and* makes the `path_client_grant`
 rule reachable on real data (it was structurally dead). **6 of 8 collectors are now
 validated on real data.**
+
+## BTM validated — the "hang" was a parser bug, not a hang
+
+Re-testing `sfltool dumpbtm` disproved the earlier "hung" finding: it returns in
+2–5s, exit 0, on every run. The 30s shell-kill guard stays as a cheap backstop, but
+it was never the blocker. The real blocker was the **parser** — the artifact's regex
+was written against an assumed `dumpbtm` format and matched **0** records of the real
+output:
+
+- It anchored on a bare `Path:` field; real items have no `Path:` line — they carry
+  `URL:` (a `file://…` path) and, on legacy agents only, `Executable Path:`.
+- Its assumed field order (`Path → Name → Developer Name → Disposition`) doesn't
+  match the real block (`UUID → Name → Developer Name → Team Identifier → Type →
+  Flags → Disposition → Identifier → URL → …`).
+
+There was also a **latent normalizer bug of the same class as the TCC deny-flip**:
+the regex captured `Disposition:` as the whole string `[disabled, allowed, notified]
+(0xa)`, and `normalize_btm` did `not bool(r["Disabled"])` — `bool("[disabled…]")` is
+always `True`, so *every* item would have normalized to `run_at_load=False`.
+
+**The fix** (`profile/custom-vql/MacOS.Raptorscope.BTM.yaml`) rewrites the parser to
+anchor each record on `UUID:` (embedded sub-records that start with `Identifier:` are
+skipped) and pull fields by label with non-greedy gaps so optional fields don't break
+the parse. It derives a clean `Path` from `url(parse=URL).Path` (url-decoded), a
+**real boolean** `Disabled` from `Disposition =~ "disabled"`, a best-effort `Mtime`
+by stat-ing absolute paths, and collapses a `(null)` developer to NULL. The
+normalizer's `Disabled` handling is hardened to inspect string tokens too
+(`_is_disabled`), closing the coercion trap.
+
+Real result: **7 items** collected (GarageBand + its extensions, LogicX importer, two
+GoogleUpdater entries), `velociraptor artifacts verify` clean, and `normalize_btm`
+produces correct `run_at_load` (GarageBand + GoogleUpdater apps disabled; extensions
+and the legacy agent enabled) with real `@timestamp`s. The `btm_unsigned` detection
+is path-gated (`/tmp`, `/Users/Shared`) so it correctly does not fire on these
+system/user items. Guarded by `test_btm_real_dumpbtm_columns` and
+`test_btm_disposition_string_is_not_coerced`.
+
+**7 of 8 collectors are now validated on real data.** The only remaining gap is
+`ConfigProfiles`: its glob of the SIP-restricted `…/ConfigurationProfiles/Store`
+can't be read even with FDA/root (confirmed `Operation not permitted`), so it needs a
+different source (`profiles show` / `system_profiler SPConfigurationProfileDataType`,
+both of which run without elevation) — and this host is unmanaged (zero profiles), so
+validating it needs a managed host or an installed test `.mobileconfig`.
 
 ## Guardrail
 

@@ -14,8 +14,8 @@ description: |
   Keywords: persistence, launchd, login items, btm, sfltool, macOS. MITRE T1543 / T1547.
 
   ### Output
-  One row per BTM item (Path, ItemName, DeveloperName, Disabled, Type, UUID, Hash,
-  Mtime). Consumed by raptorscope's `normalize_btm` (stem `btm_items`).
+  One row per BTM item (Path, ItemName, DeveloperName, Disabled, Type, UUID,
+  Identifier, Mtime). Consumed by raptorscope's `normalize_btm` (stem `btm_items`).
 type: CLIENT
 reference:
   - https://attack.mitre.org/techniques/T1547/015/
@@ -27,25 +27,40 @@ sources:
   - name: BTM
     precondition: SELECT OS FROM info() WHERE OS = 'darwin'
     query: |
-      -- Bound the run: `sfltool dumpbtm` can hang without privileges, and macOS
-      -- has no `timeout` binary, so wrap it in a shell background-kill (30s). It
-      -- degrades to empty output instead of stalling the whole collection.
+      -- Bound the run: `sfltool dumpbtm` can be slow, and macOS has no `timeout`
+      -- binary, so wrap it in a shell background-kill (30s). It degrades to empty
+      -- output instead of stalling the whole collection.
       LET dump = SELECT Stdout FROM execve(argv=["/bin/sh", "-c",
         "sfltool dumpbtm & P=$!; (sleep 30; kill -9 $P 2>/dev/null) & K=$!; wait $P 2>/dev/null; kill $K 2>/dev/null"])
-      -- One record per BTM item; fields parsed from the dumpbtm block.
-      SELECT
-        Path,
-        ItemName,
-        DeveloperName,
-        Disabled,
-        Type,
-        UUID,
-        Hash,
-        Mtime
-      FROM parse_records_with_regex(
+      -- One record per BTM item. Real `dumpbtm` output is a labelled block per
+      -- item; each full item starts with `UUID:` (embedded sub-records start with
+      -- `Identifier:` and are skipped). Anchor on UUID and pull fields by label
+      -- with non-greedy gaps so optional fields (e.g. `Executable Path:`, present
+      -- only on legacy agents) don't break the parse. Regex/format validated
+      -- against real macOS output 2026-07-05.
+      LET items = SELECT * FROM parse_records_with_regex(
         accessor="data",
         file=dump.Stdout,
-        regex="(?ms)Path:\\s+(?P<Path>.+?)\\n.+?"
-              + "Name:\\s+(?P<ItemName>.+?)\\n.+?"
-              + "Developer Name:\\s+(?P<DeveloperName>.+?)\\n.+?"
-              + "Disposition:\\s+(?P<Disabled>.+?)\\n")
+        regex="(?sm)^\\s*UUID:\\s+(?P<UUID>\\S+).*?"
+              + "^\\s*Name:\\s+(?P<ItemName>.+?)\\s*$.*?"
+              + "^\\s*Developer Name:\\s+(?P<DeveloperName>.+?)\\s*$.*?"
+              + "^\\s*Type:\\s+(?P<Type>.+?)\\s*$.*?"
+              + "^\\s*Disposition:\\s+(?P<Disposition>.+?)\\s*$.*?"
+              + "^\\s*Identifier:\\s+(?P<Identifier>.+?)\\s*$.*?"
+              + "^\\s*URL:\\s+(?P<URL>.+?)\\s*$")
+      -- Derive a clean filesystem Path from the (url-encoded) URL; a real boolean
+      -- Disabled from the disposition token; and a best-effort Mtime by stat-ing
+      -- absolute paths. `(null)` developer collapses to NULL.
+      SELECT
+        url(parse=URL).Path AS Path,
+        ItemName,
+        if(condition=DeveloperName = "(null)", then=NULL, else=DeveloperName)
+          AS DeveloperName,
+        Disposition =~ "disabled" AS Disabled,
+        Type,
+        UUID,
+        Identifier,
+        if(condition=url(parse=URL).Path =~ "^/",
+           then=timestamp(epoch=stat(filename=url(parse=URL).Path).Mtime),
+           else=NULL) AS Mtime
+      FROM items
