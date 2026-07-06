@@ -10,7 +10,7 @@ triage. **Offline-first** — a bundled sample case runs with zero infrastructur
 and **scale-ready** — Elasticsearch with native detection, aggregations, and deep
 pagination.
 
-`38 detections` · `314 tests` · `dual detection engines, 0-divergence parity` ·
+`38 detections` · `318 tests` · `dual detection engines, 0-divergence parity` ·
 `Claude-powered triage` · `RBAC + audit + metrics` · `CI: unit · live-ES · e2e ·
 supply-chain`
 
@@ -40,7 +40,7 @@ Architecture: below
   custom VQL where no built-in exists (config profiles, BTM, signature
   enrichment), timestamp provenance (mtime vs. event), and documented
   synthetic-vs-real gaps.
-- **Engineering rigor** — 260 Python + 54 web tests incl. property/fuzz tests; CI
+- **Engineering rigor** — 264 Python + 54 web tests incl. property/fuzz tests; CI
   runs unit, a **live-Elasticsearch integration** job, **Playwright e2e**, and
   **supply-chain scanning** (pip-audit · npm-audit · SBOM · Trivy).
 

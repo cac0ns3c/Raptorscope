@@ -28,9 +28,18 @@ sources:
   - name: Netstat
     precondition: SELECT OS FROM info() WHERE OS = 'darwin'
     query: |
-      SELECT Pid, Name, Family, Type, Status,
+      -- Live-capture reality (verified against a real Mac): netstat() carries no
+      -- process name (only Pid), and Family/Type are integers — so resolve the
+      -- executable via Pslist and use the *String forms (IPv4/TCP), and Status is
+      -- "ESTAB"/"LISTEN".
+      LET procs <= SELECT Pid AS P, Exe AS E FROM Artifact.MacOS.Sys.Pslist()
+      LET lut <= memoize(query=procs, key="P")
+      SELECT Pid,
+             basename(path=get(item=lut, field=format(format="%v", args=Pid)).E) AS Name,
+             get(item=lut, field=format(format="%v", args=Pid)).E AS Exe,
+             FamilyString AS Family, TypeString AS Type, Status,
              Laddr.IP AS LocalIP, Laddr.Port AS LocalPort,
              Raddr.IP AS RemoteIP, Raddr.Port AS RemotePort,
              timestamp(epoch=now()) AS Timestamp
       FROM netstat()
-      WHERE Family =~ "INET"   -- IPv4/IPv6 only; drop unix domain sockets
+      WHERE FamilyString =~ "IPv"   -- IPv4/IPv6 only; drop unix domain sockets

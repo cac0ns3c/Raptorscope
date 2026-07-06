@@ -95,3 +95,42 @@ def test_btm_custom_vql_columns():
     assert p["run_at_load"] is True  # not disabled
     assert p["hash"] == "deadbeef"
     assert doc["process"]["executable"] == "/private/tmp/.x/helperd"
+
+
+# --- shapes confirmed against a LIVE capture (velociraptor v0.77.1, macOS) ---
+def test_inventory_real_signedby_is_a_cert_chain_list():
+    # Real MacOS.System.Packages emits SignedBy as a cert chain (list, leaf-first);
+    # the leaf authority is the developer. Regression: this used to crash with
+    # "unhashable type: 'list'".
+    rows = [
+        {"Name": "App", "Path": "/Applications/App.app", "LastModified": "2026-01-01T00:00:00Z",
+         "SignedBy": ["Developer ID Application: Acme (ABC123)", "Apple Intermediate", "Apple Root"]},
+        {"Name": "Bare", "Path": "/Users/x/Downloads/Bare.app", "LastModified": "2026-01-01T00:00:00Z",
+         "SignedBy": []},
+    ]
+    docs = normalize_inventory(rows, HOST)
+    by = {d["raptorscope"]["app"]["name"]: d for d in docs}
+    assert by["App"]["raptorscope"]["app"]["signed"] is True
+    assert by["App"]["process"]["code_signature"]["subject_name"].startswith("Developer ID")
+    assert by["Bare"]["raptorscope"]["app"]["signed"] is False
+
+
+def test_processes_real_createtime_column():
+    # Real MacOS.Sys.Pslist emits `CreateTime` (not Mtime/CreatedTime); @timestamp
+    # was silently empty on real captures before this.
+    docs = normalize_processes(
+        [{"Pid": "1", "Name": "launchd", "Exe": "/sbin/launchd", "CommandLine": "launchd",
+          "CreateTime": "2026-06-27T10:06:14Z"}], HOST)
+    assert docs[0]["@timestamp"] == "2026-06-27T10:06:14Z"
+
+
+def test_network_real_estab_status_is_egress():
+    # Real netstat() Status is "ESTAB" (not "ESTABLISHED"); direction must still
+    # resolve to egress for a non-loopback peer.
+    from raptorscope.normalize.network import normalize_network
+    d = normalize_network(
+        [{"Pid": 5, "Name": "curl", "Family": "IPv4", "Type": "TCP", "Status": "ESTAB",
+          "LocalIP": "192.168.1.2", "LocalPort": 51000,
+          "RemoteIP": "45.9.148.99", "RemotePort": 443}], HOST)[0]
+    assert d["network"]["direction"] == "egress"
+    assert d["raptorscope"]["network"]["state"] == "ESTAB"

@@ -17,8 +17,11 @@ def normalize_inventory(rows: list[dict], host: dict) -> list[dict]:
     docs = []
     for r in rows:
         path = r.get("Path") or ""
-        # SignerCN = synthetic; SignedBy = real MacOS.System.Packages.
+        # SignerCN = synthetic; SignedBy = real MacOS.System.Packages, which is a
+        # cert chain (list, leaf-first) — the leaf authority is the developer.
         signer = r.get("SignerCN") or r.get("SignedBy")
+        if isinstance(signer, list):
+            signer = signer[0] if signer else None
         signed = signer not in _UNSIGNED
 
         doc = ecs_base(host, "macos.inventory", category=["package"], type_=["info"])

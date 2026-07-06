@@ -15,7 +15,12 @@ detection:
     raptorscope.app.signed: false
   filter_applications:
     file.path|startswith: /Applications/
-  condition: selection and not filter_applications
+  # Live capture: /System/Library, /Library/Application Support, and ~/Library all
+  # legitimately hold bundles that Packages reports without a Developer-ID signer.
+  # Malware drops land in Downloads/tmp/Shared, not a Library tree.
+  filter_library:
+    file.path|contains: /Library/
+  condition: selection and not filter_applications and not filter_library
 falsepositives:
   - Developer builds and portable apps run from a home directory
 level: medium

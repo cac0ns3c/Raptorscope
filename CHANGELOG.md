@@ -3,6 +3,21 @@
 All notable changes to Raptorscope. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## [Unreleased]
+
+### Real-world fidelity — first live-capture validation
+- Ran the full pipeline against a **real** macOS host (Velociraptor v0.77.1) — the
+  validation blocked all along. Fixed three bugs only real data exposed:
+  `normalize_inventory` crashing on a list-valued `SignedBy` (cert chain), empty
+  `@timestamp` from Pslist's real `CreateTime` column, and the Netstat artifact's
+  integer `Family`/`Type` + missing process name (fixed via `FamilyString`/
+  `TypeString` + a Pslist join, re-verified with `velociraptor artifacts verify`).
+- Drove the clean-host **false-positive count 14 → 3** by tightening the
+  unsigned-app rule (exclude `/Library/` trees) and the suspicious-path rule (drop
+  the noisy `command_line` `/tmp/` branch). Regression tests lock the real column
+  shapes; no personal capture data is committed. See
+  `docs/real-capture-validation-2026-07-05.md`.
+
 ## [0.3.0] — 2026-07-05
 
 ### New dataset — `macos.network`

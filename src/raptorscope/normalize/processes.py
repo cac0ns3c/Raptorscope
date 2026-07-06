@@ -15,8 +15,11 @@ def normalize_processes(rows: list[dict], host: dict) -> list[dict]:
         exe = r.get("Exe") or ""
 
         doc = ecs_base(host, "macos.process", category=["process"], type_=["info"])
-        # Mtime = synthetic; CreatedTime = real MacOS.Sys.Pslist (Linux.Sys.Pslist).
-        doc["@timestamp"] = r.get("Mtime") or r.get("CreatedTime") or ""
+        # Mtime = synthetic; real MacOS.Sys.Pslist emits `CreateTime` (verified
+        # against a live capture), older/Linux variants `CreatedTime`.
+        doc["@timestamp"] = (
+            r.get("Mtime") or r.get("CreateTime") or r.get("CreatedTime") or ""
+        )
         if exe:
             doc["file"] = {"path": exe, "name": os.path.basename(exe)}
 

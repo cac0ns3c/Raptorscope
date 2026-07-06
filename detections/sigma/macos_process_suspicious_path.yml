@@ -16,10 +16,12 @@ detection:
       - /tmp/
       - /Users/Shared/
   # Also catch interpreter-staged payloads (e.g. `bash /tmp/x.sh`).
+  # Real processes legitimately reference /tmp/ in argv (temp files, sockets) —
+  # a live-capture FP source — so the command-line branch keys only on the rarer
+  # /Users/Shared/. Running *from* /tmp is still caught by `selection` below.
   selection_cmd:
     event.dataset: macos.process
     process.command_line|contains:
-      - /tmp/
       - /Users/Shared/
   # Drop signed Installer/updater temp execs; degrades safely when signature
   # is absent (real Pslist), where the rule stays path-only.
