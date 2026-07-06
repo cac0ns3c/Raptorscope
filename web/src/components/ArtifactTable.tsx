@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Doc } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
 import { buildCsv, download } from "../util/tabular";
@@ -39,7 +40,7 @@ export function ArtifactTable({
     setSort(null);
   }, [caseName, dataset]);
 
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getArtifacts(caseName, dataset, { limit: 100000 }),
     [caseName, dataset],
   );
@@ -54,9 +55,14 @@ export function ArtifactTable({
     );
   }, [data, sort]);
 
-  if (loading) return <p className="muted">Loading {dataset}…</p>;
-  if (error || !data) return <p className="error">Failed to load {dataset}.</p>;
-  if (data.total === 0) return <p className="muted">No {dataset} events.</p>;
+  const shortDs = dataset.replace("macos.", "");
+  if (loading) return <State variant="loading" message={`Loading ${shortDs}…`} />;
+  if (error || !data)
+    return (
+      <State variant="error" message={`Failed to load ${shortDs}.`} onRetry={reload} />
+    );
+  if (data.total === 0)
+    return <State variant="empty" message={`No ${shortDs} events.`} />;
 
   const from = offset + 1;
   const to = Math.min(offset + pageSize, data.total);

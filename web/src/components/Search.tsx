@@ -7,6 +7,7 @@ import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { IconSearch } from "../ui/icons";
+import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
 
@@ -255,18 +256,14 @@ export function Search({
           <b>?</b> for query help.
         </p>
       )}
-      {query && loading && (
-        <div className="state">
-          <span className="spinner" /> Searching…
-        </div>
-      )}
+      {query && loading && <State variant="loading" message="Searching…" />}
       {query && !loading && data && (
         <>
           <p className="q-count muted" role="status" aria-live="polite">
             {data.total} {data.total === 1 ? "result" : "results"}
           </p>
           {data.total === 0 ? (
-            <p className="muted">No documents match.</p>
+            <State variant="empty" message="No documents match your query." />
           ) : (
             <div className="artifact-view">
               <div className="table-scroll">

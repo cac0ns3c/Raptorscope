@@ -26,13 +26,18 @@
   --accent-strong: #3b82f6;
   --accent-soft: rgba(110, 168, 254, 0.14);
 
-  /* severity */
+  /* severity — low is informational (blue-grey), kept distinct from the green
+     success/pass semantics (`--ok`) so a low finding doesn't read as "safe". */
   --sev-high: #ff6b7a;
   --sev-medium: #f5b13c;
-  --sev-low: #34d399;
+  --sev-low: #8aa0c0;
   --sev-high-bg: rgba(255, 107, 122, 0.13);
   --sev-medium-bg: rgba(245, 177, 60, 0.14);
-  --sev-low-bg: rgba(52, 211, 153, 0.14);
+  --sev-low-bg: rgba(138, 160, 192, 0.16);
+
+  /* success / pass (signed, all-clear, acknowledged) */
+  --ok: #34d399;
+  --ok-bg: rgba(52, 211, 153, 0.14);
 
   /* dataset accents */
   --ds-persistence: #8b8cf5;
@@ -48,6 +53,22 @@
   --pill: 999px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
+
+  /* type scale — the discrete set every font-size should snap to (adopt
+     incrementally; new UI uses these instead of ad-hoc rem values). */
+  --fs-xs: 0.72rem;
+  --fs-sm: 0.8rem;
+  --fs-base: 0.86rem;
+  --fs-md: 0.92rem;
+  --fs-lg: 1.1rem;
+
+  /* spacing scale — snap gaps/padding to these steps. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.7rem;
+  --sp-4: 0.9rem;
+  --sp-5: 1.2rem;
+  --sp-6: 1.6rem;
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
@@ -75,10 +96,12 @@
      fail contrast on white); keep them distinct from the green success pills. */
   --sev-high: #c62537;
   --sev-medium: #9a5a00;
-  --sev-low: #0d7a54;
+  --sev-low: #4a6489;
   --sev-high-bg: rgba(220, 60, 74, 0.12);
   --sev-medium-bg: rgba(200, 130, 20, 0.14);
-  --sev-low-bg: rgba(20, 160, 110, 0.14);
+  --sev-low-bg: rgba(74, 100, 140, 0.14);
+  --ok: #0d7a54;
+  --ok-bg: rgba(20, 160, 110, 0.14);
   --topbar-bg: rgba(255, 255, 255, 0.85);
   --row-hover: rgba(20, 30, 60, 0.05);
   --shadow: 0 1px 2px rgba(20, 30, 60, 0.06), 0 8px 24px -14px rgba(20, 30, 60, 0.2);
@@ -233,7 +256,7 @@ button {
 }
 .case-context .host-name {
   font-weight: 600;
-  font-size: 0.86rem;
+  font-size: var(--fs-base);
 }
 .case-context .btn-change {
   background: var(--surface-3);
@@ -284,7 +307,7 @@ button {
   color: var(--sev-high);
 }
 .good {
-  color: var(--sev-low);
+  color: var(--ok);
 }
 
 /* ---------- segmented tabs ---------- */
@@ -388,7 +411,7 @@ button {
 }
 .tile-label {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   text-transform: capitalize;
 }
 
@@ -429,7 +452,7 @@ button {
 }
 .kv li > span:first-child {
   color: var(--text-muted);
-  font-size: 0.86rem;
+  font-size: var(--fs-base);
   text-transform: capitalize;
 }
 .kv li > span:last-child {
@@ -617,7 +640,7 @@ button {
 .drawer-id {
   color: var(--text-dim);
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 .drawer-head .docs-close {
   margin-left: auto;
@@ -690,7 +713,7 @@ button {
   background: var(--surface-2);
   color: var(--text-dim);
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
@@ -723,20 +746,20 @@ button {
 }
 .grid .mono {
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 .pill {
   display: inline-block;
   padding: 0.08rem 0.5rem;
   border-radius: var(--pill);
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   border: 1px solid transparent;
 }
 .pill-yes {
-  color: var(--sev-low);
-  background: var(--sev-low-bg);
+  color: var(--ok);
+  background: var(--ok-bg);
 }
 .pill-no {
   color: var(--sev-high);
@@ -842,7 +865,7 @@ button {
 }
 .timeline-row .summary {
   color: var(--text-muted);
-  font-size: 0.86rem;
+  font-size: var(--fs-base);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -933,8 +956,8 @@ button {
   padding: 0.08rem 0.45rem;
 }
 .triage-tag.ack {
-  color: var(--sev-low);
-  background: var(--sev-low-bg);
+  color: var(--ok);
+  background: var(--ok-bg);
 }
 .triage-tag.dismissed {
   color: var(--text-dim);
@@ -1004,7 +1027,7 @@ button {
 }
 .alert-title {
   font-weight: 620;
-  font-size: 0.92rem;
+  font-size: var(--fs-md);
   /* real <button>, reset to look like text; ::after stretches over the whole
      card so the card stays clickable without wrapping the action controls. */
   background: none;
@@ -1154,7 +1177,7 @@ button {
 }
 .case-meta {
   color: var(--text-dim);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 .case-meta b {
   color: var(--text-muted);
@@ -1180,7 +1203,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
   background: var(--surface-3);
   border: 1px solid var(--border-soft);
@@ -1204,7 +1227,7 @@ button {
 }
 .empty-cases code {
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   background: var(--surface-2);
   border: 1px solid var(--border-soft);
   border-radius: var(--r-sm);
@@ -1287,7 +1310,7 @@ button {
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
 }
 .field-filter select,
 .field-filter input {
@@ -1403,7 +1426,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-dim);
@@ -1557,7 +1580,7 @@ button {
   flex-direction: column;
   gap: 0.3rem;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 .login-card input {
@@ -1615,7 +1638,7 @@ button {
 }
 .ioc-value {
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 .ioc-context {
   color: var(--text-dim);
@@ -1672,7 +1695,7 @@ button {
 }
 .hunt-host-meta {
   margin-left: auto;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
 }
 
@@ -1718,7 +1741,7 @@ button {
   padding: 0.7rem 1rem;
 }
 .ai-panel .markdown {
-  font-size: 0.86rem;
+  font-size: var(--fs-base);
 }
 .ai-summary {
   margin-bottom: 1.2rem;
@@ -1755,7 +1778,7 @@ button {
   border-top: 1px solid var(--border-soft);
 }
 .citations-label {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-dim);
@@ -1807,8 +1830,29 @@ button {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: var(--sev-low);
+  color: var(--ok);
   padding: 1.5rem 0;
+}
+.state-empty {
+  color: var(--text-muted);
+}
+.state-error {
+  color: var(--sev-high);
+}
+.state-error svg {
+  color: var(--sev-high);
+}
+.btn-retry {
+  margin-left: 0.6rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--r-sm);
+  padding: 0.2rem 0.75rem;
+  font-size: var(--fs-sm);
+}
+.btn-retry:hover {
+  border-color: var(--border-strong);
 }
 
 @media (max-width: 720px) {

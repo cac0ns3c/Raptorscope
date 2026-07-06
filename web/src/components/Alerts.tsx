@@ -6,8 +6,9 @@ import { useApi } from "../context/ApiContext";
 import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { triageKey, useTriage } from "../hooks/useTriage";
-import { IconAlert, IconShieldCheck } from "../ui/icons";
+import { IconAlert } from "../ui/icons";
 import { Markdown } from "../ui/Markdown";
+import { State } from "../ui/State";
 
 type AiState = Record<string, { loading: boolean; text?: string }>;
 const aiTriageKey = (c: string) => `rs_triage:${c}`;
@@ -82,24 +83,19 @@ export function Alerts({
         })),
       );
   }
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getAlerts(caseName),
     [caseName],
   );
 
-  if (loading)
+  if (loading) return <State variant="loading" message="Loading alerts…" />;
+  if (error || !data)
     return (
-      <div className="state">
-        <span className="spinner" /> Loading alerts…
-      </div>
+      <State variant="error" message="Failed to load alerts." onRetry={reload} />
     );
-  if (error || !data) return <p className="error">Failed to load alerts.</p>;
   if (data.length === 0)
     return (
-      <div className="empty-clear">
-        <IconShieldCheck />
-        No detections fired for this case.
-      </div>
+      <State variant="empty" tone="clear" message="No detections fired for this case." />
     );
 
   const keyed = data.map((a) => ({ a, key: triageKey(caseName, a) }));

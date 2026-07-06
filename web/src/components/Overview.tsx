@@ -6,6 +6,7 @@ import { useAiEnabled } from "../hooks/useAiEnabled";
 import { useAsync } from "../hooks/useAsync";
 import { fmtNum } from "../util/format";
 import { Markdown } from "../ui/Markdown";
+import { State } from "../ui/State";
 import { Iocs } from "./Iocs";
 
 const summaryKey = (c: string) => `rs_summary:${c}`;
@@ -36,7 +37,7 @@ export function Overview({
     setSummary(cached ? { loading: false, text: cached } : undefined);
   }, [caseName]);
 
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getOverview(caseName),
     [caseName],
   );
@@ -65,13 +66,15 @@ export function Overview({
       );
   }
 
-  if (loading)
+  if (loading) return <State variant="loading" message="Loading overview…" />;
+  if (error || !data)
     return (
-      <div className="state">
-        <span className="spinner" /> Loading overview…
-      </div>
+      <State
+        variant="error"
+        message="Failed to load the overview."
+        onRetry={reload}
+      />
     );
-  if (error || !data) return <p className="error">Failed to load overview.</p>;
 
   const maxType = Math.max(1, ...Object.values(data.persistence_types));
 

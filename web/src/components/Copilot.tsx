@@ -63,7 +63,7 @@ export function Copilot({ caseName }: { caseName: string }) {
 
       {error && <p className="error">{error}</p>}
       {showResult && (
-        <div className="copilot-result">
+        <div className="copilot-result" aria-live="polite" aria-busy={busy}>
           {citations.length > 0 && (
             <div className="citations">
               <span className="citations-label">
@@ -85,7 +85,7 @@ export function Copilot({ caseName }: { caseName: string }) {
         </div>
       )}
       {busy && !answer && (
-        <div className="state">
+        <div className="state" role="status">
           <span className="spinner" /> The copilot is gathering evidence…
         </div>
       )}

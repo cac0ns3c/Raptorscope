@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { Timeline } from "./Timeline";
 import { renderWithApi } from "../test/renderWithApi";
@@ -26,6 +27,25 @@ describe("Timeline", () => {
       getTimeline: async () => [],
     };
     renderWithApi(<Timeline caseName="mac-victim" />, client);
-    expect(await screen.findByText("No events.")).toBeInTheDocument();
+    expect(await screen.findByText(/no events/i)).toBeInTheDocument();
+  });
+
+  it("shows an error with Retry that re-fetches and recovers", async () => {
+    const real = (await import("../test/fakeClient")).makeFakeClient();
+    let calls = 0;
+    const client = {
+      ...real,
+      getTimeline: async (...args: Parameters<typeof real.getTimeline>) => {
+        calls += 1;
+        if (calls === 1) throw new Error("boom");
+        return real.getTimeline(...args);
+      },
+    };
+    renderWithApi(<Timeline caseName="mac-victim" />, client);
+    // first load fails -> error state with an actionable Retry
+    const retry = await screen.findByRole("button", { name: /retry/i });
+    await userEvent.click(retry);
+    // second load succeeds -> timeline renders
+    expect(await screen.findByLabelText("timeline")).toBeInTheDocument();
   });
 });

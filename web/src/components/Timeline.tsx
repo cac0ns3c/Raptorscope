@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
 
 export function Timeline({
@@ -13,19 +14,18 @@ export function Timeline({
   onPivot?: (dataset: string, docId: string) => void;
 }) {
   const api = useApi();
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getTimeline(caseName, limit),
     [caseName, limit],
   );
 
-  if (loading)
+  if (loading) return <State variant="loading" message="Loading timeline…" />;
+  if (error || !data)
     return (
-      <div className="state">
-        <span className="spinner" /> Loading timeline…
-      </div>
+      <State variant="error" message="Failed to load the timeline." onRetry={reload} />
     );
-  if (error || !data) return <p className="error">Failed to load timeline.</p>;
-  if (data.length === 0) return <p className="muted">No events.</p>;
+  if (data.length === 0)
+    return <State variant="empty" message="No events in this case." />;
 
   return (
     <ol className="timeline" aria-label="timeline">
