@@ -64,6 +64,30 @@ Both tunings keep the paired fixtures green (malicious fires, benign silent).
 - **`netstat()` gives no process name** — resolved via a Pslist join, but that
   makes the artifact depend on Pslist being collectable.
 
+## Privileged re-run (TCC / ConfigProfiles / BTM)
+
+A second pass with `sudo` (root) to collect the three that came back empty. Result:
+**still 0 rows for all three** — and the reasons are now confirmed, not guessed:
+
+- **TCC** — `MacOS.System.TCC` opens `…/com.apple.TCC/TCC.db` with `sqlite()`. The
+  user TCC.db exists and is owner-readable, but **TCC protects TCC.db from every
+  process without Full Disk Access, root included.** `sudo` does not help; the
+  Velociraptor *binary* must be granted FDA (System Settings → Privacy & Security →
+  Full Disk Access, or a PPPC/MDM profile in a real fleet). This is the standard
+  Velociraptor deployment requirement.
+- **ConfigProfiles** — `/var/db/ConfigurationProfiles/Store` is SIP-protected even
+  from root.
+- **BTM** — `sfltool dumpbtm` **hangs** (verified interactively: 40s+ with no
+  output), independent of privilege. The 30s background-kill added to the artifact
+  is the right mitigation (it degrades to empty instead of stalling the whole
+  collection), but real BTM coverage needs a different source than `sfltool` on
+  this macOS build.
+
+**Bottom line:** 5 of 8 collectors are validated on real data; the remaining 3 are
+gated by macOS protections (FDA/SIP) or broken host tooling (`sfltool`), not by the
+pipeline. Validating TCC on real data is a one-time FDA grant away; ConfigProfiles
+and BTM need a privileged/alternate collection method.
+
 ## Guardrail
 
 No process list, app inventory, quarantine URL, IP, username, or path from the real
