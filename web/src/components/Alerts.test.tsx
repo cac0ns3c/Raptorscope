@@ -77,6 +77,20 @@ describe("Alerts", () => {
     expect(await screen.findByText(/Assessment/)).toBeInTheDocument();
   });
 
+  it("exposes the pivot as a real button, not a card wrapping the controls", async () => {
+    const onPivot = vi.fn();
+    renderWithApi(<Alerts caseName="mac-victim" onPivot={onPivot} />);
+    await screen.findByLabelText("alerts");
+    // The title is a real button that pivots...
+    const title = screen.getAllByRole("button", { name: /view evidence:/i })[0];
+    await userEvent.click(title);
+    expect(onPivot).toHaveBeenCalled();
+    // ...and the action buttons are siblings, NOT descendants of it (valid ARIA:
+    // a button must not contain other interactive elements).
+    const ack = screen.getAllByRole("button", { name: "Ack" })[0];
+    expect(title.contains(ack)).toBe(false);
+  });
+
   it("keeps a triage note without pivoting", async () => {
     const onPivot = vi.fn();
     renderWithApi(<Alerts caseName="mac-victim" onPivot={onPivot} />);

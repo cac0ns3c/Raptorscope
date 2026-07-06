@@ -136,26 +136,22 @@ export function Alerts({
                 className={`alert-card sev-${a.level} ${
                   entry.status ? `is-${entry.status}` : ""
                 }`}
-                role="button"
-                tabIndex={0}
-                aria-label={`${a.level} severity: ${a.title} — view evidence`}
-                onClick={() => onPivot?.(a.dataset, a.doc_id)}
-                onKeyDown={(e) => {
-                  // Only the card itself pivots — ignore keys bubbling up from
-                  // the nested note input / action buttons (e.g. Space while typing).
-                  if (e.target !== e.currentTarget) return;
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onPivot?.(a.dataset, a.doc_id);
-                  }
-                }}
               >
                 <span className="alert-ico">
                   <IconAlert />
                 </span>
                 <span className="alert-head">
                   <span className="level">{a.level}</span>
-                  <span className="alert-title">{a.title}</span>
+                  {/* Stretched-link button: its ::after covers the card so the
+                      whole card pivots, but it's a real button (not a div wrapping
+                      the action buttons/note), so the ARIA is valid. */}
+                  <button
+                    className="alert-title"
+                    aria-label={`view evidence: ${a.title}`}
+                    onClick={() => onPivot?.(a.dataset, a.doc_id)}
+                  >
+                    {a.title}
+                  </button>
                   {entry.status === "ack" && (
                     <span className="triage-tag ack">acknowledged</span>
                   )}
@@ -174,10 +170,7 @@ export function Alerts({
                   ))}
                 </span>
 
-                <div
-                  className="alert-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div className="alert-actions">
                   <button
                     onClick={() =>
                       update(key, {
@@ -215,7 +208,7 @@ export function Alerts({
                 </div>
 
                 {ai[key]?.text && (
-                  <div className="ai-panel" onClick={(e) => e.stopPropagation()}>
+                  <div className="ai-panel">
                     <Markdown text={ai[key]!.text!} />
                   </div>
                 )}
@@ -226,7 +219,6 @@ export function Alerts({
                     aria-label={`note for ${a.title}`}
                     placeholder="Add a triage note…"
                     value={entry.note ?? ""}
-                    onClick={(e) => e.stopPropagation()}
                     onChange={(e) => update(key, { note: e.target.value })}
                   />
                 )}

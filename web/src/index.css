@@ -907,6 +907,10 @@ button {
   display: flex;
   gap: 0.4rem;
   margin-top: 0.15rem;
+  /* raised above the stretched .alert-title::after so they stay independently
+     clickable rather than being covered by the pivot hit-area. */
+  position: relative;
+  z-index: 1;
 }
 .alert-actions button {
   background: var(--surface-2);
@@ -947,9 +951,17 @@ button {
   font: inherit;
   font-size: 0.82rem;
   outline: none;
+  /* above the stretched pivot hit-area so it's focusable/typable */
+  position: relative;
+  z-index: 1;
 }
 .alert-note:focus {
   border-color: var(--accent-strong);
+}
+/* AI triage output sits above the pivot hit-area so its links stay clickable. */
+.alert-card .ai-panel {
+  position: relative;
+  z-index: 1;
 }
 .alert-card.sev-high { --sev: var(--sev-high); }
 .alert-card.sev-medium { --sev: var(--sev-medium); }
@@ -993,6 +1005,22 @@ button {
 .alert-title {
   font-weight: 620;
   font-size: 0.92rem;
+  /* real <button>, reset to look like text; ::after stretches over the whole
+     card so the card stays clickable without wrapping the action controls. */
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.alert-title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r);
 }
 .alert-dataset {
   color: var(--text-dim);
