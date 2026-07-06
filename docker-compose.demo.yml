@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# One-stop-shop Raptorscope demo — the whole app in Docker, no Elasticsearch.
+#
+# The API serves the bundled sample case offline (in-process Sigma evaluator, no
+# ES); nginx serves the built SPA and proxies /api -> the api service. One command:
+#
+#   docker compose -f docker-compose.demo.yml up --build
+#   # then open http://localhost:8080  (no login — offline demo, AI disabled)
+#
+# For the full ES + Kibana + live-index stack instead, use the app profile in
+# docker-compose.yml (`make stack`).
+name: raptorscope-demo
+
+services:
+  api:
+    build: .
+    container_name: raptorscope-demo-api
+    # Image default CMD already serves samples/mac-victim offline on :8000.
+    # Not published to the host — the web service reaches it over the compose
+    # network as `api:8000` (keeps it off your host's port 8000).
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    container_name: raptorscope-demo-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    restart: unless-stopped

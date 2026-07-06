@@ -86,16 +86,30 @@ Individual views:
 
 ## Quickstart
 
+**One-stop shop** — the whole app in Docker, one command, no Elasticsearch:
+
+```bash
+make up          # build + run API (offline sample) + SPA
+# open http://localhost:8080   (no login, AI disabled — straight into triage)
+make down        # stop it
+```
+
+`make up` runs `docker-compose.demo.yml`: the API serves the bundled `mac-victim`
+case in-process (in-process Sigma evaluator, no ES/Kibana) and nginx serves the SPA,
+proxying `/api` to it. Nothing to install but Docker.
+
+**Local dev** (hot-reload SPA, Python on the host):
+
 ```bash
 make setup          # venv + Python deps + web npm install
 make demo           # serve the bundled sample case on :8000 (no ES needed)
 make web            # in another shell: SPA on http://localhost:5173
 ```
 
-Open http://localhost:5173, pick the `mac-victim` case, and follow an alert
-pivot-to-evidence. Full tour in `docs/DEMO.md`.
+Open the SPA, pick the `mac-victim` case, and follow an alert pivot-to-evidence.
+Full tour in `docs/DEMO.md`.
 
-Or run the **whole app in Docker** (Elasticsearch + Kibana + API + SPA):
+**Full stack** — Elasticsearch + Kibana + live indexing + API + SPA:
 
 ```bash
 make stack          # docker compose --profile app up -d --build
