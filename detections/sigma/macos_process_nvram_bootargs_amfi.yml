@@ -1,0 +1,34 @@
+title: macOS boot-args tampered to disable library validation or AMFI
+id: a1a76058-3476-4fc2-89a5-bd178517d01d
+status: experimental
+description: >
+  A live nvram process writing boot-args, or any command line carrying an AMFI
+  bypass token (amfi_get_out_of_my_way, amfi=0x, AMFIPassBeta,
+  amfi_allow_any_signature). These NVRAM boot arguments disable Apple Mobile File
+  Integrity / library validation at the next boot, letting unsigned code and
+  injected libraries load into protected processes. Legitimate use is essentially
+  limited to kernel developers on SIP-disabled machines.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_bootargs:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'nvram boot-args'
+  selection_amfi:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'amfi_get_out_of_my_way'
+      - 'amfi=0x'
+      - 'AMFIPassBeta'
+      - 'amfi_allow_any_signature'
+      - 'cs_enforcement_disable'
+  condition: selection_bootargs or selection_amfi
+falsepositives:
+  - A kernel/driver developer intentionally relaxing code-signing enforcement on a dedicated test machine
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.privilege_escalation
+  - attack.t1562.001

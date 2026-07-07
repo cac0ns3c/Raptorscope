@@ -1,0 +1,29 @@
+title: macOS sudoers policy tampered from the command line
+id: a3f57bca-45cd-4594-8a19-83c69d7a424b
+status: experimental
+description: >
+  A live process redirecting or teeing content into /etc/sudoers or a
+  /etc/sudoers.d/ drop-in file. Appending a NOPASSWD entry or a new user into the
+  sudo policy grants password-free root and is a classic privilege-escalation /
+  persistence step. Interactive edits go through `visudo`, which validates syntax
+  and never appears as a shell redirection, so a raw `>>`/`tee` into the sudoers
+  tree is high-signal.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - '> /etc/sudoers'
+      - '>>/etc/sudoers'
+      - 'tee /etc/sudoers'
+      - 'tee -a /etc/sudoers'
+      - 'tee /etc/sudoers.d'
+  condition: selection
+falsepositives:
+  - Configuration-management tooling (Ansible, Puppet, Jamf) that renders a validated /etc/sudoers.d/ drop-in via a templated `tee`; scope to known automation hosts
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.003

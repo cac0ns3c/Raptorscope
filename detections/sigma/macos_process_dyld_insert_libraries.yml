@@ -1,0 +1,32 @@
+title: macOS dylib injection via DYLD_INSERT_LIBRARIES
+id: ec4878ab-191d-484b-a3e8-b7b0c09307ee
+status: experimental
+description: >
+  A live process launched with the DYLD_INSERT_LIBRARIES environment variable set
+  on its command line, forcing the dynamic loader to preload an attacker-supplied
+  dylib into a target binary. This hijacks execution inside a trusted process for
+  code injection or privilege escalation. Known developer/diagnostic preloads
+  (AddressSanitizer, guardmalloc, Xcode instrumentation) are filtered out.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'DYLD_INSERT_LIBRARIES='
+  filter_diagnostics:
+    process.command_line|contains:
+      - 'libclang_rt.asan'
+      - 'libgmalloc.dylib'
+      - 'libBacktraceRecording.dylib'
+      - 'libViewDebuggerSupport.dylib'
+      - '/Applications/Xcode.app/'
+  condition: selection and not filter_diagnostics
+falsepositives:
+  - Reverse-engineering, fuzzing, or malloc-debugging harnesses on a developer workstation that preload their own instrumentation dylib
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.persistence
+  - attack.t1574.006

@@ -3,9 +3,9 @@
 Paired Sigma detections shipped with Raptorscope, with their ECS dataset,
 severity, and mapped MITRE ATT&CK techniques. Generated from `detections/sigma/`.
 
-**89 rules** across 7 datasets, mapping to **60 unique ATT&CK techniques**. Every rule ships a paired hit + benign fixture and is drift-guarded by `detect/pairing.py`.
+**102 rules** across 7 datasets, mapping to **66 unique ATT&CK techniques**. Every rule ships a paired hit + benign fixture and is drift-guarded by `detect/pairing.py`.
 
-Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 · `macos.process` 36 · `macos.quarantine` 8 · `macos.tcc` 9 · `macos.unifiedlog` 2
+Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 · `macos.process` 44 · `macos.quarantine` 8 · `macos.tcc` 9 · `macos.unifiedlog` 7
 
 | Rule | Dataset | Level | MITRE |
 |------|---------|-------|-------|
@@ -50,21 +50,28 @@ Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 
 | macOS Keychain credential dumping via security dump-keychain | `macos.process` | high | T1555.001 |
 | macOS SSH and cloud credential file harvest | `macos.process` | high | T1552.004, T1552.001 |
 | macOS TCC privacy database tampered via sqlite3 | `macos.process` | high | T1548.006 |
+| macOS account added to admin or wheel group via dseditgroup | `macos.process` | high | T1098 |
+| macOS authorization database weakened via security authorizationdb | `macos.process` | high | T1548 |
 | macOS base64-decoded payload piped to a shell or interpreter | `macos.process` | high | T1140, T1059.004 |
+| macOS boot-args tampered to disable library validation or AMFI | `macos.process` | high | T1562.001 |
 | macOS browser credential store access | `macos.process` | high | T1555.003 |
 | macOS clipboard capture via pbpaste to file or network | `macos.process` | medium | T1115 |
 | macOS data exfiltration via curl upload | `macos.process` | medium | T1041 |
+| macOS dylib injection via DYLD_INSERT_LIBRARIES | `macos.process` | high | T1574.006 |
 | macOS execute bit set on file in Downloads or Shared | `macos.process` | medium | T1222.002 |
 | macOS fake password prompt via osascript hidden-answer dialog | `macos.process` | high | T1056.002 |
 | macOS file hidden via chflags or SetFile invisible bit | `macos.process` | medium | T1564.001 |
 | macOS file timestamps altered (timestomp) | `macos.process` | medium | T1070.006 |
 | macOS host hardware/OS fingerprinting via system_profiler | `macos.process` | medium | T1082 |
+| macOS kernel extension loaded from a world-writable staging path | `macos.process` | high | T1547.006 |
 | macOS known credential dumping tool execution | `macos.process` | high | T1555 |
 | macOS launchd persistence activated via launchctl from a world-writable path | `macos.process` | high | T1543.001, T1543.004 |
 | macOS local account creation or admin escalation via dscl or sysadminctl | `macos.process` | high | T1136.001 |
 | macOS local account enumeration via dscl/dscacheutil | `macos.process` | medium | T1087.001 |
 | macOS local password hash dump via dscl ShadowHashData | `macos.process` | high | T1003 |
 | macOS login keychain file raw read | `macos.process` | high | T1555.001 |
+| macOS non-interactive SSH lateral movement via sshpass or disabled host checking | `macos.process` | high | T1021.004 |
+| macOS payload run as root via launchctl asuser 0 | `macos.process` | high | T1548 |
 | macOS private key export via security export identities | `macos.process` | high | T1552.004 |
 | macOS process invoking a network download or beacon | `macos.process` | high | T1105 |
 | macOS process running from a suspicious path | `macos.process` | high | T1204.002 |
@@ -76,6 +83,7 @@ Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 
 | macOS shell history cleared or disabled | `macos.process` | medium | T1070.003 |
 | macOS silent screen capture to a file | `macos.process` | medium | T1113 |
 | macOS staging of user data into an archive | `macos.process` | medium | T1560.001 |
+| macOS sudoers policy tampered from the command line | `macos.process` | high | T1548.003 |
 | macOS unified logs or diagnostics cleared | `macos.process` | high | T1070 |
 | macOS unsigned or untrusted process running | `macos.process` | medium | T1036.001 |
 | macOS virtualization/sandbox detection via ioreg vendor grep | `macos.process` | high | T1497.001 |
@@ -96,5 +104,10 @@ Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 
 | macOS protected-folder (Desktop/Documents/Downloads) TCC grant to a non-Apple client | `macos.tcc` | medium | T1005 |
 | macOS sensitive TCC grant to a non-Apple client | `macos.tcc` | high | T1548.006, T1056.001, T1113 |
 | macOS synthetic-input (PostEvent) TCC grant to a non-Apple client | `macos.tcc` | high | T1056.001 |
+| macOS TCC request from a binary in a world-writable/temp path (Unified Log) | `macos.unifiedlog` | high | T1059.002, T1082 |
+| macOS authorization right granted to a process in a temp/world-writable path (Unified Log) | `macos.unifiedlog` | high | T1548 |
 | macOS non-Apple client requested a sensitive TCC service (Unified Log) | `macos.unifiedlog` | high | T1548.006, T1056.001, T1113 |
 | macOS non-system process granted a sensitive authorization right (Unified Log) | `macos.unifiedlog` | high | T1543.001, T1548 |
+| macOS raw binary requested AppleEvents/keystroke-synthesis TCC service (Unified Log) | `macos.unifiedlog` | high | T1059.002, T1056.001 |
+| macOS raw binary requested EndpointSecurity TCC service (Unified Log) | `macos.unifiedlog` | high | T1562.001 |
+| macOS task-port / task_for_pid authorization right granted (Unified Log) | `macos.unifiedlog` | high | T1055 |

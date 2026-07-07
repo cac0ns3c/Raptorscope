@@ -1,0 +1,35 @@
+title: macOS kernel extension loaded from a world-writable staging path
+id: c77df4e8-b615-4515-9ef3-530c46561ff2
+status: experimental
+description: >
+  A live kextload/kmutil process loading a kernel extension whose bundle path lives
+  in a world-writable or user-controlled staging directory (/tmp, /private/tmp,
+  /Users/Shared, /Volumes, /private/var/folders). Legitimate third-party kexts ship
+  under /Library/Extensions or an app bundle; loading a .kext straight out of a
+  staging area is a strong signal of a freshly-planted, likely unsigned, kernel
+  module used for rootkit-grade persistence or privilege escalation.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_cmd:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'kextload '
+      - 'kextutil '
+      - 'kmutil load '
+  selection_path:
+    process.command_line|contains:
+      - '/tmp/'
+      - '/private/tmp/'
+      - '/Users/Shared/'
+      - '/Volumes/'
+      - '/private/var/folders/'
+  condition: selection_cmd and selection_path
+falsepositives:
+  - A driver developer manually loading a locally built .kext from a scratch directory during testing
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.persistence
+  - attack.t1547.006

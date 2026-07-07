@@ -1,0 +1,30 @@
+title: macOS authorization database weakened via security authorizationdb
+id: 54c825f8-4f32-413c-95a2-143f88a6b3df
+status: experimental
+description: >
+  A live `security authorizationdb write` process modifying a system authorization
+  right. Attackers rewrite rights such as system.privilege.admin or
+  system.login.console to `allow` (or swap the rule class) so privileged actions no
+  longer require an admin credential, weakening the OS elevation-control mechanism.
+  This is a rare, high-impact administrative operation.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_cmd:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'security authorizationdb write'
+  selection_target:
+    process.command_line|contains:
+      - 'allow'
+      - 'system.privilege'
+      - 'system.login'
+      - 'is-admin'
+  condition: selection_cmd and selection_target
+falsepositives:
+  - Enterprise scripts that intentionally pre-authorize a specific right for kiosk or automated-deployment workflows (document and allowlist)
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548

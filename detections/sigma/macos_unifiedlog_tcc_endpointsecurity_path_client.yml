@@ -1,0 +1,32 @@
+title: macOS raw binary requested EndpointSecurity TCC service (Unified Log)
+id: 8a0d0d74-7d0c-43c9-99cf-4d209a288cff
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.TCC): a bare executable
+  (path client, not a bundle id) requested kTCCServiceEndpointSecurityClient.
+  This service is granted almost exclusively to signed, notarized security/EDR
+  app bundles; a standalone binary outside the system/app paths asking for the
+  EndpointSecurity client entitlement is attempting to gain kernel event
+  visibility or masquerade as security tooling.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: tcc_access_request
+    raptorscope.tcc.client_type: path
+    raptorscope.tcc.service: kTCCServiceEndpointSecurityClient
+  filter_system:
+    process.executable|startswith:
+      - /System/
+      - /usr/
+      - /Library/
+      - /Applications/
+  condition: selection and not filter_system
+falsepositives:
+  - A security/EDR agent installed to a non-standard user path the analyst recognizes
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

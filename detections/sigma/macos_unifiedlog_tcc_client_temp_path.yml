@@ -1,0 +1,32 @@
+title: macOS TCC request from a binary in a world-writable/temp path (Unified Log)
+id: b892228f-a2d1-42f0-8b03-19b14c940df7
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.TCC): a TCC access
+  request whose client is a bare executable (path subject, not a bundle id)
+  running out of a classic malware drop directory (/tmp, /private/tmp, /var/tmp,
+  /Users/Shared). Legitimate software requests TCC from an installed app bundle;
+  a raw binary in a world-writable temp path probing privacy services is a
+  hands-on-keyboard / dropped-payload signal, regardless of which service.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: tcc_access_request
+    process.executable|startswith:
+      - /tmp/
+      - /private/tmp/
+      - /var/tmp/
+      - /private/var/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Rare admin/one-off scripts that a user intentionally staged and ran from a temp directory
+level: high
+tags:
+  - attack.execution
+  - attack.discovery
+  - attack.t1059.002
+  - attack.t1082

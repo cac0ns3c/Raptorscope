@@ -1,0 +1,31 @@
+title: macOS non-interactive SSH lateral movement via sshpass or disabled host checking
+id: c325a9dc-9d5d-41c2-82c2-428023ec0cc7
+status: experimental
+description: >
+  A live process driving ssh/scp non-interactively by supplying the password on the
+  command line (`sshpass -p`) or by disabling host-key verification
+  (StrictHostKeyChecking=no together with UserKnownHostsFile=/dev/null). Both
+  patterns are hallmarks of scripted lateral movement to a remote host where the
+  operator wants no prompts and no trust-on-first-use record.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_sshpass:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'sshpass -p'
+      - 'sshpass --password'
+  selection_nohostkey:
+    process.command_line|contains:
+      - 'StrictHostKeyChecking=no'
+  selection_nohostkey_2:
+    process.command_line|contains:
+      - 'UserKnownHostsFile=/dev/null'
+  condition: selection_sshpass or (selection_nohostkey and selection_nohostkey_2)
+falsepositives:
+  - CI/CD runners or provisioning tools that intentionally disable host-key prompts against ephemeral hosts; scope to build infrastructure
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.004

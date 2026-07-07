@@ -1,0 +1,30 @@
+title: macOS authorization right granted to a process in a temp/world-writable path (Unified Log)
+id: 5787045b-98c3-442d-9bec-01f7e885a584
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.Authorization): authd
+  granted ANY authorization right to a process executing from a classic malware
+  drop directory (/tmp, /private/tmp, /var/tmp, /Users/Shared). Trusted software
+  is installed under /Applications, /usr, /Library or /System — a binary in a
+  world-writable temp path being handed an authorization right is a
+  privilege-escalation / dropped-payload signal irrespective of which right.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: authorization_right
+    process.executable|startswith:
+      - /tmp/
+      - /private/tmp/
+      - /var/tmp/
+      - /private/var/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Admin one-off scripts a user deliberately staged and ran from a temp directory
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548

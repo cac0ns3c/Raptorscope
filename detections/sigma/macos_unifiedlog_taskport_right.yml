@@ -1,0 +1,34 @@
+title: macOS task-port / task_for_pid authorization right granted (Unified Log)
+id: 944bb49d-69a3-4f50-af5a-e415f19e6271
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.Authorization): a
+  process was granted a task-port / task_for_pid style right. Acquiring another
+  process's Mach task port is the core primitive for code injection and memory
+  tampering. Legitimate holders are debuggers and Apple system binaries; a grant
+  to a process outside developer/system paths is process-injection preparation.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: authorization_right
+    raptorscope.unifiedlog.right|contains:
+      - taskport
+      - task_for_pid
+  filter_devsys:
+    process.executable|startswith:
+      - /System/
+      - /usr/
+      - /Library/Apple/
+      - /Library/Developer/
+      - /Applications/Xcode.app/
+  condition: selection and not filter_devsys
+falsepositives:
+  - Third-party debuggers/profilers (e.g. Homebrew-installed lldb) the developer runs deliberately
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.defense_evasion
+  - attack.t1055

@@ -1,0 +1,23 @@
+title: macOS payload run as root via launchctl asuser 0
+id: 265adb52-915c-4571-a262-c0e38860a187
+status: experimental
+description: >
+  A live process using `launchctl asuser 0` to execute a program inside root's
+  bootstrap/launchd context. Management tooling targets a real console user's uid
+  (`asuser <uid>`); pinning uid 0 runs the payload as root with a launchd parent,
+  a technique used to elevate and to detach execution from the spawning shell.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'launchctl asuser 0 '
+  condition: selection
+falsepositives:
+  - Enterprise management agents that deliberately run a helper in the root launchd session (uncommon; prefer bootstrap system)
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548

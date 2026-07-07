@@ -1,0 +1,31 @@
+title: macOS account added to admin or wheel group via dseditgroup
+id: d3f53027-7b7e-4f4a-865d-1ae8127bf752
+status: experimental
+description: >
+  A live dseditgroup process adding a member to the local admin or wheel group
+  (`dseditgroup -o edit -a <user> -t user admin`). Promoting an account into the
+  administrators group grants sudo/GUI admin rights and is a common
+  privilege-consolidation step after initial access. Interactive users grant admin
+  through System Settings; the dseditgroup CLI path is rarely benign outside
+  managed provisioning.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_action:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'dseditgroup -o edit -a '
+      - 'dseditgroup -o edit -m '
+  selection_group:
+    process.command_line|contains:
+      - ' admin'
+      - ' wheel'
+      - ' com.apple.local.'
+  condition: selection_action and selection_group
+falsepositives:
+  - Centralized MDM / imaging automation that provisions named administrators
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1098

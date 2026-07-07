@@ -1,0 +1,36 @@
+title: macOS raw binary requested AppleEvents/keystroke-synthesis TCC service (Unified Log)
+id: 1777bc25-2f93-4c2c-853e-e41e68f02175
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.TCC): a bare executable
+  (path client, not a bundle id) requested AppleEvents (cross-application
+  scripting) or PostEvent (synthetic keyboard/mouse injection). Legitimate
+  automation tools are signed app bundles (bundle-id clients); a standalone
+  binary outside system/app paths asking to drive other apps or inject input is
+  an automation-abuse / input-injection signal.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: tcc_access_request
+    raptorscope.tcc.client_type: path
+    raptorscope.tcc.service:
+      - kTCCServiceAppleEvents
+      - kTCCServicePostEvent
+  filter_system:
+    process.executable|startswith:
+      - /System/
+      - /usr/
+      - /Library/
+      - /Applications/
+  condition: selection and not filter_system
+falsepositives:
+  - Developer/CLI automation binaries under a user home the analyst recognizes and authorized
+level: high
+tags:
+  - attack.execution
+  - attack.collection
+  - attack.t1059.002
+  - attack.t1056.001
