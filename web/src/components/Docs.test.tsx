@@ -10,8 +10,8 @@ describe("Docs", () => {
   it("lists docs and renders the selected one as HTML", async () => {
     renderWithApi(<Docs onClose={() => {}} />);
     const dialog = await screen.findByRole("dialog", { name: "Documentation" });
-    expect(within(dialog).getByText("Overview")).toBeInTheDocument();
-    expect(within(dialog).getByText("Using Kibana")).toBeInTheDocument();
+    expect(await within(dialog).findByText("Overview")).toBeInTheDocument();
+    expect(await within(dialog).findByText("Using Kibana")).toBeInTheDocument();
     // markdown rendered to an actual heading element
     expect(await within(dialog).findByRole("heading")).toBeInTheDocument();
   });
@@ -19,7 +19,9 @@ describe("Docs", () => {
   it("switches the rendered doc when a nav item is clicked", async () => {
     renderWithApi(<Docs onClose={() => {}} />);
     const dialog = await screen.findByRole("dialog", { name: "Documentation" });
-    await userEvent.click(within(dialog).getByRole("button", { name: "Using Kibana" }));
+    await userEvent.click(
+      await within(dialog).findByRole("button", { name: "Using Kibana" }),
+    );
     expect(
       await within(dialog).findByRole("heading", { name: /kibana/i }),
     ).toBeInTheDocument();
