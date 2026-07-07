@@ -130,6 +130,8 @@ def _read_tcc_db(p: pathlib.Path) -> list[dict]:
 
 def _read_quarantine_db(p: pathlib.Path) -> list[dict]:
     """Raw QuarantineEventsV2 -> normalize_quarantine rows (LSQuarantine* keys)."""
+    import urllib.parse
+
     con = _connect_ro(p)
     try:
         rows = []
@@ -137,7 +139,10 @@ def _read_quarantine_db(p: pathlib.Path) -> list[dict]:
             d = dict(r)
             ts = d.get("LSQuarantineTimeStamp")
             d["LSQuarantineTimeStamp"] = _iso(ts + _CF_EPOCH) if ts else ""
-            d["Path"] = str(p)
+            # There's no on-disk file path in QuarantineEventsV2 — the downloaded
+            # file name is the last path segment of the data URL.
+            url = d.get("LSQuarantineDataURLString") or ""
+            d["Path"] = urllib.parse.urlparse(url).path if url else ""
             rows.append(d)
         return rows
     finally:

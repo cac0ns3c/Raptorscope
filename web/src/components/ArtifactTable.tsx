@@ -7,6 +7,7 @@ import { useAsync } from "../hooks/useAsync";
 import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
+import { fmtTime } from "../util/format";
 import { buildCsv, download } from "../util/tabular";
 import { columnsFor } from "./columns";
 import { DetailDrawer } from "./DetailDrawer";
@@ -173,12 +174,15 @@ export function ArtifactTable({
                       </td>
                     );
                   }
-                  const text = cell(value);
+                  const text =
+                    col.path === "@timestamp"
+                      ? fmtTime(value as string)
+                      : cell(value);
                   return (
                     <td
                       key={col.path}
                       className={MONO.has(col.path) ? "mono" : undefined}
-                      title={text || undefined}
+                      title={col.path === "@timestamp" ? String(value) : text || undefined}
                     >
                       {text}
                     </td>

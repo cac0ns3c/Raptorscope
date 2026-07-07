@@ -151,46 +151,35 @@ def _apply_op(cell, op: str, value: str) -> bool:
 
 def _summary(doc: dict) -> str:
     """A one-line, dataset-aware description for the timeline."""
+
+    def v(path: str, default: str = "—") -> str:
+        # Never render a bare Python None/empty into the timeline.
+        val = _dig(doc, path)
+        return default if val in (None, "") else str(val)
+
     ds = _dig(doc, "event.dataset")
     if ds == "macos.persistence":
-        ptype = _dig(doc, "raptorscope.persistence.type")
-        label = _dig(doc, "raptorscope.persistence.label")
-        return f"{ptype}: {label} ({_dig(doc, 'file.path')})"
+        return f"{v('raptorscope.persistence.type')}: {v('raptorscope.persistence.label')} ({v('file.path')})"
     if ds == "macos.process":
-        return (
-            f"{_dig(doc, 'process.name')} [{_dig(doc, 'process.pid')}] "
-            f"{_dig(doc, 'process.executable')}"
-        )
+        return f"{v('process.name')} [{v('process.pid')}] {v('process.executable')}"
     if ds == "macos.quarantine":
-        return (
-            f"downloaded {_dig(doc, 'file.name')} "
-            f"from {_dig(doc, 'url.original')}"
-        )
+        return f"downloaded {v('file.name')} from {v('url.original', v('url.full'))}"
     if ds == "macos.tcc":
         state = "allowed" if _dig(doc, "raptorscope.tcc.allowed") else "denied"
-        return (
-            f"{_dig(doc, 'raptorscope.tcc.service')} -> "
-            f"{_dig(doc, 'raptorscope.tcc.client')} ({state})"
-        )
+        return f"{v('raptorscope.tcc.service')} -> {v('raptorscope.tcc.client')} ({state})"
     if ds == "macos.inventory":
-        return (
-            f"{_dig(doc, 'raptorscope.app.name')} "
-            f"{_dig(doc, 'raptorscope.app.version')} ({_dig(doc, 'file.path')})"
-        )
+        return f"{v('raptorscope.app.name')} {v('raptorscope.app.version')} ({v('file.path')})"
     if ds == "macos.unifiedlog":
         action = _dig(doc, "event.action")
         if action == "tcc_access_request":
             state = "allowed" if _dig(doc, "raptorscope.tcc.allowed") else "denied"
-            return (
-                f"TCC {_dig(doc, 'raptorscope.tcc.service')} "
-                f"{state} for {_dig(doc, 'raptorscope.tcc.client')}"
-            )
+            return f"TCC {v('raptorscope.tcc.service')} {state} for {v('raptorscope.tcc.client')}"
         if action == "authorization_right":
             return (
-                f"authz: {_dig(doc, 'raptorscope.unifiedlog.right')} granted to "
-                f"{_dig(doc, 'raptorscope.unifiedlog.process')}"
+                f"authz: {v('raptorscope.unifiedlog.right')} granted to "
+                f"{v('raptorscope.unifiedlog.process')}"
             )
-        return f"{action or 'unifiedlog'}: {_dig(doc, 'raptorscope.unifiedlog.process')}"
+        return f"{action or 'unifiedlog'}: {v('raptorscope.unifiedlog.process')}"
     return _dig(doc, "file.path") or ds or ""
 
 

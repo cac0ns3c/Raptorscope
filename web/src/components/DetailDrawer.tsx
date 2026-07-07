@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Doc } from "../api/types";
 import { useModalA11y } from "../hooks/useModalA11y";
 import { cell } from "../util/dig";
+import { fmtTime } from "../util/format";
 import { flatten } from "../util/tabular";
 
 export function DetailDrawer({ doc, onClose }: { doc: Doc; onClose: () => void }) {
@@ -43,7 +44,7 @@ export function DetailDrawer({ doc, onClose }: { doc: Doc; onClose: () => void }
         <table className="detail-grid">
           <tbody>
             {fields.map(([k, v]) => {
-              const text = cell(v);
+              const text = k === "@timestamp" ? fmtTime(String(v)) : cell(v);
               return (
                 <tr key={k}>
                   <th>{k}</th>

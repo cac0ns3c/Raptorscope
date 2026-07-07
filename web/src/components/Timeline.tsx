@@ -5,6 +5,7 @@ import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
 import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
+import { fmtTime } from "../util/format";
 
 export function Timeline({
   caseName,
@@ -68,8 +69,8 @@ export function Timeline({
           aria-label={onPivot ? "open in artifacts" : undefined}
           {...(onPivot ? rowActivation(() => onPivot(row.dataset, row.doc_id)) : {})}
         >
-          <time className="ts" dateTime={row.timestamp}>
-            <span data-testid="tl-ts">{row.timestamp}</span>
+          <time className="ts" dateTime={row.timestamp} title={row.timestamp}>
+            <span data-testid="tl-ts">{fmtTime(row.timestamp)}</span>
             {row.time_source === "mtime" && (
               <span
                 className="ts-provenance"
