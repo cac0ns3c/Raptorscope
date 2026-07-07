@@ -6,8 +6,10 @@ import pathlib
 from .collection import enrich_host, load_collection
 from .evidence import (
     is_artifact_dir,
+    is_bundle,
     is_logarchive,
     load_artifacts,
+    load_bundle,
     load_unifiedlog,
 )
 
@@ -100,6 +102,8 @@ def normalize_collection(path: str) -> list[dict]:
     """
     if is_logarchive(path):
         artifacts, raw_host = load_unifiedlog(path)
+    elif is_bundle(path):
+        artifacts, raw_host = load_bundle(path)
     elif is_artifact_dir(path):
         artifacts, raw_host = load_artifacts(path)
     else:

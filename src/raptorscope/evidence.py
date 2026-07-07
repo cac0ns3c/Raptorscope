@@ -18,6 +18,7 @@ import plistlib
 import shutil
 import sqlite3
 import subprocess
+import tarfile
 import tempfile
 
 # Unified Log subsystems we ingest (selection, not firehose — a .logarchive is
@@ -200,3 +201,44 @@ def load_artifacts(path: str) -> tuple[dict, dict]:
         artifacts["launch_items"] = plists
     host = {"name": root.name, "os": {"type": "macos"}}
     return artifacts, host
+
+
+# --------------------------------------------------------------------------- #
+# Bundle drop-and-scan: a whole sysdiagnose / Aftermath collection. Fan out to  #
+# every sub-loader (Unified Log + raw artifacts) and merge — best effort, so a  #
+# partial/corrupt bundle still yields whatever it can.                          #
+# --------------------------------------------------------------------------- #
+def is_bundle(path: str) -> bool:
+    p = pathlib.Path(path)
+    if p.is_file():  # a sysdiagnose tarball
+        return ".tar" in p.suffixes or p.suffix in (".tar", ".tgz")
+    # a container directory that *holds* a .logarchive (but isn't one itself)
+    if p.is_dir() and p.suffix != ".logarchive":
+        return any(True for _ in p.rglob("*.logarchive"))
+    return False
+
+
+def load_bundle(path: str) -> tuple[dict, dict]:
+    root = pathlib.Path(path)
+    tmp = None
+    try:
+        if root.is_file():
+            tmp = tempfile.mkdtemp()
+            with tarfile.open(root) as tf:
+                tf.extractall(tmp, filter="data")  # safe extraction (py3.12+)
+            root = pathlib.Path(tmp)
+        artifacts: dict[str, list] = {}
+        archive = next(root.rglob("*.logarchive"), None)
+        if archive is not None:
+            try:
+                ul, _ = load_unifiedlog(str(archive))
+                artifacts.update(ul)
+            except Exception:
+                pass  # parser missing/failed — still ingest the raw artifacts
+        raw, _ = load_artifacts(str(root))
+        artifacts.update(raw)
+        host = {"name": pathlib.Path(path).stem, "os": {"type": "macos"}}
+        return artifacts, host
+    finally:
+        if tmp:
+            shutil.rmtree(tmp, ignore_errors=True)
