@@ -1,0 +1,41 @@
+title: macOS remote desktop / screen sharing enabled from command line
+id: 9f86c124-846b-488d-a2e3-835aff7032fe
+status: experimental
+description: >
+  A process turning on macOS remote-access services: Apple Remote Desktop via
+  kickstart -activate, the Screen Sharing service via launchctl, or Remote Login
+  (SSH) via systemsetup -setremotelogin on. Enabling these services grants
+  interactive remote control and is a common attacker action to establish hands-on
+  access to a compromised host.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_ard:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'kickstart -activate'
+      - 'kickstart  -activate'
+      - '-configure -allowAccessFor -allUsers'
+  selection_remotelogin:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'setremotelogin on'
+      - 'setremotelogin -on'
+  selection_ss_svc:
+    process.command_line|contains:
+      - 'com.apple.screensharing'
+  selection_ss_action:
+    process.command_line|contains:
+      - ' enable '
+      - ' load '
+      - ' bootstrap '
+      - ' -w '
+  condition: selection_ard or selection_remotelogin or (selection_ss_svc and selection_ss_action)
+falsepositives:
+  - MDM/Jamf or an IT administrator legitimately enabling ARD, Screen Sharing or
+    Remote Login on a managed Mac
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.005

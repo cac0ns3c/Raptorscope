@@ -1,0 +1,27 @@
+title: macOS login/logout hook installed via defaults write
+id: 824a09ae-c825-45a8-9d39-12a693e23e4f
+status: experimental
+description: >
+  A live process writing a `LoginHook` or `LogoutHook` into the
+  com.apple.loginwindow preferences. These legacy hooks run an arbitrary script as
+  root at every login/logout, giving an adversary a reliable persistence and
+  privilege-execution foothold outside the launchd surface most tools watch.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'defaults write'
+  hook:
+    process.command_line|contains:
+      - 'LoginHook'
+      - 'LogoutHook'
+  condition: selection and hook
+falsepositives:
+  - Legacy enterprise management that still deploys login/logout scripts via the loginwindow hook mechanism
+level: high
+tags:
+  - attack.persistence
+  - attack.t1037.002

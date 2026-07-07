@@ -1,0 +1,36 @@
+title: macOS exfiltration over alternative protocol (ftp/tftp)
+id: 57b16e3a-77ca-4f6d-9a45-08cf3250b2c3
+status: experimental
+description: >
+  A process moving data off-host over a non-web transfer protocol: an FTP/TFTP
+  PUT (curl to an ftp:// URL with an upload flag, an explicit tftp put, or a
+  scripted ftp session). Using these legacy protocols instead of HTTPS is a
+  deliberate exfiltration-over-alternative-protocol technique that often evades
+  web-proxy inspection.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_ftp_upload:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'curl -T ftp://'
+      - 'curl --upload-file ftp://'
+      - 'curl -T ftps://'
+  selection_tftp:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'tftp -i '
+      - 'tftp -e '
+      - ' put '
+  selection_tftp_tool:
+    process.command_line|contains:
+      - 'tftp '
+  condition: selection_ftp_upload or (selection_tftp and selection_tftp_tool)
+falsepositives:
+  - Legacy device provisioning or firmware/backup jobs that legitimately use
+    FTP/TFTP within an isolated management network
+level: medium
+tags:
+  - attack.exfiltration
+  - attack.t1048

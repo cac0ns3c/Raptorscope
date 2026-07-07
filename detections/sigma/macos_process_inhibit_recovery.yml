@@ -1,0 +1,30 @@
+title: macOS inhibit system recovery via snapshot or Time Machine tampering
+id: 6a37f68a-7b19-4808-b71e-31d5b9044f72
+status: experimental
+description: >
+  A live process deleting APFS/Time Machine local snapshots, disabling Time
+  Machine, or tampering with the boot volume via bless. Destroying local
+  snapshots and recovery options is a standard pre-ransomware step so victims
+  cannot roll back. These commands are near-unambiguous recovery-inhibit actions.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'tmutil deletelocalsnapshots'
+      - 'tmutil disablelocal'
+      - 'tmutil disable'
+      - 'diskutil apfs deleteSnapshot'
+      - 'diskutil apfs deletesnapshot'
+      - 'bless --setBoot'
+  condition: selection
+falsepositives:
+  - Administrator freeing disk space by deleting old Time Machine local snapshots
+  - Administrator intentionally disabling Time Machine
+  - Dual-boot or imaging workflow setting the active boot volume with bless
+level: high
+tags:
+  - attack.impact
+  - attack.t1490

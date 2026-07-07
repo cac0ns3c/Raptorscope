@@ -1,0 +1,19 @@
+title: macOS unsigned binary executed from a mounted volume
+id: 5d1b8a37-2e46-4c9f-a013-7b6e9f24c105
+status: experimental
+description: >
+  A process whose executable lives under /Volumes (a mounted disk image or
+  removable device) and is unsigned/untrusted — the replication-through-removable-
+  media / mounted-DMG execution pattern. Signed installer apps that mount at
+  /Volumes are excluded by requiring an untrusted signature.
+logsource: {product: macos, service: process}
+detection:
+  selection:
+    event.dataset: macos.process
+    process.executable|startswith: '/Volumes/'
+    process.code_signature.trusted: false
+  condition: selection
+falsepositives:
+  - A developer running an ad-hoc unsigned build from a mounted image
+level: medium
+tags: [attack.initial_access, attack.t1091]

@@ -1,0 +1,59 @@
+title: macOS persistence via shell startup file modification
+id: 3d679a52-2f5e-46f5-a59e-9189d8130338
+status: experimental
+description: >
+  A live process appending to an interactive-shell startup file (.zshrc,
+  .zprofile, .zshenv, .bash_profile, .bashrc, /etc/zshrc, /etc/profile) via a
+  redirect or `tee -a`. Injecting a command into a shell rc runs it on every new
+  shell, a low-effort persistence and execution vector. Common package-manager and
+  version-manager shell-init lines are filtered out.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+  redirect:
+    process.command_line|contains:
+      - '>> '
+      - '>>~'
+      - '>>"'
+      - '>>$'
+      - 'tee -a'
+  rc:
+    process.command_line|contains:
+      - '.zshrc'
+      - '.zprofile'
+      - '.zshenv'
+      - '.bash_profile'
+      - '.bashrc'
+      - '/etc/zshrc'
+      - '/etc/profile'
+  filter_pkg:
+    process.command_line|contains:
+      - 'brew shellenv'
+      - 'pyenv init'
+      - 'rbenv init'
+      - 'nodenv init'
+      - 'jenv init'
+      - 'nvm.sh'
+      - 'conda.sh'
+      - 'conda initialize'
+      - 'nix-daemon.sh'
+      - '.nix-profile'
+      - 'rustup'
+      - 'cargo/env'
+      - 'ghcup/env'
+      - 'sdkman-init.sh'
+      - 'starship init'
+      - 'zoxide init'
+      - 'direnv hook'
+      - 'atuin init'
+      - 'thefuck --alias'
+  condition: selection and redirect and rc and not filter_pkg
+falsepositives:
+  - Dotfile managers (chezmoi, stow) or a developer intentionally editing their own shell startup files with a command not in the package-manager allowlist
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1546.004

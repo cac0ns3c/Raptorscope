@@ -1,0 +1,28 @@
+title: macOS SMB share mount / enumeration
+id: 664b6d89-801e-4088-ba0f-8ab6777e1c3d
+status: experimental
+description: >
+  A process mounting or enumerating an SMB/Windows share from the command line
+  (mount_smbfs, smbutil view //, open smb://). Adversaries use SMB shares for
+  lateral movement and to reach remote admin shares; command-line SMB access
+  outside a mapped-drive login item is worth reviewing.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'mount_smbfs '
+      - 'smbutil view '
+      - 'smbutil lookup '
+      - 'open smb://'
+      - 'open -g smb://'
+  condition: selection
+falsepositives:
+  - Users or MDM login scripts mounting a corporate file server over SMB
+  - IT tooling enumerating shares on a managed network
+level: medium
+tags:
+  - attack.lateral_movement
+  - attack.t1021.002

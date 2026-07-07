@@ -1,0 +1,25 @@
+title: macOS automated collection via find with a copy/archive action
+id: 3c9f4e21-8a7b-45d0-b6e2-1f8c0a9d2b73
+status: experimental
+description: >
+  A `find` sweep whose `-exec` action copies, archives, or reads the matched
+  files — the automated-collection pattern (stage many files in one pass). Distinct
+  from a single archive command: requires find AND an -exec collect/exfil verb.
+logsource: {product: macos, service: process}
+detection:
+  sel_find:
+    event.dataset: macos.process
+    process.command_line|contains: ['find ']
+  sel_exec:
+    process.command_line|contains:
+      - '-exec cp'
+      - '-exec tar'
+      - '-exec scp'
+      - '-exec cat'
+      - '-exec openssl'
+      - '-exec ditto'
+  condition: sel_find and sel_exec
+falsepositives:
+  - Backup or migration scripts that find-and-copy user files
+level: medium
+tags: [attack.collection, attack.t1119]

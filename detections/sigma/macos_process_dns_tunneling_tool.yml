@@ -1,0 +1,28 @@
+title: macOS DNS tunneling / DNS-C2 tool execution
+id: 30af3c8f-4812-473b-b47f-f70843af4ba3
+status: experimental
+description: >
+  A process invoking a known DNS-tunneling utility (iodine, dnscat, dns2tcp) that
+  encodes a bidirectional data channel inside DNS queries. These tools have no
+  legitimate desktop use and are a strong indicator of DNS-based C2 or exfiltration
+  that tunnels out through a resolver even when direct egress is blocked.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'iodine '
+      - 'iodined '
+      - 'dnscat'
+      - 'dns2tcp'
+      - 'dns2tcpc'
+      - 'dns2tcpd'
+  condition: selection
+falsepositives:
+  - Authorized penetration testing or red-team engagements exercising DNS tunneling
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1071.004

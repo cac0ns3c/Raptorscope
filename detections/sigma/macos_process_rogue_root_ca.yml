@@ -1,0 +1,23 @@
+title: macOS rogue root CA trusted via security add-trusted-cert
+id: cd6cece9-86ea-4632-b556-5ab95f01f87d
+status: experimental
+description: >
+  A live process invoking `security add-trusted-cert` to install a certificate as
+  a trusted root, typically into the admin System.keychain. Planting a rogue CA
+  lets an adversary silently intercept TLS (MITM) and sign malicious code that the
+  OS then treats as trusted, defeating certificate-based defenses.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'add-trusted-cert'
+  condition: selection
+falsepositives:
+  - Enterprise MDM/Jamf or an internal PKI enrollment tool installing a corporate root CA on managed endpoints; scope to known management hosts
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1553.004

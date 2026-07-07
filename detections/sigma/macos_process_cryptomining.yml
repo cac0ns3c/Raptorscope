@@ -1,0 +1,33 @@
+title: macOS cryptomining / resource hijacking
+id: 8131dd10-2246-48ab-b453-c06b74c1a146
+status: experimental
+description: >
+  A live process invoking a known cryptocurrency miner (xmrig, minerd) or
+  carrying miner-specific command-line flags — a mining pool stratum URL, a
+  donate-level, a coin selection, or a proof-of-work algorithm name. Unauthorized
+  mining hijacks host CPU/GPU for the attacker's benefit.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'xmrig'
+      - 'minerd'
+      - '--donate-level'
+      - 'stratum+tcp://'
+      - 'stratum+ssl://'
+      - '--coin monero'
+      - '--coin=monero'
+      - 'randomx'
+      - 'cryptonight'
+      - 'nicehash'
+  condition: selection
+falsepositives:
+  - Sanctioned mining or blockchain research on a dedicated host
+  - Security tooling or documentation that embeds these strings for detection
+level: high
+tags:
+  - attack.impact
+  - attack.t1496

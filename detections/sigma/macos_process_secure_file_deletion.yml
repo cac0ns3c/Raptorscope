@@ -1,0 +1,26 @@
+title: macOS anti-forensic secure file deletion
+id: d99904af-ac9e-467b-8b91-9f8f443aef61
+status: experimental
+description: >
+  A live process performing a secure/overwriting delete — `srm`, `rm -P`,
+  `diskutil secureErase`, or `shred` — that destroys file contents beyond
+  recovery. Adversaries use overwriting deletes to eliminate tooling and artifacts
+  so responders cannot carve the original bytes back off disk.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'srm '
+      - 'rm -P'
+      - 'diskutil secureErase'
+      - 'shred '
+  condition: selection
+falsepositives:
+  - An administrator or privacy tool intentionally shredding sensitive files or securely erasing a disk/volume
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1070.004

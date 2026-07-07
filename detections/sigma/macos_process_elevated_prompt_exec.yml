@@ -1,0 +1,25 @@
+title: macOS elevated execution requested via authorization prompt
+id: 9c6ff890-e893-4e74-bd9e-719e398d1a58
+status: experimental
+description: >
+  A live process requesting privilege elevation through a user-facing
+  authorization prompt — AppleScript `with administrator privileges` or the
+  AuthorizationExecuteWithPrivileges API surfaced on the command line. Adversaries
+  abuse this to social-engineer a root credential from the logged-in user instead
+  of exploiting a vulnerability.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'with administrator privileges'
+      - 'AuthorizationExecuteWithPrivileges'
+  condition: selection
+falsepositives:
+  - A legitimate signed installer or updater (e.g. Sparkle) that requests administrator rights via AppleScript to write outside the user domain
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.004

@@ -1,0 +1,44 @@
+title: macOS process discovery filtered for security or monitoring tooling
+id: b5151f01-fda3-4a43-a92f-a9c7094d3e22
+status: experimental
+description: >
+  A full process listing (`ps aux` / `ps -ef` / `ps ax`) piped through a filter
+  for the name of an endpoint-security, AV, DFIR or network-monitoring product.
+  Malware enumerates running processes specifically to spot (and then evade or
+  kill) the defensive agents on the host. A bare `ps` is far too common to alert
+  on, so this requires the listing AND a defensive-product name in the same argv.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_ps:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'ps aux'
+      - 'ps -ef'
+      - 'ps -A'
+      - 'ps ax'
+  selection_target:
+    process.command_line|contains:
+      - 'CrowdStrike'
+      - 'falcon'
+      - 'SentinelOne'
+      - 'sentinel'
+      - 'Malwarebytes'
+      - 'Sophos'
+      - 'Carbon Black'
+      - 'CbDefense'
+      - 'LittleSnitch'
+      - 'Little Snitch'
+      - 'BlockBlock'
+      - 'osquery'
+      - 'santad'
+      - 'ESET'
+      - 'Wireshark'
+  condition: selection_ps and selection_target
+falsepositives:
+  - An admin or the security agent's own health-check script grepping the process table for its daemon
+level: high
+tags:
+  - attack.discovery
+  - attack.t1057

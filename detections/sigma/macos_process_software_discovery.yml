@@ -1,0 +1,29 @@
+title: macOS installed software discovery
+id: 991f5dbd-002a-4f1d-b2e7-361f84925653
+status: experimental
+description: >
+  A process enumerating installed applications — `system_profiler
+  SPApplicationsDataType` or a Spotlight query for application bundles
+  (`mdfind kind:application`). Malware inventories installed software to
+  fingerprint the victim, find defensive tools, and choose which apps to abuse.
+  Distinct from the SPHardware/SPSoftware recon rule which targets host/OS facts.
+  A bare `ls /Applications` was deliberately excluded — it fired on Xcode and
+  developer tooling walking app-bundle subpaths.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'system_profiler SPApplicationsDataType'
+      - 'mdfind kind:application'
+      - 'mdfind "kind:application"'
+      - "mdfind 'kind:application'"
+  condition: selection
+falsepositives:
+  - Inventory/patch-management agents (Munki, Jamf, osquery) cataloguing installed apps
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1518

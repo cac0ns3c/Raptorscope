@@ -1,0 +1,31 @@
+title: macOS lateral tool transfer over SSH (rsync/sftp push)
+id: c5e8e8d1-7c7b-4e7f-ba63-ed56346bca57
+status: experimental
+description: >
+  A process pushing files to a remote host over SSH transport with rsync tunneled
+  through ssh (-e ssh / --rsh=ssh) or a scripted sftp batch upload. This is the
+  staging step where an operator copies tooling or collected data to another host,
+  distinct from interactive login. Fires on the SSH-transport transfer verbs, not
+  on plain local rsync.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'rsync -e ssh'
+      - "rsync -e 'ssh"
+      - 'rsync -e "ssh'
+      - 'rsync --rsh=ssh'
+      - 'rsync --rsh ssh'
+      - 'sftp -b '
+      - 'sftp -oBatchMode'
+  condition: selection
+falsepositives:
+  - Deployment, mirroring or backup jobs that legitimately rsync-over-ssh or run
+    scripted sftp uploads to servers
+level: medium
+tags:
+  - attack.lateral_movement
+  - attack.t1570

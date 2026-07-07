@@ -1,0 +1,45 @@
+title: macOS destructive wipe of user data or whole volume
+id: e18fd77e-736f-4404-8db3-9fd2e31f4fb1
+status: experimental
+description: >
+  A live process recursively deleting a user's home data directory
+  (Documents/Desktop/Pictures/Movies/Music) with rm/srm, or erasing an entire
+  disk or volume with diskutil. This is the destructive-impact step of wiper or
+  ransomware activity. Keyed on a destruction verb AND a user-data path, or on a
+  whole-volume erase, so routine rm -rf of build/node_modules/tmp stays silent.
+logsource:
+  product: macos
+  service: process
+detection:
+  destroy_verb:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'rm -rf'
+      - 'rm -fr'
+      - 'rm -Rf'
+      - 'srm -r'
+  user_data_target:
+    process.command_line|contains:
+      - '/Documents'
+      - '/Desktop'
+      - '/Pictures'
+      - '/Movies'
+      - '/Music'
+  disk_erase:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'diskutil eraseDisk'
+      - 'diskutil eraseVolume'
+      - 'diskutil zeroDisk'
+      - 'diskutil secureErase'
+      - 'diskutil reformat'
+      - 'diskutil apfs deleteVolume'
+  condition: (destroy_verb and user_data_target) or disk_erase
+falsepositives:
+  - Administrator or user intentionally clearing a Documents/Desktop folder
+  - Legitimate reformat/erase of an external disk or USB volume with diskutil
+  - Backup or migration tooling that reformats a destination volume
+level: high
+tags:
+  - attack.impact
+  - attack.t1485

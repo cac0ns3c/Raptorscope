@@ -1,0 +1,26 @@
+title: macOS JavaScript for Automation (JXA) execution via osascript
+id: b2d84669-9067-4c5b-b90d-ed94076b6d64
+status: experimental
+description: >
+  osascript invoked with the JavaScript language flag (`osascript -l JavaScript`),
+  i.e. JavaScript for Automation (JXA). JXA gives attackers full ObjC bridge access
+  from an Apple-signed binary and is a well-documented macOS execution and staging
+  technique (e.g. Empire/Mythic JXA payloads). osascript is code-signed, so this
+  keys on the JXA language flag in the command line.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'osascript -l JavaScript'
+      - 'osascript -i -l JavaScript'
+      - 'osascript -l javascript'
+  condition: selection
+falsepositives:
+  - Developer or automation tooling that legitimately scripts macOS via JXA
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.007

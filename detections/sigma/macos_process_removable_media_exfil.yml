@@ -1,0 +1,40 @@
+title: macOS data copied to removable / mounted volume
+id: 50cd5173-c91b-4286-af17-018809c64c2d
+status: experimental
+description: >
+  A process copying user data (Desktop/Documents/Downloads or a home directory)
+  onto a volume under /Volumes with cp, rsync or ditto. Bulk-copying personal
+  data to an external or mounted drive is a common exfiltration-over-physical-media
+  step. Requires BOTH a copy tool with a user-data source and a /Volumes
+  destination so routine app-DMG installs do not fire.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'ditto '
+      - 'rsync '
+      - 'cp -r '
+      - 'cp -R '
+      - 'cp -a '
+      - 'cp -pr '
+  selection_source:
+    process.command_line|contains:
+      - '/Desktop'
+      - '/Documents'
+      - '/Downloads'
+      - '/Users/'
+      - 'Library/Keychains'
+  selection_dest:
+    process.command_line|contains:
+      - '/Volumes/'
+  condition: selection_tool and selection_source and selection_dest
+falsepositives:
+  - Manual user backups or migrations to an external drive
+  - Backup/EDR agents that stage user data onto a mounted backup volume
+level: medium
+tags:
+  - attack.exfiltration
+  - attack.t1052.001

@@ -1,0 +1,49 @@
+title: macOS credential search through shell history files
+id: 9546a5a3-1518-4763-b536-4ab14fc22f5d
+status: experimental
+description: >
+  A live process reading or grepping an interactive shell history file
+  (.bash_history/.zsh_history) for a credential keyword such as password, token,
+  or key. Shell histories routinely capture secrets passed on the command line, so
+  an adversary harvesting them recovers reusable credentials. This is READING for
+  creds, distinct from clearing history to hide activity.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+  histfile:
+    process.command_line|contains:
+      - '.bash_history'
+      - '.zsh_history'
+      - '.sh_history'
+      - '.zhistory'
+  reader:
+    process.command_line|contains:
+      - 'grep'
+      - 'cat '
+      - 'less '
+      - 'more '
+      - 'tail '
+      - 'head '
+      - 'awk '
+      - 'strings '
+  secret:
+    process.command_line|contains:
+      - 'password'
+      - 'passwd'
+      - 'token'
+      - 'secret'
+      - 'apikey'
+      - 'api_key'
+      - 'access_key'
+      - 'private_key'
+      - 'AKIA'
+  condition: selection and histfile and reader and secret
+falsepositives:
+  - A user grepping their own shell history to recall a past command that happened to contain a credential keyword
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1552.003

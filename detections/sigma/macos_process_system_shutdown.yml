@@ -1,0 +1,37 @@
+title: macOS system shutdown or reboot
+id: 720cc969-cb37-48c0-a485-dc2d1074eef4
+status: experimental
+description: >
+  A live process invoking a system shutdown, halt, or reboot — via the shutdown
+  binary, halt/reboot, or an osascript AppleEvent telling the system to shut down
+  or restart. Adversaries force reboots to interrupt operations, complete a wiper,
+  or drop the host offline. Inherently dual-use with legitimate administration.
+logsource:
+  product: macos
+  service: process
+detection:
+  cmd_shutdown:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'shutdown -h'
+      - 'shutdown -r'
+      - '/sbin/halt'
+      - '/sbin/reboot'
+      - 'to shut down'
+      - 'to restart'
+      - 'systemsetup -setrestartpowerfailure'
+  name_power:
+    event.dataset: macos.process
+    process.name:
+      - 'shutdown'
+      - 'halt'
+      - 'reboot'
+  condition: cmd_shutdown or name_power
+falsepositives:
+  - Administrator or user performing a routine reboot/shutdown
+  - Scheduled kiosk/lab reboot cron job or MDM-initiated restart
+  - Installer or update flow that reboots to finish
+level: medium
+tags:
+  - attack.impact
+  - attack.t1529

@@ -1,0 +1,36 @@
+title: macOS protocol tunneling / port forwarding
+id: 65fba30e-0917-4e61-97ae-204488cc6d59
+status: experimental
+description: >
+  A process establishing a network tunnel or port forward: SSH local/remote/dynamic
+  forwarding (-L / -R / -D), ngrok, a socat TCP relay, or chisel. Tunneling is used
+  to pivot into a network, expose an internal service to the internet, or wrap C2
+  traffic inside an allowed channel.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'ssh -L '
+      - 'ssh -R '
+      - 'ssh -D '
+      - 'ssh -nNT'
+      - 'ngrok http'
+      - 'ngrok tcp'
+      - 'ngrok start'
+      - 'socat TCP-LISTEN'
+      - 'socat tcp-listen'
+      - 'socat TCP4-LISTEN'
+      - 'socat OPENSSL'
+      - 'chisel client'
+      - 'chisel server'
+  condition: selection
+falsepositives:
+  - Developers and admins using ssh -L/-R/-D or ngrok to reach internal services,
+    databases or share a local dev server
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1572

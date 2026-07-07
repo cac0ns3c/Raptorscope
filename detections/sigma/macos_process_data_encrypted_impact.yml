@@ -1,0 +1,42 @@
+title: macOS bulk encryption of user data for impact
+id: c9315932-3b05-485a-bddd-2b9fba37e9c9
+status: experimental
+description: >
+  A live process encrypting many user files with openssl/gpg/zip, either driven
+  by a find/loop iterator or aimed at a home data directory. This is the
+  encrypt-for-impact step of macOS ransomware. Keyed on an encryption tool AND a
+  bulk-scope or user-data indicator, so a single openssl/gpg of one config file
+  stays silent.
+logsource:
+  product: macos
+  service: process
+detection:
+  crypto_tool:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'openssl enc'
+      - 'gpg --encrypt'
+      - 'gpg -c '
+      - 'gpg --symmetric'
+      - 'zip --encrypt'
+      - 'zip -er '
+      - 'zip -re '
+  bulk_scope:
+    process.command_line|contains:
+      - 'find '
+      - 'for f in'
+      - 'while read'
+      - 'xargs '
+      - '/Documents'
+      - '/Desktop'
+      - '/Pictures'
+      - '/Movies'
+      - '/Music'
+  condition: crypto_tool and bulk_scope
+falsepositives:
+  - Backup tooling producing an encrypted archive of a Documents folder
+  - Developer batch-encrypting release assets with gpg/openssl
+level: high
+tags:
+  - attack.impact
+  - attack.t1486

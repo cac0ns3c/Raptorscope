@@ -1,0 +1,26 @@
+title: macOS broad file and directory discovery
+id: 7e2a1c94-6b3d-4f8a-9c21-0a5f7d31e884
+status: experimental
+description: >
+  A process enumerating the filesystem from a broad root or via Spotlight
+  (`find /`, `find /Users`, `mdfind`, recursive `ls -R /`). Attackers sweep for
+  sensitive files after landing; keyed on a broad search root so a project-local
+  `find . -name` stays silent.
+logsource: {product: macos, service: process}
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'find / -name'
+      - 'find / -type'
+      - 'find /Users -name'
+      - 'find /Users -type'
+      - 'mdfind '
+      - 'ls -R /'
+      - 'ls -laR /'
+  condition: selection
+falsepositives:
+  - Admin or backup scripts that legitimately walk the whole filesystem
+  - Spotlight power users invoking mdfind interactively
+level: medium
+tags: [attack.discovery, attack.t1083]

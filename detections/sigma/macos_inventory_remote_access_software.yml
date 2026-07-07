@@ -1,0 +1,45 @@
+title: macOS remote-access software present in installed-application inventory
+id: 02667937-810e-4a9d-8447-d7bdb6619e91
+status: experimental
+description: >
+  An installed application whose bundle identifier or name matches a commercial
+  remote-access / remote-control tool (TeamViewer, AnyDesk, RustDesk, Chrome
+  Remote Desktop, ScreenConnect/ConnectWise, LogMeIn, RealVNC). These tools are
+  frequently abused for hands-on-keyboard access and tech-support scams, but are
+  also legitimate IT-support software, so this is a review indicator, not a
+  known-bad.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection_bundle:
+    event.dataset: macos.inventory
+    raptorscope.app.bundle_id|contains:
+      - 'com.teamviewer'
+      - 'com.philandro.anydesk'
+      - 'com.anydesk'
+      - 'com.carriez.rustdesk'
+      - 'com.google.chromeremotedesktop'
+      - 'com.screenconnect'
+      - 'com.connectwise'
+      - 'com.logmein'
+      - 'com.realvnc'
+  selection_name:
+    event.dataset: macos.inventory
+    raptorscope.app.name|contains:
+      - 'TeamViewer'
+      - 'AnyDesk'
+      - 'RustDesk'
+      - 'Chrome Remote Desktop'
+      - 'ScreenConnect'
+      - 'ConnectWise Control'
+      - 'LogMeIn'
+  condition: selection_bundle or selection_name
+falsepositives:
+  - IT / helpdesk teams that deploy TeamViewer, AnyDesk or ScreenConnect for
+    legitimate remote support
+  - Users who installed a remote-access tool for their own remote work
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1219

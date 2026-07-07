@@ -1,0 +1,51 @@
+title: macOS system service stop via launchctl or killall
+id: c55c4b77-e4cd-4213-baf0-9ffb87c2790f
+status: experimental
+description: >
+  A live process tearing down an Apple system LaunchDaemon/Agent with launchctl
+  bootout/kill/disable, or force-killing a critical system daemon (logging,
+  auditing, directory, security, MDM) with killall/pkill. Stopping core services
+  degrades logging and system function as an impact/anti-analysis step. Distinct
+  from the security-agent unload rule, which targets endpoint-defense agents.
+logsource:
+  product: macos
+  service: process
+detection:
+  launchctl_stop:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'launchctl bootout'
+      - 'launchctl kill '
+      - 'launchctl disable'
+      - 'launchctl stop'
+      - 'launchctl remove'
+  system_daemon:
+    process.command_line|contains:
+      - 'system/com.apple.'
+      - 'com.apple.audit'
+      - 'com.apple.syslogd'
+      - 'com.apple.opendirectoryd'
+      - 'com.apple.securityd'
+      - 'com.apple.ManagedClient'
+  killall_verb:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'killall '
+      - 'pkill '
+  critical_service:
+    process.command_line|contains:
+      - 'syslogd'
+      - 'auditd'
+      - 'opendirectoryd'
+      - 'securityd'
+      - 'trustd'
+      - 'coreauthd'
+      - 'ManagedClient'
+  condition: (launchctl_stop and system_daemon) or (killall_verb and critical_service)
+falsepositives:
+  - Administrator or MDM troubleshooting that restarts a system daemon
+  - Support scripts booting out an Apple service to force a reload
+level: medium
+tags:
+  - attack.impact
+  - attack.t1489

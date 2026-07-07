@@ -1,0 +1,28 @@
+title: macOS local permission group membership discovery
+id: 47144e93-1951-47e8-be8f-f65360f7dc4c
+status: experimental
+description: >
+  A process reading local privileged group membership — `dscl . -read
+  /Groups/admin`, `dseditgroup -o checkmember` or `dsmemberutil checkmembership`.
+  Actors check who is in admin/wheel to pick escalation targets and confirm their
+  own privileges. Distinct from the account-enumeration rule (`dscl -list`) and the
+  dseditgroup add-to-admin rule; this keys on the read/check verbs.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'dscl . -read /Groups/admin'
+      - 'dscl . read /Groups/admin'
+      - 'dscl . -read /Groups/wheel'
+      - 'dseditgroup -o checkmember'
+      - 'dsmemberutil checkmembership'
+  condition: selection
+falsepositives:
+  - Provisioning or compliance scripts verifying admin group membership
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1069.001

@@ -1,0 +1,37 @@
+title: macOS LaunchAgent/LaunchDaemon plist executable modified in place
+id: 341a0639-fd63-40d1-b5fd-d51a4efd2b11
+status: experimental
+description: >
+  A live process editing a LaunchAgents/LaunchDaemons property list in place —
+  plutil -replace/-insert, PlistBuddy, or defaults write — to set the Program /
+  ProgramArguments / RunAtLoad key. Rewriting an existing launchd plist to point at
+  an attacker binary hijacks a trusted autostart job for persistence.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+  tool:
+    process.command_line|contains:
+      - 'plutil -replace'
+      - 'plutil -insert'
+      - 'PlistBuddy'
+      - 'defaults write'
+  plist:
+    process.command_line|contains:
+      - 'LaunchAgents'
+      - 'LaunchDaemons'
+  key:
+    process.command_line|contains:
+      - 'ProgramArguments'
+      - 'Program '
+      - ':Program'
+      - 'RunAtLoad'
+  condition: selection and tool and plist and key
+falsepositives:
+  - An installer or configuration-management tool that renders/edits its own LaunchAgent/LaunchDaemon plist during setup
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.011

@@ -1,0 +1,28 @@
+title: macOS system network configuration discovery
+id: 129e6b17-aa95-4754-93bc-5fb7b8f7ba97
+status: experimental
+description: >
+  A process enumerating the host's network configuration — hardware ports and
+  network services (`networksetup -listall...`), the resolver/DNS configuration
+  (`scutil --dns`) or the routing table (`netstat -rn`). Attackers map interfaces,
+  DNS and routes to plan pivoting and C2. Keyed to the distinctive multi-token
+  forms; a bare `ifconfig` is too common on developer hosts to include.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'networksetup -listallhardwareports'
+      - 'networksetup -listallnetworkservices'
+      - 'scutil --dns'
+      - 'netstat -rn'
+      - 'netstat -nr'
+  condition: selection
+falsepositives:
+  - Network troubleshooting by admins, VPN clients, or MDM inventory collectors
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1016

@@ -1,0 +1,30 @@
+title: macOS browser history and bookmark file discovery
+id: 4ac6c70a-30e0-462c-a47e-38000023abc9
+status: experimental
+description: >
+  A process referencing a browser history or bookmarks store on its command line —
+  Safari `History.db`/`Bookmarks.plist`, Chrome `Default/History`/`Bookmarks`, or a
+  Firefox `places.sqlite`. Reading these with a shell/sqlite/copy tool (rather than
+  the browser itself, whose argv is just its bundle path) is how stealers and
+  hands-on actors profile a victim's browsing to harvest intel and session targets.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'Safari/History.db'
+      - 'Safari/Bookmarks.plist'
+      - 'Chrome/Default/History'
+      - 'Chrome/Default/Bookmarks'
+      - 'Firefox/Profiles/'
+      - 'places.sqlite'
+  condition: selection
+falsepositives:
+  - Backup or migration tools copying browser profile data
+  - Browser-forensics/DFIR tooling run by an analyst
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1217

@@ -1,0 +1,30 @@
+title: macOS network sniffing via packet capture tooling
+id: 6c2e9b16-fea8-4c94-9100-111e89538dfe
+status: experimental
+description: >
+  A live process capturing network traffic — tcpdump/tshark, or the Wi-Fi
+  `airport ... sniff` monitor mode. On an endpoint this is a credential-access and
+  reconnaissance indicator: an adversary reading cleartext protocols, tokens, or
+  session material off the wire.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'tcpdump'
+      - 'tshark'
+  airport:
+    process.command_line|contains:
+      - 'airport'
+  sniff:
+    process.command_line|contains:
+      - 'sniff'
+  condition: selection or (airport and sniff)
+falsepositives:
+  - A network administrator, monitoring agent, or Wireshark session performing a sanctioned packet capture
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1040

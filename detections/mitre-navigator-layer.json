@@ -1,0 +1,773 @@
+{
+  "name": "Raptorscope macOS coverage",
+  "versions": {
+    "attack": "14",
+    "navigator": "4.9.1",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "Raptorscope Sigma coverage \u2014 140 rules over 104 techniques.",
+  "sorting": 3,
+  "layout": {
+    "layout": "side",
+    "showID": true,
+    "showName": true
+  },
+  "hideDisabled": false,
+  "techniques": [
+    {
+      "techniqueID": "T1003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS local password hash dump via dscl ShadowHashData",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1003.008",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS sensitive password file access",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1005",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS protected-folder (Desktop/Documents/Downloads) TCC grant to a non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1007",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system service discovery via launchctl",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1016",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system network configuration discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS host listening on an RDP port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS host listening on an RDP port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021.002",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS SMB share mount / enumeration",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS non-interactive SSH lateral movement via sshpass or disabled host checking",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021.005",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS remote desktop / screen sharing enabled from command line",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1033",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system owner and user discovery burst",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1036",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unsigned application installed outside /Applications",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1036.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unsigned or untrusted process running",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1036.005",
+      "score": 6,
+      "color": "#1b5e20",
+      "comment": "macOS BTM item claims Apple developer from a non-system path; macOS application bundle installed in a temporary or shared staging path; macOS persistence masquerading as an Apple label; macOS unsigned application impersonating a major vendor bundle identifier; macOS unsigned application impersonating an Apple bundle identifier; macOS unsigned application installed outside /Applications",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1036.008",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS quarantined download with a double-extension masquerade",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1037.002",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS login/logout hook installed via defaults write",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1040",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS network sniffing via packet capture tooling",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1041",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS data exfiltration via curl upload",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1048",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS exfiltration over alternative protocol (ftp/tftp)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1049",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system network connections discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1052.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS data copied to removable / mounted volume",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1053.003",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS cron/periodic job executes a binary from a world-writable path; macOS cron/periodic job runs a suspicious command",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1055",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS task-port / task_for_pid authorization right granted (Unified Log)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1056.001",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS non-Apple client requested a sensitive TCC service (Unified Log); macOS raw binary requested AppleEvents/keystroke-synthesis TCC service (Unified Log); macOS sensitive TCC grant to a non-Apple client; macOS synthetic-input (PostEvent) TCC grant to a non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1056.002",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS fake password prompt via osascript hidden-answer dialog",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1057",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS process discovery filtered for security or monitoring tooling",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1059.002",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS AppleScript shell execution via osascript; macOS TCC request from a binary in a world-writable/temp path (Unified Log); macOS persistence item runs AppleScript that shells out; macOS raw binary requested AppleEvents/keystroke-synthesis TCC service (Unified Log)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1059.004",
+      "score": 6,
+      "color": "#1b5e20",
+      "comment": "macOS base64-decoded payload piped to a shell or interpreter; macOS persistence item runs a reverse or interactive shell; macOS persistence item runs a shell download one-liner; macOS scripting interpreter executing inline code; macOS shell or interpreter bound to a listening socket; macOS shell or interpreter with an outbound network connection",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1059.006",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS persistence item runs inline scripting-interpreter code; macOS scripting interpreter executing inline code",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1059.007",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS JavaScript for Automation (JXA) execution via osascript",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1069.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS local permission group membership discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1070",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unified logs or diagnostics cleared",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1070.003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS shell history cleared or disabled",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1070.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS anti-forensic secure file deletion",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1070.006",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS file timestamps altered (timestomp)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1071",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS outbound connection to an IRC C2 port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1071.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS DNS tunneling / DNS-C2 tool execution",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1082",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS TCC request from a binary in a world-writable/temp path (Unified Log); macOS host hardware/OS fingerprinting via system_profiler",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1083",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS broad file and directory discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1087.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS local account enumeration via dscl/dscacheutil",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1090",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS outbound connection to a Tor or SOCKS anonymity port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1090.003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS outbound connection to a Tor or SOCKS anonymity port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1091",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unsigned binary executed from a mounted volume",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1095",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS shell or interpreter bound to a listening socket; macOS shell or interpreter with an outbound network connection",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1098",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS account added to admin or wheel group via dseditgroup",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1098.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS persistence item writes to SSH authorized_keys",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1102",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS quarantined download delivered from a chat/file-drop CDN; macOS quarantined download from a paste site or anonymous file host",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1105",
+      "score": 5,
+      "color": "#1b5e20",
+      "comment": "macOS process invoking a network download or beacon; macOS quarantined download delivered from a chat/file-drop CDN; macOS quarantined download from a file-extension look-alike TLD (.zip/.mov); macOS quarantined download from a paste site or anonymous file host; macOS quarantined download from a tunneling or anonymous file-sharing host",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1112",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS screensaver password prompt disabled via defaults write",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1113",
+      "score": 5,
+      "color": "#1b5e20",
+      "comment": "macOS Screen Recording TCC grant to a non-Apple client; macOS non-Apple client requested a sensitive TCC service (Unified Log); macOS persistence item runs screencapture for surveillance; macOS sensitive TCC grant to a non-Apple client; macOS silent screen capture to a file",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1114.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS local email store collection",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1115",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS clipboard capture via pbpaste to file or network",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1119",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS automated collection via find with a copy/archive action",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1123",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS Camera or Microphone TCC grant to an unexpected non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1125",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS Camera or Microphone TCC grant to an unexpected non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1136.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS local account creation or admin escalation via dscl or sysadminctl",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1140",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS base64-decoded payload piped to a shell or interpreter",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1201",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS password policy discovery via pwpolicy",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1204.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS quarantined download whose origin URL is a link shortener",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1204.002",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS known adware or PUP family present in installed-application inventory; macOS process running from a suspicious path; macOS quarantined download with a double-extension masquerade; macOS quarantined executable or script downloaded",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1217",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS browser history and bookmark file discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1219",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS remote-access software present in installed-application inventory",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1222.002",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS execute bit set on file in Downloads or Shared",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1485",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS destructive wipe of user data or whole volume",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1486",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS bulk encryption of user data for impact",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1489",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system service stop via launchctl or killall",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1490",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS inhibit system recovery via snapshot or Time Machine tampering",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1496",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS cryptomining / resource hijacking",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1497.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS virtualization/sandbox detection via ioreg vendor grep",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1518",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS installed software discovery",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1518.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS security posture discovery (Gatekeeper/SIP/FileVault/firewall status)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1529",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS system shutdown or reboot",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1543.001",
+      "score": 6,
+      "color": "#1b5e20",
+      "comment": "macOS BTM persistence item from suspicious path; macOS launch agent or daemon with an untrusted code signature; macOS launchd persistence activated via launchctl from a world-writable path; macOS non-system process granted a sensitive authorization right (Unified Log); macOS persistence masquerading as an Apple label; macOS persistence program in suspicious path",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1543.004",
+      "score": 7,
+      "color": "#1b5e20",
+      "comment": "macOS BTM daemon registered by an unknown developer; macOS BTM item claims Apple developer from a non-system path; macOS BTM persistence item from suspicious path; macOS launch agent or daemon with an untrusted code signature; macOS launchd persistence activated via launchctl from a world-writable path; macOS persistence masquerading as an Apple label",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1546.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS persistence via shell startup file modification",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1547",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unsigned configuration profile installed",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1547.006",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS kernel extension loaded from a world-writable staging path",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1547.011",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS LaunchAgent/LaunchDaemon plist executable modified in place",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1547.015",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS BTM persistence item from suspicious path; macOS hidden and unsigned login item; macOS login item from suspicious path; macOS login item points directly at a shell or interpreter",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1548",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS authorization database weakened via security authorizationdb; macOS authorization right granted to a process in a temp/world-writable path (Unified Log); macOS non-system process granted a sensitive authorization right (Unified Log); macOS payload run as root via launchctl asuser 0",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1548.003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS sudoers policy tampered from the command line",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1548.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS elevated execution requested via authorization prompt",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1548.006",
+      "score": 6,
+      "color": "#1b5e20",
+      "comment": "macOS AppleEvents automation TCC grant to a non-Apple client; macOS SysAdminFiles TCC grant to a non-Apple client; macOS TCC grant to a path-based (non-bundle) client; macOS TCC privacy database tampered via sqlite3; macOS non-Apple client requested a sensitive TCC service (Unified Log); macOS sensitive TCC grant to a non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1552.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS SSH and cloud credential file harvest",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1552.003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS credential search through shell history files",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1552.004",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS SSH and cloud credential file harvest; macOS private key export via security export identities",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1553",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS unsigned configuration profile installed",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1553.001",
+      "score": 2,
+      "color": "#66bb6a",
+      "comment": "macOS quarantine attribute stripped via xattr; macOS unsigned application installed directly in /Applications",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1553.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS rogue root CA trusted via security add-trusted-cert",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1554",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS App-Management TCC grant to a non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1555",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS known credential dumping tool execution",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1555.001",
+      "score": 3,
+      "color": "#2e7d32",
+      "comment": "macOS Keychain credential dumping via security dump-keychain; macOS login keychain file raw read; macOS persistence item dumps or queries the login keychain",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1555.003",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS browser credential store access",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1559",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS AppleEvents automation TCC grant to a non-Apple client",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1560.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS staging of user data into an archive",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1562.001",
+      "score": 6,
+      "color": "#1b5e20",
+      "comment": "macOS Gatekeeper assessment rule disabled or allowlisted via spctl; macOS Gatekeeper or SIP weakened via spctl or csrutil; macOS boot-args tampered to disable library validation or AMFI; macOS persistence item disables system security controls; macOS raw binary requested EndpointSecurity TCC service (Unified Log); macOS security agent unloaded or killed",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1562.004",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS Application Firewall disabled via socketfilterfw",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1564.001",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS file hidden via chflags or SetFile invisible bit",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1566.002",
+      "score": 4,
+      "color": "#1b5e20",
+      "comment": "macOS quarantined download from a file-extension look-alike TLD (.zip/.mov); macOS quarantined download whose origin URL is a link shortener; macOS quarantined executable or script downloaded; macOS quarantined file downloaded over cleartext HTTP",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1567.002",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS data exfiltration to cloud storage",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1570",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS lateral tool transfer over SSH (rsync/sftp push)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1571",
+      "score": 3,
+      "color": "#2e7d32",
+      "comment": "macOS UDP beacon to a backdoor/C2 remote port; macOS established connection to a backdoor/C2 remote port; macOS listener bound on a common backdoor/C2 port",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1572",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS protocol tunneling / port forwarding",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1574.006",
+      "score": 1,
+      "color": "#a5d6a7",
+      "comment": "macOS dylib injection via DYLD_INSERT_LIBRARIES",
+      "enabled": true
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#a5d6a7",
+      "#1b5e20"
+    ],
+    "minValue": 1,
+    "maxValue": 7
+  },
+  "legendItems": [
+    {
+      "label": "1",
+      "color": "#a5d6a7"
+    },
+    {
+      "label": "2",
+      "color": "#66bb6a"
+    },
+    {
+      "label": "3",
+      "color": "#2e7d32"
+    },
+    {
+      "label": "4+",
+      "color": "#1b5e20"
+    }
+  ]
+}

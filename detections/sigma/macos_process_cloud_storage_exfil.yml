@@ -1,0 +1,37 @@
+title: macOS data exfiltration to cloud storage
+id: 4319b722-f6fe-4fda-abb9-81c402327d5e
+status: experimental
+description: >
+  A process bulk-copying local data into third-party cloud storage using rclone,
+  the AWS CLI, or gsutil, or pushing a file to a well-known one-shot file-drop /
+  paste host with curl. These are the transfer verbs (copy/sync/move/cp) paired
+  with a remote destination, the classic exfiltration-to-web-service step.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'rclone copy '
+      - 'rclone sync '
+      - 'rclone move '
+      - 'aws s3 cp '
+      - 'aws s3 sync '
+      - 'gsutil cp '
+      - 'gsutil -m cp '
+      - 'gsutil rsync '
+      - 'curl -T https://transfer.sh'
+      - 'transfer.sh/'
+      - 'file.io'
+      - 'anonfiles.com'
+      - '0x0.st'
+  condition: selection
+falsepositives:
+  - rclone, aws-cli or gsutil used by legitimate backup, DevOps or data-engineering
+    workflows that intentionally push data to cloud buckets
+  - Developers sharing build artifacts or logs through transfer.sh / file.io
+level: medium
+tags:
+  - attack.exfiltration
+  - attack.t1567.002

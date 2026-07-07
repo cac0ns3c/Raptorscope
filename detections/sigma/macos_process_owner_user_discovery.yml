@@ -1,0 +1,37 @@
+title: macOS system owner and user discovery burst
+id: 5a5f95e5-e5d1-4c1d-9ea7-61592ceefe10
+status: experimental
+description: >
+  A single command line that chains `whoami` with another identity-enumeration
+  utility (`id`, `groups`, `who`, `w`). A lone `id` or `whoami` is a normal part
+  of shells and login scripts, but bursting several together in one argv is a
+  classic recon one-liner dropped after initial access. Requiring `whoami` plus a
+  second identity command keeps benign single invocations silent.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_whoami:
+    event.dataset: macos.process
+    process.command_line|contains: 'whoami'
+  selection_other:
+    process.command_line|contains:
+      - 'id -un'
+      - 'id -u '
+      - 'id -g'
+      - '&& id'
+      - '; id'
+      - 'id;'
+      - 'id &&'
+      - 'groups'
+      - 'who am i'
+      - '; who'
+      - '&& who'
+      - 'w -h'
+  condition: selection_whoami and selection_other
+falsepositives:
+  - Onboarding or diagnostic scripts that print the current user identity
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1033

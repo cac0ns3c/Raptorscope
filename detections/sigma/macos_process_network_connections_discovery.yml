@@ -1,0 +1,29 @@
+title: macOS system network connections discovery
+id: bc2f6f9b-359a-4076-831f-e46069b18647
+status: experimental
+description: >
+  A process listing active network connections or the ARP cache — `netstat -an`,
+  `lsof -i` or `arp -a`. Post-exploitation actors enumerate live sockets and
+  neighbouring hosts to find lateral-movement targets and existing sessions.
+  These commands also appear in benign network debugging, so this is a
+  medium-confidence discovery signal rather than a standalone high alert.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'netstat -an'
+      - 'netstat -na'
+      - 'lsof -i'
+      - 'arp -a'
+      - 'arp -na'
+  condition: selection
+falsepositives:
+  - Developers and admins debugging listening ports or connectivity
+  - Monitoring and EDR agents sampling open sockets
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1049

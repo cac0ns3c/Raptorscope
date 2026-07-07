@@ -1,0 +1,27 @@
+title: macOS system service discovery via launchctl
+id: 1c3bba53-bda1-4bcd-b1f0-421aed7be10f
+status: experimental
+description: >
+  A process enumerating loaded services and daemons with `launchctl list`,
+  `launchctl print` or `launchctl dumpstate`. Attackers inventory launchd jobs to
+  find persistence slots, privileged daemons and security agents to disable. These
+  are also legitimate admin/debug commands, so this is a medium-confidence
+  discovery signal.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'launchctl list'
+      - 'launchctl print'
+      - 'launchctl dumpstate'
+  condition: selection
+falsepositives:
+  - Admins and developers inspecting or debugging LaunchAgents/LaunchDaemons
+  - MDM and monitoring agents auditing installed services
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1007

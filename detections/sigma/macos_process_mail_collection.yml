@@ -1,0 +1,38 @@
+title: macOS local email store collection
+id: f6dd5e88-79ea-4a7b-9987-5e9efdae4089
+status: experimental
+description: >
+  A live process reading, copying, or archiving the local Mail store — the
+  ~/Library/Mail directory, .emlx messages, or an .mbox export — with a copy,
+  archive, or search tool. Bulk access to the on-disk mailbox is a classic local
+  email-collection step prior to staging and exfiltration.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+  maildata:
+    process.command_line|contains:
+      - '/Library/Mail'
+      - '.emlx'
+      - '.mbox'
+  tool:
+    process.command_line|contains:
+      - 'cat '
+      - 'cp '
+      - 'grep'
+      - 'tar '
+      - 'zip '
+      - 'rsync'
+      - 'ditto'
+      - 'find '
+      - 'strings '
+      - 'less '
+  condition: selection and maildata and tool
+falsepositives:
+  - A user-run backup or migration script (rsync/tar) that includes the Mail directory, or a mailbox import/export the user initiated
+level: medium
+tags:
+  - attack.collection
+  - attack.t1114.001
