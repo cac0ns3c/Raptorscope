@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach } from "vitest";
 
 import { ArtifactTable } from "./ArtifactTable";
 import { renderWithApi } from "../test/renderWithApi";
+
+beforeEach(() => window.localStorage.clear());
 
 describe("ArtifactTable", () => {
   it("renders dataset-appropriate columns and rows", async () => {
@@ -76,5 +79,53 @@ describe("ArtifactTable", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("11–12 of 12")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("hides and restores a column via the column picker", async () => {
+    renderWithApi(
+      <ArtifactTable caseName="mac-victim" dataset="macos.persistence" />,
+    );
+    expect(
+      await screen.findByRole("columnheader", { name: /Label/ }),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Columns/ }));
+    const menu = screen.getByRole("group", { name: "choose columns" });
+    // the picker offers more than the curated columns — every field in the data
+    expect(within(menu).getByText("event.dataset")).toBeInTheDocument();
+
+    // uncheck the curated "Label" column (target its unique field path)
+    const labelRow = within(menu)
+      .getByText("raptorscope.persistence.label")
+      .closest("label")!;
+    await userEvent.click(within(labelRow).getByRole("checkbox"));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("columnheader", { name: /Label/ }),
+      ).not.toBeInTheDocument(),
+    );
+
+    // re-check it -> column comes back
+    await userEvent.click(within(labelRow).getByRole("checkbox"));
+    expect(
+      await screen.findByRole("columnheader", { name: /Label/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("adds a non-default field as a column", async () => {
+    renderWithApi(
+      <ArtifactTable caseName="mac-victim" dataset="macos.persistence" />,
+    );
+    await screen.findByRole("columnheader", { name: /Label/ });
+    await userEvent.click(screen.getByRole("button", { name: /Columns/ }));
+    const menu = screen.getByRole("group", { name: "choose columns" });
+    const fileRow = within(menu).getByText("file.name").closest("label")!;
+    await userEvent.click(within(fileRow).getByRole("checkbox"));
+    // a new "Name" column header appears (humanized from host.name)
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("columnheader").some((h) => /Name/.test(h.textContent || "")),
+      ).toBe(true),
+    );
   });
 });

@@ -4,11 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Doc } from "../api/types";
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
+import { useColumns } from "../hooks/useColumns";
 import { State } from "../ui/State";
 import { rowActivation } from "../util/a11y";
 import { cell, dig } from "../util/dig";
 import { fmtTime } from "../util/format";
 import { buildCsv, download } from "../util/tabular";
+import { ColumnPicker } from "./ColumnPicker";
 import { columnsFor } from "./columns";
 import { DetailDrawer } from "./DetailDrawer";
 
@@ -48,7 +50,16 @@ export function ArtifactTable({
     [caseName, dataset],
   );
 
-  const columns = columnsFor(dataset);
+  const {
+    columns: chosen,
+    available,
+    visible,
+    toggle,
+    reset,
+  } = useColumns(dataset, data?.items ?? []);
+  // Never render a column-less table — fall back to the dataset defaults if the
+  // user has hidden everything.
+  const columns = chosen.length ? chosen : columnsFor(dataset);
 
   const sorted = useMemo(() => {
     const items = data?.items ?? [];
@@ -96,6 +107,12 @@ export function ArtifactTable({
       <div className="view-toolbar">
         <span className="muted">{data.total} rows</span>
         <span className="view-export">
+          <ColumnPicker
+            available={available}
+            visible={visible}
+            toggle={toggle}
+            reset={reset}
+          />
           <button
             onClick={() =>
               download(
