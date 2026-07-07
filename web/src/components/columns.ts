@@ -42,6 +42,8 @@ export const COLUMNS: Record<string, Column[]> = {
     { header: "Service", path: "raptorscope.tcc.service" },
     { header: "Client", path: "raptorscope.tcc.client" },
     { header: "Allowed", path: "raptorscope.tcc.allowed" },
+    { header: "Right", path: "raptorscope.unifiedlog.right" },
+    { header: "Process", path: "raptorscope.unifiedlog.process" },
   ],
 };
 

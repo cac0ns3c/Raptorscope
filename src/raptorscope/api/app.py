@@ -177,6 +177,20 @@ def _summary(doc: dict) -> str:
             f"{_dig(doc, 'raptorscope.app.name')} "
             f"{_dig(doc, 'raptorscope.app.version')} ({_dig(doc, 'file.path')})"
         )
+    if ds == "macos.unifiedlog":
+        action = _dig(doc, "event.action")
+        if action == "tcc_access_request":
+            state = "allowed" if _dig(doc, "raptorscope.tcc.allowed") else "denied"
+            return (
+                f"TCC {_dig(doc, 'raptorscope.tcc.service')} "
+                f"{state} for {_dig(doc, 'raptorscope.tcc.client')}"
+            )
+        if action == "authorization_right":
+            return (
+                f"authz: {_dig(doc, 'raptorscope.unifiedlog.right')} granted to "
+                f"{_dig(doc, 'raptorscope.unifiedlog.process')}"
+            )
+        return f"{action or 'unifiedlog'}: {_dig(doc, 'raptorscope.unifiedlog.process')}"
     return _dig(doc, "file.path") or ds or ""
 
 
