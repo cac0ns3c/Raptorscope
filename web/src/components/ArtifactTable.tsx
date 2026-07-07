@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { Doc } from "../api/types";
 import { useApi } from "../context/ApiContext";
@@ -33,11 +33,13 @@ export function ArtifactTable({
   const [offset, setOffset] = useState(0);
   const [sort, setSort] = useState<{ path: string; dir: 1 | -1 } | null>(null);
   const [selected, setSelected] = useState<Doc | null>(null);
+  const handledHighlight = useRef<string | undefined>(undefined);
 
   // Reset paging/sort when the case or dataset changes.
   useEffect(() => {
     setOffset(0);
     setSort(null);
+    handledHighlight.current = undefined;
   }, [caseName, dataset]);
 
   const { data, loading, error, reload } = useAsync(
@@ -54,6 +56,19 @@ export function ArtifactTable({
       (a, b) => compare(dig(a, sort.path), dig(b, sort.path)) * sort.dir,
     );
   }, [data, sort]);
+
+  // Pivot target: jump to the highlighted doc's page and open its drawer (once
+  // per new highlight) so alert→evidence lands ON the document, not near it.
+  useEffect(() => {
+    if (!highlightId || !data) return;
+    if (handledHighlight.current === highlightId) return;
+    const idx = sorted.findIndex((d) => d._id === highlightId);
+    if (idx >= 0) {
+      handledHighlight.current = highlightId;
+      setOffset(Math.floor(idx / pageSize) * pageSize);
+      setSelected(sorted[idx]);
+    }
+  }, [highlightId, data, sorted, pageSize]);
 
   const shortDs = dataset.replace("macos.", "");
   if (loading) return <State variant="loading" message={`Loading ${shortDs}…`} />;
