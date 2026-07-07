@@ -914,6 +914,11 @@ button {
   text-align: left;
   transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
+/* Let the content column shrink so long unbroken values (paths, command lines)
+   ellipsize inside the card instead of forcing horizontal page overflow. */
+.alert-card > * {
+  min-width: 0;
+}
 .alert-card {
   cursor: pointer;
 }
