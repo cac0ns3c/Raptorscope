@@ -112,4 +112,10 @@ export interface Alert {
   dataset: string;
   doc_id: string;
   evidence: Record<string, unknown>;
+  // detection metadata (surfaced from the rule)
+  mitre?: string[];
+  description?: string;
+  falsepositives?: string[];
+  status?: string;
+  time_source?: string | null;
 }

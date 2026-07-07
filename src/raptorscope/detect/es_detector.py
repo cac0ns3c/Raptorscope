@@ -20,7 +20,7 @@ import yaml
 
 from ..es.store import ESStore
 from .convert import convert_rule
-from .evaluate import Rule, _evidence, _rule_datasets
+from .evaluate import Rule, _dig, _evidence, _rule_datasets, alert_meta
 
 
 def _dataset_of(src: dict):
@@ -73,6 +73,8 @@ class ESDetector:
                         "dataset": _dataset_of(src),
                         "doc_id": h.get("_id"),
                         "evidence": _evidence(src, rule.detection),
+                        "time_source": _dig(src, "raptorscope.time.source"),
+                        **alert_meta(rule),
                     }
                 )
         return alerts

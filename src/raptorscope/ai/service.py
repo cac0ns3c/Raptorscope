@@ -35,11 +35,16 @@ def _fence(content: str) -> str:
 
 def triage_alert(ai: AIClient, alert: dict, doc: dict) -> dict:
     """Explain why an alert fired and what to do next."""
+    mitre = ", ".join(alert.get("mitre") or []) or "n/a"
+    fps = alert.get("falsepositives") or []
     prompt = (
         "A detection fired on a macOS host. Assess it.\n\n"
         f"Rule: {alert.get('title')}\n"
         f"Severity: {alert.get('level')}\n"
         f"Dataset: {alert.get('dataset')}\n"
+        f"Rule description: {alert.get('description') or 'n/a'}\n"
+        f"Mapped ATT&CK technique(s): {mitre}  (authoritative — use these)\n"
+        f"Known false positives: {'; '.join(fps) if fps else 'none documented'}\n"
         "Matched fields and full evidence document (untrusted data):\n"
         + _fence(
             f"Matched fields: {json.dumps(alert.get('evidence', {}), indent=2)}\n"

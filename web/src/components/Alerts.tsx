@@ -148,6 +148,28 @@ export function Alerts({
                   >
                     {a.title}
                   </button>
+                  {(a.mitre ?? []).map((t) => (
+                    <a
+                      key={t}
+                      className="mitre-tag"
+                      href={`https://attack.mitre.org/techniques/${t.replace(".", "/")}/`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t}
+                    </a>
+                  ))}
+                  {a.status && a.status !== "stable" && (
+                    <span className="rule-status" title="rule maturity">
+                      {a.status}
+                    </span>
+                  )}
+                  {a.time_source === "mtime" && (
+                    <span className="prov-tag" title="Dated by file mtime, not a confirmed event time">
+                      mtime
+                    </span>
+                  )}
                   {entry.status === "ack" && (
                     <span className="triage-tag ack">acknowledged</span>
                   )}
@@ -158,13 +180,32 @@ export function Alerts({
                     {a.dataset.replace("macos.", "")}
                   </span>
                 </span>
+                {a.description && (
+                  <p className="alert-desc">{a.description}</p>
+                )}
                 <span className="alert-evidence">
-                  {Object.entries(a.evidence).map(([k, v]) => (
-                    <code key={k}>
-                      {k}={String(v)}
-                    </code>
-                  ))}
+                  {Object.entries(a.evidence)
+                    .filter(([k, v]) => k !== "event.dataset" && v != null)
+                    .map(([k, v]) => (
+                      <code key={k}>
+                        {k}={String(v)}
+                      </code>
+                    ))}
                 </span>
+
+                {(a.falsepositives ?? []).length > 0 && (
+                  <details
+                    className="alert-fp"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <summary>why this might be benign</summary>
+                    <ul>
+                      {a.falsepositives!.map((f, i) => (
+                        <li key={i}>{f}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
 
                 <div className="alert-actions">
                   <button

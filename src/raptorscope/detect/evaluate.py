@@ -9,6 +9,7 @@ values as OR, multiple fields as AND, and a boolean ``condition`` over named
 selection blocks (``and``/``or``/``not``/parens, plus ``all of``/``N of them``).
 """
 import glob
+import re
 from dataclasses import dataclass
 
 import yaml
@@ -22,6 +23,33 @@ class Rule:
     tags: list
     datasets: set
     detection: dict
+    description: str = ""
+    falsepositives: list = None  # type: ignore[assignment]
+    status: str = "experimental"
+
+
+_TECHNIQUE = re.compile(r"^attack\.(t\d{4}(?:\.\d{3})?)$", re.IGNORECASE)
+
+
+def mitre_techniques(tags) -> list:
+    """Extract ATT&CK technique IDs (e.g. 'T1547.015') from Sigma `attack.*` tags."""
+    out = []
+    for t in tags or []:
+        m = _TECHNIQUE.match(str(t))
+        if m:
+            out.append(m.group(1).upper())
+    return out
+
+
+def alert_meta(rule: "Rule") -> dict:
+    """The detection metadata every alert should carry (shared by both detectors)."""
+    return {
+        "tags": rule.tags,
+        "mitre": mitre_techniques(rule.tags),
+        "description": (rule.description or "").strip(),
+        "falsepositives": rule.falsepositives or [],
+        "status": rule.status,
+    }
 
 
 def _dig(doc, path):
@@ -170,6 +198,9 @@ def load_rules(rules_dir: str) -> list[Rule]:
                 tags=doc.get("tags", []),
                 datasets=_rule_datasets(detection),
                 detection=detection,
+                description=doc.get("description", "") or "",
+                falsepositives=doc.get("falsepositives", []) or [],
+                status=doc.get("status", "experimental"),
             )
         )
     return rules
@@ -212,6 +243,8 @@ def run_rules(docs, rules) -> list[dict]:
                         "dataset": dataset,
                         "doc_id": doc.get("_id"),
                         "evidence": _evidence(doc, rule.detection),
+                        "time_source": _dig(doc, "raptorscope.time.source"),
+                        **alert_meta(rule),
                     }
                 )
     return alerts

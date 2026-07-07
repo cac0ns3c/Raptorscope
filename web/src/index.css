@@ -1071,6 +1071,64 @@ button {
   white-space: nowrap;
 }
 
+/* alert detection metadata (surfaced from the rule) */
+.mitre-tag {
+  position: relative;
+  z-index: 1;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 0.05rem 0.4rem;
+  text-decoration: none;
+}
+.mitre-tag:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.rule-status {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sev-medium);
+  border: 1px solid color-mix(in srgb, var(--sev-medium) 45%, transparent);
+  border-radius: var(--pill);
+  padding: 0.04rem 0.45rem;
+}
+.prov-tag {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  background: var(--surface-3);
+  border-radius: var(--pill);
+  padding: 0.04rem 0.45rem;
+}
+.alert-desc {
+  grid-column: 2;
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.alert-fp {
+  grid-column: 2;
+  position: relative;
+  z-index: 1;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.alert-fp summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  width: fit-content;
+}
+.alert-fp ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
 /* ---------- landing / case picker ---------- */
 .landing {
   max-width: 62rem;
