@@ -138,6 +138,7 @@ const CASES: Case[] = [
 
 export function makeFakeClient(): ApiClient {
   const docsFor = (name: string) => (name === DIRTY ? DIRTY_DOCS : CLEAN_DOCS);
+  const TRIAGE: Record<string, Record<string, string>> = {};
 
   return {
     listCases: async () => CASES,
@@ -153,6 +154,17 @@ export function makeFakeClient(): ApiClient {
       return limit != null ? rows.slice(0, limit) : rows;
     },
     getAlerts: async (name) => (name === DIRTY ? ALERTS : []),
+    getTriage: async () => ({ ...TRIAGE }),
+    setTriage: async (_name, ruleId, docId, patch) => {
+      const key = `${ruleId}|${docId}`;
+      const entry = { ...(TRIAGE[key] ?? {}), ...patch, actor: "test", ts: "2026-07-07T00:00:00Z" };
+      if (!entry.status && !entry.note) {
+        delete TRIAGE[key];
+        return {};
+      }
+      TRIAGE[key] = entry as Record<string, string>;
+      return entry as Record<string, string>;
+    },
     search: async (name, query) => {
       let items = Object.entries(docsFor(name))
         .filter(([ds]) => !query.dataset || ds === query.dataset)

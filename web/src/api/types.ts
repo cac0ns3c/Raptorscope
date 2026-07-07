@@ -105,6 +105,13 @@ export type CopilotEvent =
   | { type: "tool"; tool: string; input: Record<string, unknown> }
   | { type: "text"; text: string };
 
+export interface TriageServerEntry {
+  status?: string;
+  note?: string;
+  actor?: string;
+  ts?: string;
+}
+
 export interface Alert {
   rule_id: string;
   title: string;

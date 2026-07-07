@@ -14,6 +14,7 @@ import type {
   SearchQuery,
   SearchResult,
   TimelineRow,
+  TriageServerEntry,
 } from "./types";
 
 /** A mutable token holder so the client picks up a token set after construction. */
@@ -33,6 +34,14 @@ export interface ApiClient {
   ): Promise<ArtifactPage>;
   getTimeline(caseName: string, limit?: number): Promise<TimelineRow[]>;
   getAlerts(caseName: string): Promise<Alert[]>;
+  /** Server-side triage state, keyed by `${rule_id}|${doc_id}`. */
+  getTriage(caseName: string): Promise<Record<string, TriageServerEntry>>;
+  setTriage(
+    caseName: string,
+    ruleId: string,
+    docId: string,
+    patch: { status?: string | null; note?: string | null },
+  ): Promise<TriageServerEntry>;
   search(caseName: string, query: SearchQuery): Promise<SearchResult>;
   login(username: string, password: string): Promise<{ token: string }>;
   listDocs(): Promise<DocMeta[]>;
@@ -146,6 +155,13 @@ export function createHttpClient(
         `/cases/${c(name)}/timeline${limit != null ? `?limit=${limit}` : ""}`,
       ),
     getAlerts: (name) => req(`/cases/${c(name)}/alerts`),
+    getTriage: (name) => req(`/cases/${c(name)}/triage`),
+    setTriage: (name, ruleId, docId, patch) =>
+      req(`/cases/${c(name)}/triage`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ rule_id: ruleId, doc_id: docId, ...patch }),
+      }),
     search: (name, query) => {
       const params = new URLSearchParams();
       for (const [k, v] of Object.entries(query)) {

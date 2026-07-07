@@ -54,7 +54,7 @@ export function Alerts({
 }) {
   const api = useApi();
   const aiEnabled = useAiEnabled();
-  const { map, update } = useTriage();
+  const { map, update } = useTriage(caseName);
   const [showDismissed, setShowDismissed] = useState(false);
   const [noteOpen, setNoteOpen] = useState<string | null>(null);
   const [ai, setAi] = useState<AiState>({});

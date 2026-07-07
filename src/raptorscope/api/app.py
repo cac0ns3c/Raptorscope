@@ -13,7 +13,7 @@ import uuid
 
 import json as _json
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -81,6 +81,7 @@ from .auth import (
     make_auth_dependency,
     make_role_dependency,
 )
+from .casestate import TriageStore
 from .docs import get_doc, list_docs
 from .store import Store
 
@@ -93,6 +94,13 @@ class Credentials(BaseModel):
 class TriageBody(BaseModel):
     rule_id: str
     doc_id: str
+
+
+class TriagePatch(BaseModel):
+    rule_id: str
+    doc_id: str
+    status: str | None = None
+    note: str | None = None
 
 
 class QuestionBody(BaseModel):
@@ -258,9 +266,17 @@ def create_app(
     # All /cases/* routes require a valid token when auth is enabled.
     router = APIRouter(dependencies=[Depends(require_token)])
 
+    triage_store = TriageStore(os.environ.get("RAPTORSCOPE_STATE_DIR"))
+
     def require_case(case: str) -> None:
         if case not in store.hosts():
             raise HTTPException(status_code=404, detail=f"unknown case: {case}")
+
+    def _actor(request: Request) -> str:
+        if not auth.enabled:
+            return "-"
+        prin = auth.principal(_bearer(request.headers.get("authorization", "")))
+        return prin[0] if prin else "anon"
 
     def case_summary(case: str) -> dict:
         return {
@@ -300,6 +316,17 @@ def create_app(
     def get_case(case: str):
         require_case(case)
         return case_summary(case)
+
+    @router.get("/cases/{case}/triage")
+    def get_triage(case: str):
+        require_case(case)
+        return triage_store.get(case)
+
+    @router.post("/cases/{case}/triage", dependencies=[require_analyst])
+    def set_triage(case: str, body: TriagePatch, request: Request):
+        require_case(case)
+        patch = body.model_dump(exclude_unset=True, include={"status", "note"})
+        return triage_store.set(case, body.rule_id, body.doc_id, patch, _actor(request))
 
     @router.get("/cases/{case}/overview")
     def overview(case: str):

@@ -91,12 +91,23 @@ class InMemoryStore:
     """A ``Store`` backed by a list of ECS docs held in memory."""
 
     def __init__(self, docs: list[dict]):
-        # Assign a stable id per doc; keep an id->doc index for get().
+        # Content-addressed ids so triage state survives re-ingest (an enumeration
+        # index reshuffles when the collection changes; a content hash does not).
+        # Exact-duplicate docs get a stable ``-N`` suffix by insertion order.
+        import hashlib
+        import json as _json
+
         self._docs: list[dict] = []
         self._by_id: dict[str, dict] = {}
-        for i, src in enumerate(docs):
-            doc = dict(src)
-            doc["_id"] = str(i)
+        seen: dict[str, int] = {}
+        for src in docs:
+            doc = {k: v for k, v in src.items() if k != "_id"}
+            digest = hashlib.sha1(
+                _json.dumps(doc, sort_keys=True, default=str).encode()
+            ).hexdigest()[:16]
+            n = seen.get(digest, 0)
+            seen[digest] = n + 1
+            doc["_id"] = digest if n == 0 else f"{digest}-{n}"
             self._docs.append(doc)
             self._by_id[doc["_id"]] = doc
 
