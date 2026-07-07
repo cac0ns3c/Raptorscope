@@ -1,0 +1,15 @@
+[
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:30.100000000Z", "message": "AUTHREQ_CTX: msgID=1000.1, function=<private>, service=kTCCServiceListenEvent, preflight=no, query=1, client_dict=(null), daemon_dict=<private>"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:30.100500000Z", "message": "AUTHREQ_SUBJECT: msgID=1000.1, subject=/Users/analyst/.hidden/agent,"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:30.101000000Z", "message": "AUTHREQ_RESULT: msgID=1000.1, authValue=2, authReason=1, authVersion=1, desired_auth=0, error=(null),"},
+
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:31.200000000Z", "message": "AUTHREQ_CTX: msgID=1000.2, function=<private>, service=kTCCServiceScreenCapture, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:31.200500000Z", "message": "AUTHREQ_SUBJECT: msgID=1000.2, subject=com.apple.Terminal,"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:31.201000000Z", "message": "AUTHREQ_RESULT: msgID=1000.2, authValue=2, authReason=5, authVersion=1, desired_auth=0, error=(null),"},
+
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:32.300000000Z", "message": "AUTHREQ_CTX: msgID=1000.3, function=<private>, service=kTCCServiceAddressBook, preflight=no, query=1, client_dict=(null), daemon_dict=<private>"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:32.300500000Z", "message": "AUTHREQ_SUBJECT: msgID=1000.3, subject=com.acme.contacts,"},
+  {"subsystem": "com.apple.TCC", "category": "access", "process": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd", "pid": 591, "timestamp": "2026-07-07T07:18:32.301000000Z", "message": "AUTHREQ_RESULT: msgID=1000.3, authValue=2, authReason=1, authVersion=1, desired_auth=0, error=(null),"},
+
+  {"subsystem": "com.apple.coreanimation", "category": "render", "process": "/usr/bin/other", "pid": 42, "timestamp": "2026-07-07T07:18:33.000000000Z", "message": "some unrelated log line that must be ignored"}
+]

@@ -3,14 +3,14 @@
 from fastapi.testclient import TestClient
 
 from raptorscope.cli import DEMO_SAMPLE, build_demo_app, normalize_collection
-from raptorscope.detect.pairing import ALL_DATASETS
+from raptorscope.detect.pairing import COLLECTION_DATASETS
 
 
 def test_sample_collection_ingests():
     assert DEMO_SAMPLE.is_dir()
     docs = normalize_collection(str(DEMO_SAMPLE))
     assert len(docs) == 27
-    assert {d["event"]["dataset"] for d in docs} == ALL_DATASETS
+    assert {d["event"]["dataset"] for d in docs} == COLLECTION_DATASETS
 
 
 def test_demo_app_serves_sample_case_with_alerts():
@@ -19,4 +19,4 @@ def test_demo_app_serves_sample_case_with_alerts():
     assert [c["name"] for c in cases] == ["mac-victim"]
     alerts = client.get("/cases/mac-victim/alerts").json()
     assert alerts
-    assert {a["dataset"] for a in alerts} == ALL_DATASETS
+    assert {a["dataset"] for a in alerts} == COLLECTION_DATASETS

@@ -1,6 +1,13 @@
 # Plan: raw macOS evidence ingestion — Phase 1, Unified Logs
 
-**Status:** draft / kickoff · **Date:** 2026-07-07
+**Status:** Phase 0 landed ✅ · **Date:** 2026-07-07
+
+> **Phase 0 done (vertical slice):** raw `.logarchive` → `macos-UnifiedLogs` parser →
+> `evidence.py` loader → `normalize_unifiedlog` (TCC AUTHREQ correlation by `msgID`) →
+> `macos.unifiedlog` ECS → paired Sigma rule → SPA columns. Proven end-to-end on a real
+> 198 MB archive: 446K log lines → 53 correlated TCC requests → the detection fired 3×
+> on non-Apple sensitive requests (authorized-dev-tool FP case), 0 on Apple clients.
+> 274 Python + 60 web tests green; pairing guard clean. Next: Phase 1 predicate fan-out.
 
 ## Context
 

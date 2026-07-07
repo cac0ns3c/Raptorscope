@@ -9,7 +9,7 @@ import yaml
 
 from raptorscope.cli import _NORMALIZERS, ingest, normalize_collection
 from raptorscope.collection import ARTIFACT_ALIASES
-from raptorscope.detect.pairing import ALL_DATASETS
+from raptorscope.detect.pairing import ALL_DATASETS, COLLECTION_DATASETS
 
 PROFILE = pathlib.Path("profile/raptorscope-macos.yaml")
 FIX = pathlib.Path("fixtures/velociraptor")
@@ -51,5 +51,5 @@ def test_real_artifact_filenames_ingest(tmp_path):
 
     docs = normalize_collection(str(col))
     assert len(docs) == 27
-    assert {d["event"]["dataset"] for d in docs} == ALL_DATASETS
+    assert {d["event"]["dataset"] for d in docs} == COLLECTION_DATASETS
     assert ingest(str(col), es_url=None) == 27

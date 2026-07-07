@@ -1,0 +1,36 @@
+title: macOS non-Apple client requested a sensitive TCC service (Unified Log)
+id: 1a7c9e40-0009-4000-a000-0000000c0df0
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.TCC): a non-Apple
+  client requested Accessibility, Full-Disk-Access, Input-Monitoring, or Screen
+  Recording. Unlike the TCC.db-sourced grant rule, this fires on the request
+  event itself — visible in an incident timeline (and recoverable from a raw
+  .logarchive even when TCC.db is unreadable), whether or not the grant persisted.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: tcc_access_request
+    raptorscope.tcc.service:
+      - kTCCServiceAccessibility
+      - kTCCServiceSystemPolicyAllFiles
+      - kTCCServiceListenEvent
+      - kTCCServiceScreenCapture
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
+  condition: selection and not filter_apple
+falsepositives:
+  - Automation/remote-support or developer tools the user intentionally authorized
+level: high
+tags:
+  - attack.collection
+  - attack.privilege_escalation
+  - attack.t1548.006
+  - attack.t1056.001
+  - attack.t1113

@@ -49,12 +49,19 @@ EMITTED_FIELDS = {
     "network.type",
     "network.direction",
     "raptorscope.network.state",
+    # macos.unifiedlog (raw Unified Log evidence); reuses raptorscope.tcc.* above
+    "event.action",
+    "raptorscope.unifiedlog.subsystem",
+    "raptorscope.unifiedlog.category",
+    "raptorscope.unifiedlog.process",
+    "raptorscope.unifiedlog.pid",
+    "raptorscope.unifiedlog.msg_id",
 }
 
 
-# Every ECS dataset the v1 normalizers emit; the pairing guard requires each to
-# have at least one Sigma rule.
-ALL_DATASETS = {
+# Datasets produced from a Velociraptor collection (the mac-victim sample
+# exercises all of these).
+COLLECTION_DATASETS = {
     "macos.persistence",
     "macos.process",
     "macos.quarantine",
@@ -62,6 +69,13 @@ ALL_DATASETS = {
     "macos.inventory",
     "macos.network",
 }
+# Raw-evidence datasets parsed directly off disk (no Velociraptor).
+EVIDENCE_DATASETS = {
+    "macos.unifiedlog",
+}
+# Every ECS dataset the normalizers emit; the pairing guard requires each to
+# have at least one Sigma rule.
+ALL_DATASETS = COLLECTION_DATASETS | EVIDENCE_DATASETS
 
 
 def _rule_datasets_and_fields(doc):

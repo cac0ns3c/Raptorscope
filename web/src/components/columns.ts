@@ -36,6 +36,13 @@ export const COLUMNS: Record<string, Column[]> = {
     { header: "Path", path: "file.path" },
     { header: "Signed", path: "raptorscope.app.signed" },
   ],
+  "macos.unifiedlog": [
+    { header: "Time", path: "@timestamp" },
+    { header: "Action", path: "event.action" },
+    { header: "Service", path: "raptorscope.tcc.service" },
+    { header: "Client", path: "raptorscope.tcc.client" },
+    { header: "Allowed", path: "raptorscope.tcc.allowed" },
+  ],
 };
 
 export const DEFAULT_COLUMNS: Column[] = [

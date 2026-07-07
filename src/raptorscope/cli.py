@@ -4,6 +4,7 @@ import argparse
 import pathlib
 
 from .collection import enrich_host, load_collection
+from .evidence import is_logarchive, load_unifiedlog
 
 # The committed sample collection that `raptorscope demo` serves out of the box.
 DEMO_SAMPLE = pathlib.Path(__file__).resolve().parents[2] / "samples" / "mac-victim"
@@ -18,6 +19,7 @@ from .normalize.network import normalize_network
 from .normalize.processes import normalize_processes
 from .normalize.quarantine import normalize_quarantine
 from .normalize.tcc import normalize_tcc
+from .normalize.unifiedlog import normalize_unifiedlog
 
 # collection json stem -> normalizer for that artifact
 _NORMALIZERS = {
@@ -32,6 +34,8 @@ _NORMALIZERS = {
     "tcc": normalize_tcc,
     "installed_apps": normalize_inventory,
     "network": normalize_network,
+    # raw-evidence sources (no Velociraptor)
+    "unifiedlog": normalize_unifiedlog,
 }
 
 
@@ -83,8 +87,16 @@ def _index_for(dataset: str) -> str:
 
 
 def normalize_collection(path: str) -> list[dict]:
-    """Load a collection and normalize every known artifact to ECS docs."""
-    artifacts, raw_host = load_collection(path)
+    """Load a collection (or raw evidence) and normalize to ECS docs.
+
+    Sniffs the input: a raw ``.logarchive`` goes through the evidence loader;
+    anything else is a Velociraptor collection dir/zip. Both yield the same
+    ``(artifacts, host)`` shape, so the normalizer loop is identical.
+    """
+    if is_logarchive(path):
+        artifacts, raw_host = load_unifiedlog(path)
+    else:
+        artifacts, raw_host = load_collection(path)
     host = enrich_host(raw_host)
     docs: list[dict] = []
     for name, fn in _NORMALIZERS.items():
