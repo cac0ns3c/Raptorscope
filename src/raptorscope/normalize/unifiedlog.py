@@ -31,8 +31,19 @@ _SERVICE = re.compile(r"service=(kTCCService\w+)")
 _SUBJECT = re.compile(r"subject=([^,\n]+)")
 _AUTHVAL = re.compile(r"authValue=(\d+)")
 
+# authd (com.apple.Authorization): a right grant is correlated to its requesting
+# process by the ``engine N`` id shared between the "evaluates" and "granting" lines.
+_ENGINE = re.compile(r"engine (\d+)")
+_EVAL = re.compile(r"Process (\S+) \(PID (\d+)\) evaluates")
+_GRANT = re.compile(r"granting right ([\w.]+)")
+
 
 def normalize_unifiedlog(rows: list[dict], host: dict) -> list[dict]:
+    """Dispatch each supported Unified Log subsystem to its own extractor."""
+    return _normalize_tcc(rows, host) + _normalize_authd(rows, host)
+
+
+def _normalize_tcc(rows: list[dict], host: dict) -> list[dict]:
     # Correlate the AUTHREQ_* lines of each request by msgID.
     reqs: dict[str, dict] = {}
     for r in rows:
@@ -85,6 +96,48 @@ def normalize_unifiedlog(rows: list[dict], host: dict) -> list[dict]:
                 "process": d.get("process"),
                 "pid": d.get("pid"),
                 "msg_id": mid,
+            },
+        }
+        docs.append(doc)
+    return docs
+
+
+def _normalize_authd(rows: list[dict], host: dict) -> list[dict]:
+    """Authorization right grants: correlate requesting process ↔ granted right
+    by the shared ``engine`` id (validated against real output 2026-07-07)."""
+    procs: dict[str, tuple] = {}   # engine -> (executable, pid, ts)
+    grants: list[tuple] = []       # (engine, right, ts)
+    for r in rows:
+        if r.get("subsystem") != "com.apple.Authorization":
+            continue
+        msg = r.get("message") or ""
+        eng = _ENGINE.search(msg)
+        if not eng:
+            continue
+        e = eng.group(1)
+        ev = _EVAL.search(msg)
+        if ev:
+            procs[e] = (ev.group(1), ev.group(2), r.get("timestamp"))
+        g = _GRANT.search(msg)
+        if g:
+            grants.append((e, g.group(1), r.get("timestamp")))
+
+    docs = []
+    for e, right, ts in grants:
+        proc, pid, pts = procs.get(e, (None, None, None))
+        doc = ecs_base(host, "macos.unifiedlog")
+        doc["@timestamp"] = ts or pts or ""
+        doc["event"]["action"] = "authorization_right"
+        if proc:
+            doc["process"] = {"executable": proc, "pid": int(pid) if pid else None}
+        doc["raptorscope"] = {
+            "unifiedlog": {
+                "subsystem": "com.apple.Authorization",
+                "category": "authorization",
+                "process": proc,
+                "pid": int(pid) if pid else None,
+                "right": right,
+                "granted": True,
             },
         }
         docs.append(doc)

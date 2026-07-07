@@ -12,6 +12,7 @@ from raptorscope.detect.pairing import ALL_DATASETS, check_pairing
 from raptorscope.normalize.unifiedlog import normalize_unifiedlog
 
 ROWS = json.loads(pathlib.Path("fixtures/unifiedlog/tcc_access.raw.json").read_text())
+AUTHD = json.loads(pathlib.Path("fixtures/unifiedlog/authd.raw.json").read_text())
 HOST = {"name": "h", "os": {"type": "macos"}}
 RULES = load_rules("detections/sigma")
 
@@ -63,6 +64,29 @@ def test_apple_client_and_nonsensitive_service_do_not_fire():
     }
     assert "com.apple.Terminal" not in fired_clients      # Apple client filtered
     assert "com.acme.contacts" not in fired_clients       # AddressBook not sensitive
+
+
+def test_authd_correlates_right_grant_to_requesting_process():
+    docs = normalize_unifiedlog(AUTHD, HOST)
+    assert len(docs) == 3  # three "granting right" lines
+    assert all(d["event"]["action"] == "authorization_right" for d in docs)
+    by = {(d["process"]["executable"], d["raptorscope"]["unifiedlog"]["right"]) for d in docs}
+    # process joined to right by engine id
+    assert ("/Users/analyst/Downloads/Installer.app/Contents/MacOS/Installer",
+            "com.apple.ServiceManagement.daemons.modify") in by
+    assert ("/usr/libexec/mdmclient",
+            "com.apple.ServiceManagement.daemons.modify") in by
+
+
+def test_authd_detection_fires_only_on_nonsystem_sensitive_grant():
+    alerts = run_rules(normalize_unifiedlog(AUTHD, HOST), RULES)
+    hits = [a for a in alerts if "authorization right" in a["title"].lower()]
+    # Only the user-space Installer granted daemons.modify — mdmclient (system)
+    # and print.admin (not sensitive) are excluded.
+    assert len(hits) == 1
+    assert "Installer" in hits[0]["evidence"]["process.executable"]
+    assert hits[0]["evidence"]["raptorscope.unifiedlog.right"] == \
+        "com.apple.ServiceManagement.daemons.modify"
 
 
 def test_pairing_guard_clean_with_new_dataset():

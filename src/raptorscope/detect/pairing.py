@@ -56,6 +56,8 @@ EMITTED_FIELDS = {
     "raptorscope.unifiedlog.process",
     "raptorscope.unifiedlog.pid",
     "raptorscope.unifiedlog.msg_id",
+    "raptorscope.unifiedlog.right",
+    "raptorscope.unifiedlog.granted",
 }
 
 

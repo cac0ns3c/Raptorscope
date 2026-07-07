@@ -1,0 +1,38 @@
+title: macOS non-system process granted a sensitive authorization right (Unified Log)
+id: 2b8daf51-000a-4000-a000-0000000c0df1
+status: experimental
+description: >
+  Reconstructed from the Unified Log (subsystem com.apple.Authorization): a
+  process outside the system paths was granted a privileged authorization right —
+  e.g. installing a launch daemon (ServiceManagement.daemons.modify) or admin
+  privilege. Legitimate grants come from Apple system binaries (mdmclient,
+  loginwindow); a grant to a user-space binary is a privilege-escalation signal.
+logsource:
+  product: macos
+  service: unifiedlog
+detection:
+  selection:
+    event.dataset: macos.unifiedlog
+    event.action: authorization_right
+    raptorscope.unifiedlog.right:
+      - com.apple.ServiceManagement.daemons.modify
+      - system.privilege.admin
+      - com.apple.trust-settings.admin
+      - system.install.apple-software
+      - com.apple.system-migration
+  filter_system:
+    process.executable|startswith:
+      - /System/
+      - /usr/libexec/
+      - /usr/sbin/
+      - /usr/bin/
+      - /Library/Apple/
+  condition: selection and not filter_system
+falsepositives:
+  - Legitimate admin tooling/installers the user runs from a non-system path
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.persistence
+  - attack.t1543.001
+  - attack.t1548

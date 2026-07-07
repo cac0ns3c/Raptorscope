@@ -18,8 +18,8 @@ import subprocess
 import tempfile
 
 # Unified Log subsystems we ingest (selection, not firehose — a .logarchive is
-# millions of lines). Phase 0: TCC access decisions.
-PREDICATE_SUBSYSTEMS = ("com.apple.TCC",)
+# millions of lines): TCC access decisions + authorization-right grants.
+PREDICATE_SUBSYSTEMS = ("com.apple.TCC", "com.apple.Authorization")
 
 
 def _parser_bin() -> str:

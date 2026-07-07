@@ -1,0 +1,10 @@
+[
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:00.100000000Z", "message": "Process /Users/analyst/Downloads/Installer.app/Contents/MacOS/Installer (PID 66001) evaluates 1 rights with flags 00000002 (engine 900, token 585): ("},
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:00.200000000Z", "message": "Creator of authorization has uid == 0, granting right com.apple.ServiceManagement.daemons.modify (engine 900)"},
+
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:01.100000000Z", "message": "Process /usr/libexec/mdmclient (PID 65597) evaluates 1 rights with flags 00000002 (engine 901, token 585): ("},
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:01.200000000Z", "message": "Creator of authorization has uid == 0, granting right com.apple.ServiceManagement.daemons.modify (engine 901)"},
+
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:02.100000000Z", "message": "Process /Users/analyst/Downloads/Installer.app/Contents/MacOS/Installer (PID 66001) evaluates 1 rights with flags 00000002 (engine 902, token 585): ("},
+  {"subsystem": "com.apple.Authorization", "category": "", "process": "/usr/libexec/authd", "pid": 585, "timestamp": "2026-07-07T07:20:02.200000000Z", "message": "Creator of authorization has uid == 0, granting right com.apple.print.admin (engine 902)"}
+]
