@@ -49,11 +49,35 @@ All 140 rules were evaluated against the normalized docs; every fire was triaged
   the signal the rule is for; an analyst dispositions it as benign (it's the endpoint
   tooling), but the detection firing is correct.
 
+## Signature surface (follow-up pass)
+
+The run above pinned signatures to *trusted*, so the six signature-gated rules
+(`macos_process_unsigned`, `..._suspicious_path`, `..._removable_media_execution`,
+and three persistence rules) weren't exercised. This follow-up captured **real
+`codesign` verdicts** for every running process — Trusted = a real signing Authority
+(Apple / Developer ID), ad-hoc (Authority=None) counted as untrusted, matching the
+collector's `TrustedSigner` semantics.
+
+- 386 processes resolved to a real executable file: **380 trusted, 6 untrusted**
+  across just **3 distinct binaries** — all Homebrew ad-hoc-signed (`node`, `python`,
+  `limactl`) under `/opt/homebrew`.
+- **0 fires.** `macos_process_unsigned` already carries a `filter_dev` excluding
+  `/opt/homebrew`, `/usr/local/Cellar`, `/usr/local/bin`, so the ad-hoc Homebrew
+  binaries — the dominant benign source of "untrusted" on a dev Mac — are correctly
+  suppressed. The other five signature rules need a second condition (suspicious path,
+  removable volume, persistence context) none of the real processes met.
+
+(Method note: macOS `ps -o comm` truncates paths, and a truncated path that resolves
+to a *directory* makes `codesign` report "unsigned" — an early version of this pass
+showed 7 phantom `/System/Library/` fires from exactly that. Restricting to real
+executable *files* removed them. A reminder that the capture harness, not just the
+rules, has to be validated.)
+
 ## Takeaway
 
-Across 733 real docs spanning five datasets, the 140-rule set produced a single genuine
-false positive — a substring-matching bug in one rule — with the rest either silent or
-correctly flagging. The command-line rules' multi-token / `filter_*` tightening held up
-on real argv. Signature-gated behavior was not exercised here (signatures pinned
-trusted); a follow-up with real per-process `codesign` verdicts would validate that
-surface too.
+Across ~1,100 real docs spanning six datasets — including genuine per-process code
+signatures — the 140-rule set produced **one** genuine false positive (a substring bug,
+fixed) and was otherwise silent or correctly flagging. The command-line rules'
+multi-token / `filter_*` tightening and the signature rules' dev-prefix filter both
+held up on real host state. The detection set is now real-data-validated across every
+dataset it can see.
