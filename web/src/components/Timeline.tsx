@@ -36,7 +36,7 @@ export function Timeline({
 
   return (
     <>
-      <div className="timeline-filters" aria-label="timeline filters">
+      <div className="timeline-filters" aria-label="dataset filters">
         <button
           data-dataset=""
           className={filter === null ? "chip active" : "chip"}
