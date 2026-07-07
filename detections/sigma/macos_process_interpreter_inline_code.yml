@@ -2,11 +2,14 @@ title: macOS scripting interpreter executing inline code
 id: 28ff2821-6caa-4cd6-8706-7c8e5aabfe23
 status: experimental
 description: >
-  A running process whose command line invokes a scripting interpreter
-  (python/python3, ruby, perl) or a Unix shell (bash/sh/zsh) with an inline
-  one-liner flag (-c / -e) instead of a script file path. Passing code inline
-  is a classic in-memory stager / fileless-execution technique used to launch
-  reverse shells and download-and-run payloads without touching disk.
+  A running process invoking an interpreted-language runtime (python/python3,
+  ruby, perl, node, php) with an inline one-liner flag (-c / -e / -r) instead of
+  a script file. Passing code inline is a classic in-memory stager / fileless
+  technique for reverse shells and download-and-run payloads. NOTE: bare shell
+  `bash -c`/`sh -c` is deliberately excluded — real-data validation showed it fires
+  on routine shell plumbing (login shells, tooling wrappers, shell-snapshotting);
+  malicious shell one-liners are caught by the reverse-shell, network-command, and
+  base64-exec rules which key on the payload, not the `-c` flag.
 logsource:
   product: macos
   service: process
@@ -18,16 +21,14 @@ detection:
       - 'python3 -c'
       - 'ruby -e'
       - 'perl -e'
-      - 'bash -c'
-      - 'sh -c'
+      - 'node -e'
+      - 'php -r'
   condition: selection
 falsepositives:
-  - Developer tooling, build systems, and package managers that run inline
-    interpreter snippets (pip/gem/npm postinstall, configure scripts).
-  - Shell wrappers that legitimately invoke `bash -c` / `sh -c` for automation;
-    the `sh -c` token in particular is common in benign orchestration.
+  - Developer tooling and package managers that run inline interpreter snippets
+    (pip/gem/npm postinstall, configure scripts) — usually short and non-network.
 level: medium
 tags:
   - attack.execution
-  - attack.t1059.004
   - attack.t1059.006
+  - attack.t1059.007
