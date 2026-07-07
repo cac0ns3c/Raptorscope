@@ -10,10 +10,13 @@ The parser binary is located via ``$RAPTORSCOPE_UNIFIEDLOG_BIN``, else
 ``tools/unifiedlog_iterator`` (dev), else ``unifiedlog_iterator`` on PATH (the
 Docker image bakes it in).
 """
+import datetime
 import json
 import os
 import pathlib
+import plistlib
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 
@@ -80,3 +83,120 @@ def load_unifiedlog(path: str) -> tuple[dict, dict]:
     rows = _run_parser(path)
     host = {"name": pathlib.Path(path).stem, "os": {"type": "macos"}}
     return {"unifiedlog": rows}, host
+
+
+# --------------------------------------------------------------------------- #
+# Raw SQLite / plist artifacts (off a disk image — no Velociraptor).           #
+# Each reader maps a raw file to the exact row shape an existing normalizer     #
+# already consumes, so the ECS mapping + detections are reused as-is.           #
+# --------------------------------------------------------------------------- #
+_CF_EPOCH = 978307200  # CFAbsoluteTime epoch (2001-01-01 UTC) in unix seconds
+
+
+def _iso(unix_secs) -> str:
+    return datetime.datetime.fromtimestamp(
+        float(unix_secs), datetime.timezone.utc
+    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _connect_ro(p: pathlib.Path) -> sqlite3.Connection:
+    con = sqlite3.connect(f"file:{p}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    return con
+
+
+def _read_tcc_db(p: pathlib.Path) -> list[dict]:
+    """Raw TCC.db ``access`` table -> normalize_tcc rows (fixture/int shape)."""
+    con = _connect_ro(p)
+    try:
+        cols = {r[1] for r in con.execute("PRAGMA table_info(access)")}
+        auth = "auth_value" if "auth_value" in cols else "allowed"
+        rows = []
+        for r in con.execute("SELECT * FROM access"):
+            d = dict(r)
+            rows.append({
+                "Service": d.get("service"),
+                "Client": d.get("client"),
+                "ClientType": d.get("client_type"),
+                "AuthValue": d.get(auth),
+                "LastModified": _iso(d["last_modified"]) if d.get("last_modified") else "",
+                "_OSPath": str(p),
+            })
+        return rows
+    finally:
+        con.close()
+
+
+def _read_quarantine_db(p: pathlib.Path) -> list[dict]:
+    """Raw QuarantineEventsV2 -> normalize_quarantine rows (LSQuarantine* keys)."""
+    con = _connect_ro(p)
+    try:
+        rows = []
+        for r in con.execute("SELECT * FROM LSQuarantineEvent"):
+            d = dict(r)
+            ts = d.get("LSQuarantineTimeStamp")
+            d["LSQuarantineTimeStamp"] = _iso(ts + _CF_EPOCH) if ts else ""
+            d["Path"] = str(p)
+            rows.append(d)
+        return rows
+    finally:
+        con.close()
+
+
+def _read_launch_plists(root: pathlib.Path) -> list[dict]:
+    """LaunchAgents/LaunchDaemons *.plist -> normalize_launch_items rows."""
+    rows = []
+    for sub in ("LaunchAgents", "LaunchDaemons"):
+        for f in root.rglob(f"{sub}/*.plist"):
+            try:
+                with open(f, "rb") as fh:
+                    pl = dict(plistlib.load(fh))
+            except Exception:
+                continue
+            pl["Path"] = str(f)
+            pl["OSPath"] = str(f)
+            pl["Mtime"] = _iso(f.stat().st_mtime)
+            rows.append(pl)
+    return rows
+
+
+def _find(root: pathlib.Path, name: str):
+    hits = list(root.rglob(name))
+    return hits[0] if hits else None
+
+
+def _has_launch_plists(root: pathlib.Path) -> bool:
+    return any(
+        True
+        for s in ("LaunchAgents", "LaunchDaemons")
+        for _ in root.rglob(f"{s}/*.plist")
+    )
+
+
+def is_artifact_dir(path: str) -> bool:
+    """A directory of raw macOS artifacts (TCC.db / QuarantineEventsV2 / launch plists)."""
+    root = pathlib.Path(path)
+    if not root.is_dir():
+        return False
+    return bool(
+        _find(root, "TCC.db")
+        or _find(root, "*QuarantineEventsV2")
+        or _has_launch_plists(root)
+    )
+
+
+def load_artifacts(path: str) -> tuple[dict, dict]:
+    """Return ``(artifacts, host)`` for a directory of raw macOS artifacts."""
+    root = pathlib.Path(path)
+    artifacts: dict[str, list] = {}
+    tcc = _find(root, "TCC.db")
+    if tcc:
+        artifacts["tcc"] = _read_tcc_db(tcc)
+    quar = _find(root, "*QuarantineEventsV2")
+    if quar:
+        artifacts["quarantine"] = _read_quarantine_db(quar)
+    plists = _read_launch_plists(root)
+    if plists:
+        artifacts["launch_items"] = plists
+    host = {"name": root.name, "os": {"type": "macos"}}
+    return artifacts, host

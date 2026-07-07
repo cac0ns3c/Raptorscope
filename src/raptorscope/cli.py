@@ -4,7 +4,12 @@ import argparse
 import pathlib
 
 from .collection import enrich_host, load_collection
-from .evidence import is_logarchive, load_unifiedlog
+from .evidence import (
+    is_artifact_dir,
+    is_logarchive,
+    load_artifacts,
+    load_unifiedlog,
+)
 
 # The committed sample collection that `raptorscope demo` serves out of the box.
 DEMO_SAMPLE = pathlib.Path(__file__).resolve().parents[2] / "samples" / "mac-victim"
@@ -95,6 +100,8 @@ def normalize_collection(path: str) -> list[dict]:
     """
     if is_logarchive(path):
         artifacts, raw_host = load_unifiedlog(path)
+    elif is_artifact_dir(path):
+        artifacts, raw_host = load_artifacts(path)
     else:
         artifacts, raw_host = load_collection(path)
     host = enrich_host(raw_host)
