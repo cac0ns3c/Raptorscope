@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import type { Alert } from "../api/types";
 import { useApi } from "../context/ApiContext";
@@ -100,11 +100,24 @@ export function Alerts({
 
   const keyed = data.map((a) => ({ a, key: triageKey(caseName, a) }));
   const dismissed = keyed.filter(({ key }) => map[key]?.status === "dismissed");
-  // Triage queue is severity-first (high → medium → low); the API order isn't.
+  // Triage queue is severity-first (high → medium → low), then clustered by rule
+  // so duplicate hits group together with a header + bulk action.
   const visible = keyed
     .filter(({ key }) => map[key]?.status !== "dismissed" || showDismissed)
-    .sort((x, y) => sevRank(x.a.level) - sevRank(y.a.level));
+    .sort(
+      (x, y) =>
+        sevRank(x.a.level) - sevRank(y.a.level) ||
+        x.a.rule_id.localeCompare(y.a.rule_id),
+    );
   const acked = keyed.filter(({ key }) => map[key]?.status === "ack").length;
+  const ruleCounts = new Map<string, number>();
+  for (const { a } of visible)
+    ruleCounts.set(a.rule_id, (ruleCounts.get(a.rule_id) ?? 0) + 1);
+
+  function bulkDismiss(ruleId: string) {
+    for (const { a, key } of visible)
+      if (a.rule_id === ruleId) update(key, { status: "dismissed" });
+  }
 
   return (
     <section aria-label="alerts">
@@ -124,10 +137,26 @@ export function Alerts({
       </div>
 
       <ul className="alerts">
-        {visible.map(({ a, key }: { a: Alert; key: string }) => {
+        {visible.map(({ a, key }: { a: Alert; key: string }, i) => {
           const entry = map[key] ?? {};
+          const count = ruleCounts.get(a.rule_id) ?? 1;
+          const groupStart =
+            count > 1 && (i === 0 || visible[i - 1].a.rule_id !== a.rule_id);
           return (
-            <li key={key}>
+            <Fragment key={key}>
+              {groupStart && (
+                <li className="alert-group-head">
+                  <span className="alert-group-count">{count}×</span>
+                  <span className="alert-group-title">{a.title}</span>
+                  <button
+                    className="btn-change"
+                    onClick={() => bulkDismiss(a.rule_id)}
+                  >
+                    dismiss all {count}
+                  </button>
+                </li>
+              )}
+            <li>
               <div
                 className={`alert-card sev-${a.level} ${
                   entry.status ? `is-${entry.status}` : ""
@@ -261,6 +290,7 @@ export function Alerts({
                 )}
               </div>
             </li>
+            </Fragment>
           );
         })}
       </ul>

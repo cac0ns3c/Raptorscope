@@ -820,6 +820,18 @@ button {
   gap: 0.7rem;
   padding: 0.4rem 0;
 }
+.timeline-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+.timeline-cap {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  margin-left: auto;
+}
 .timeline-row.clickable {
   cursor: pointer;
   border-radius: var(--r-sm);
@@ -1069,6 +1081,28 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* grouped duplicate-rule header */
+.alert-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.2rem 0.1rem;
+  margin-top: 0.3rem;
+}
+.alert-group-count {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.alert-group-title {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+.alert-group-head .btn-change {
+  margin-left: auto;
+  font-size: 0.72rem;
 }
 
 /* alert detection metadata (surfaced from the rule) */

@@ -49,3 +49,24 @@ describe("Timeline", () => {
     expect(await screen.findByLabelText("timeline")).toBeInTheDocument();
   });
 });
+
+describe("Timeline filters", () => {
+  it("filters rows by dataset chip", async () => {
+    renderWithApi(<Timeline caseName="mac-victim" />);
+    const list = await screen.findByLabelText("timeline");
+    const before = list.querySelectorAll(".timeline-row").length;
+    const chip = screen
+      .getAllByRole("button")
+      .find((b) => /^persistence \d+/i.test(b.textContent || ""));
+    expect(chip).toBeTruthy();
+    await userEvent.click(chip!);
+    const after = document
+      .querySelector('[aria-label="timeline"]')!
+      .querySelectorAll(".timeline-row").length;
+    expect(after).toBeGreaterThan(0);
+    expect(after).toBeLessThanOrEqual(before);
+    // all remaining rows are persistence
+    for (const r of document.querySelectorAll(".timeline-row"))
+      expect(r.getAttribute("data-dataset")).toBe("macos.persistence");
+  });
+});

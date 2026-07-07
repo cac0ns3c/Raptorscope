@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { useState } from "react";
+
 import { useApi } from "../context/ApiContext";
 import { useAsync } from "../hooks/useAsync";
 import { State } from "../ui/State";
@@ -14,6 +16,7 @@ export function Timeline({
   onPivot?: (dataset: string, docId: string) => void;
 }) {
   const api = useApi();
+  const [filter, setFilter] = useState<string | null>(null);
   const { data, loading, error, reload } = useAsync(
     () => api.getTimeline(caseName, limit),
     [caseName, limit],
@@ -27,9 +30,37 @@ export function Timeline({
   if (data.length === 0)
     return <State variant="empty" message="No events in this case." />;
 
+  const datasets = [...new Set(data.map((r) => r.dataset))].sort();
+  const rows = filter ? data.filter((r) => r.dataset === filter) : data;
+
   return (
-    <ol className="timeline" aria-label="timeline">
-      {data.map((row) => (
+    <>
+      <div className="timeline-filters" aria-label="timeline filters">
+        <button
+          data-dataset=""
+          className={filter === null ? "chip active" : "chip"}
+          onClick={() => setFilter(null)}
+        >
+          all {data.length}
+        </button>
+        {datasets.map((ds) => (
+          <button
+            key={ds}
+            data-dataset={ds}
+            className={filter === ds ? "chip active" : "chip"}
+            onClick={() => setFilter((f) => (f === ds ? null : ds))}
+          >
+            {ds.replace("macos.", "")} {data.filter((r) => r.dataset === ds).length}
+          </button>
+        ))}
+        {data.length >= limit && (
+          <span className="timeline-cap" title="Increase the limit to see older events">
+            showing newest {limit}
+          </span>
+        )}
+      </div>
+      <ol className="timeline" aria-label="timeline">
+        {rows.map((row) => (
         <li
           key={row.doc_id}
           className={`timeline-row ${onPivot ? "clickable" : ""}`}
@@ -57,6 +88,7 @@ export function Timeline({
           </span>
         </li>
       ))}
-    </ol>
+      </ol>
+    </>
   );
 }

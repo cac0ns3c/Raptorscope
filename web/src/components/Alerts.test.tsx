@@ -101,4 +101,24 @@ describe("Alerts", () => {
     expect((note as HTMLInputElement).value).toBe("looks real");
     expect(onPivot).not.toHaveBeenCalled();
   });
+
+  it("groups duplicate-rule alerts with a header and bulk-dismisses them", async () => {
+    const real = (await import("../test/fakeClient")).makeFakeClient();
+    const dupes = [
+      { rule_id: "r-dup", title: "macOS repeated finding", level: "high", dataset: "macos.persistence", doc_id: "d1", evidence: {} },
+      { rule_id: "r-dup", title: "macOS repeated finding", level: "high", dataset: "macos.persistence", doc_id: "d2", evidence: {} },
+      { rule_id: "r-dup", title: "macOS repeated finding", level: "high", dataset: "macos.persistence", doc_id: "d3", evidence: {} },
+    ];
+    const client = { ...real, getAlerts: async () => dupes };
+    renderWithApi(<Alerts caseName="mac-victim" />, client);
+    await screen.findByLabelText("alerts");
+    // group header with the count + bulk action
+    const bulk = await screen.findByRole("button", { name: /dismiss all 3/i });
+    expect(bulk).toBeInTheDocument();
+    // 3 cards visible before
+    expect(screen.getAllByText(/^high$/).length).toBe(3);
+    await userEvent.click(bulk);
+    // all three dismissed -> gone from the default view
+    expect(screen.queryAllByText(/^high$/).length).toBe(0);
+  });
 });
