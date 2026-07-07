@@ -1,0 +1,36 @@
+title: macOS file timestamps altered (timestomp)
+id: af9c70bc-a3e9-45ff-8a88-143e773625e0
+status: experimental
+description: >
+  A live process rewriting file timestamps to blend a dropped artifact into its
+  surroundings — the legacy SetFile -d/-m date tool, or touch -r copying the
+  timestamp from a system binary onto another file. Timestomping defeats
+  timeline-based triage. The touch branch requires a reference to a system path so
+  ordinary build-tool touches on project files do not fire.
+logsource:
+  product: macos
+  service: process
+detection:
+  setfile:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'SetFile -d '
+      - 'SetFile -m '
+  touch_ref:
+    process.command_line|contains: 'touch -r '
+  sys_ref:
+    process.command_line|contains:
+      - '/System/'
+      - '/bin/'
+      - '/sbin/'
+      - '/usr/bin/'
+      - '/usr/lib/'
+      - '/usr/sbin/'
+  condition: setfile or (touch_ref and sys_ref)
+falsepositives:
+  - Legacy Xcode/Carbon build scripts that stamp resource fork dates with SetFile
+  - Packaging tooling that normalizes timestamps against a reference file
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1070.006

@@ -1,0 +1,37 @@
+title: macOS staging of user data into an archive
+id: 919cbae7-8d05-4d38-badc-07adf3ddbec3
+status: experimental
+description: >
+  A process archiving a sensitive user-data location (Desktop, Documents,
+  Downloads, ~/.ssh, Keychains) with zip/tar. Bundling these directories into a
+  single archive is the classic collection/staging step that precedes
+  exfiltration. Requires BOTH an archive tool and a sensitive target path so a
+  routine build tarball does not fire.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'zip -r'
+      - 'tar -czf'
+      - 'tar czf'
+      - 'tar -cJf'
+      - 'tar cJf'
+      - 'tar -zcvf'
+      - 'tar zcvf'
+  selection_target:
+    process.command_line|contains:
+      - '/Desktop'
+      - '/Documents'
+      - '/Downloads'
+      - '/.ssh'
+      - 'Library/Keychains'
+  condition: selection_tool and selection_target
+falsepositives:
+  - Backup or migration scripts that archive user directories
+level: medium
+tags:
+  - attack.collection
+  - attack.t1560.001

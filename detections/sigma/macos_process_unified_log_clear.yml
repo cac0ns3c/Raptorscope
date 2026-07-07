@@ -1,0 +1,37 @@
+title: macOS unified logs or diagnostics cleared
+id: 0f7fa6d7-5e06-4ec8-969d-4006989ffb10
+status: experimental
+description: >
+  A live process erasing the macOS unified logging store (log erase) or deleting
+  the on-disk diagnostics / Apple System Log directories. Wiping these stores
+  destroys the primary host telemetry an analyst would use to reconstruct an
+  intrusion and has no routine operational purpose. Requires either the log-erase
+  subcommand or a deletion tool acting on the diagnostics/asl paths.
+logsource:
+  product: macos
+  service: process
+detection:
+  log_erase:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'log erase'
+      - 'log config --reset'
+  delete_tool:
+    process.command_line|contains:
+      - 'rm '
+      - 'unlink '
+      - 'srm '
+  log_path:
+    process.command_line|contains:
+      - '/var/db/diagnostics'
+      - '/var/db/uuidtext'
+      - '/var/log/asl'
+      - '/var/log/DiagnosticMessages'
+  condition: log_erase or (delete_tool and log_path)
+falsepositives:
+  - Support engineer clearing logs to reproduce an issue from a clean state
+  - Disk-cleanup utilities purging old diagnostic archives
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1070

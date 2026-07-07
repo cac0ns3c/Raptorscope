@@ -1,0 +1,30 @@
+title: macOS security posture discovery (Gatekeeper/SIP/FileVault/firewall status)
+id: a066e966-b26c-4b4f-953a-9f3b94a8b228
+status: experimental
+description: >
+  A process querying the enabled/disabled state of macOS protections — Gatekeeper
+  (`spctl --status`), System Integrity Protection (`csrutil status`), FileVault
+  (`fdesetup status`) or the application firewall (`socketfilterfw
+  --getglobalstate`). Malware probes these before deciding whether it can drop
+  unsigned payloads or disable defenses. This is status enumeration, distinct from
+  the disable actions.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'spctl --status'
+      - 'spctl -status'
+      - 'csrutil status'
+      - 'fdesetup status'
+      - 'socketfilterfw --getglobalstate'
+      - 'socketfilterfw -getglobalstate'
+  condition: selection
+falsepositives:
+  - Compliance/MDM agents and admins auditing endpoint security posture
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1518.001

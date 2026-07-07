@@ -1,0 +1,60 @@
+title: macOS Camera or Microphone TCC grant to an unexpected non-Apple client
+id: 0f8ff43b-e74e-47bd-8592-cb4f7ff05e34
+status: experimental
+description: >
+  A TCC authorization granting Camera (kTCCServiceCamera) or Microphone
+  (kTCCServiceMicrophone) access to a client that is neither an Apple binary nor
+  a well-known conferencing / browser / recording application. Malware uses these
+  services to spy on the user via the webcam or capture audio; a grant held by an
+  otherwise unexpected client is a video/audio-collection signal. The allowlist
+  suppresses the everyday-benign case (Zoom, Teams, browsers, OBS, etc.).
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service:
+      - kTCCServiceCamera
+      - kTCCServiceMicrophone
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+  filter_known_av_client:
+    raptorscope.tcc.client|startswith:
+      - us.zoom.
+      - com.microsoft.teams
+      - com.microsoft.edgemac
+      - com.cisco.webex
+      - com.webex.
+      - com.google.Chrome
+      - com.google.meetings
+      - org.mozilla.firefox
+      - com.brave.Browser
+      - com.operasoftware.
+      - com.vivaldi.
+      - company.thebrowser.Browser
+      - com.hnc.Discord
+      - com.tinyspeck.slackmacgap
+      - com.skype.skype
+      - com.microsoft.SkypeForBusiness
+      - com.obsproject.
+      - com.loom.desktop
+      - com.techsmith.
+      - net.whatsapp.WhatsApp
+      - org.whispersystems.signal-desktop
+      - ru.keepcoder.Telegram
+      - com.spotify.client
+      - com.gotomeeting.
+      - com.ringcentral.
+  condition: selection and not filter_apple and not filter_known_av_client
+falsepositives:
+  - Uncommon or newly installed conferencing, streaming or camera utilities not
+    present in the allowlist that the user intentionally authorized
+level: medium
+tags:
+  - attack.collection
+  - attack.t1123
+  - attack.t1125

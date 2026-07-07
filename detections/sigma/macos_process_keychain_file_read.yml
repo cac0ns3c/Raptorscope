@@ -1,0 +1,40 @@
+title: macOS login keychain file raw read
+id: 78c4ec5b-0983-4154-beb8-2c43decb9834
+status: experimental
+description: >
+  A generic byte/DB tool (strings, sqlite3, plutil, xxd, hexdump, dd, cat, cp,
+  tar, base64) pointed directly at a keychain file on disk
+  (`login.keychain-db`, `/Library/Keychains/`). This bypasses Apple's `security`
+  API and is how attackers copy or scrape the encrypted keychain for offline
+  extraction. Deliberately distinct from `security dump-keychain`.
+logsource:
+  product: macos
+  service: process
+detection:
+  target:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'login.keychain-db'
+      - 'login.keychain'
+      - '/Library/Keychains/'
+      - '.keychain-db'
+  tool:
+    process.command_line|contains:
+      - 'strings'
+      - 'sqlite3'
+      - 'plutil'
+      - 'xxd'
+      - 'hexdump'
+      - 'dd '
+      - 'cat '
+      - 'cp '
+      - 'tar '
+      - 'base64'
+      - 'ditto'
+  condition: target and tool
+falsepositives:
+  - A file-level backup tool that copies the Keychains directory by path (uncommon; most backups archive the home directory as a whole)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1555.001

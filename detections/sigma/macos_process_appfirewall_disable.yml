@@ -1,0 +1,29 @@
+title: macOS Application Firewall disabled via socketfilterfw
+id: 9eddb1ad-ffd5-4df2-b4dc-7822f396b972
+status: experimental
+description: >
+  A live process turning off the macOS Application Layer Firewall or its logging
+  via socketfilterfw (--setglobalstate off / --setloggingmode off). Disabling the
+  socket-filter firewall removes inbound-connection controls and blinds its logs,
+  a common defense-impair step before running a listener or C2 stager. Matches the
+  real process.command_line field, so it fires on live MacOS.Sys.Pslist captures.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'socketfilterfw --setglobalstate off'
+      - 'socketfilterfw -setglobalstate off'
+      - 'socketfilterfw --setloggingmode off'
+      - 'socketfilterfw -setloggingmode off'
+      - 'socketfilterfw --setloggingopt off'
+  condition: selection
+falsepositives:
+  - Administrator or MDM policy intentionally disabling the built-in firewall
+  - Lab imaging / provisioning workflows that reset firewall state
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1562.004

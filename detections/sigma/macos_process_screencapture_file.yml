@@ -1,0 +1,28 @@
+title: macOS silent screen capture to a file
+id: 7f7390b9-419a-4aab-b2bd-f89309af890a
+status: experimental
+description: >
+  A process invoking `screencapture` with the silent flag `-x` (suppresses the
+  shutter sound) to grab the screen without alerting the user. Interactive
+  user-initiated screenshots play the sound and do not pass -x, so this isolates
+  the stealthy programmatic capture that spyware performs.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'screencapture'
+  selection_silent:
+    process.command_line|contains:
+      - ' -x '
+      - ' -x/'
+      - ' -xa'
+      - ' -xC'
+  condition: selection_tool and selection_silent
+falsepositives:
+  - Remote-support or automation tooling that captures the screen non-interactively
+level: medium
+tags:
+  - attack.collection
+  - attack.t1113

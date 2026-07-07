@@ -1,0 +1,26 @@
+title: macOS file hidden via chflags or SetFile invisible bit
+id: 456be7de-cf62-45a5-bebc-34c1e278db3f
+status: experimental
+description: >
+  A live process setting the Finder hidden/invisible flag on a file with
+  chflags hidden or SetFile -a V. This conceals an artifact from the Finder and
+  casual inspection without changing its path, a lightweight way to hide a payload
+  or persistence helper. Legitimate use is rare outside a handful of installers.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'chflags hidden'
+      - 'chflags -h hidden'
+      - 'chflags -R hidden'
+      - 'SetFile -a V'
+  condition: selection
+falsepositives:
+  - Installer or setup tooling that hides its own support files
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1564.001

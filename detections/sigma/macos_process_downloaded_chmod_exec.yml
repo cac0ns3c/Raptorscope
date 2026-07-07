@@ -1,0 +1,34 @@
+title: macOS execute bit set on file in Downloads or Shared
+id: 33c57700-7d6f-453f-9909-5c533101d83c
+status: experimental
+description: >
+  A live chmod granting execute permission to a file living in ~/Downloads or
+  /Users/Shared. Marking a freshly downloaded, browser-delivered file executable is
+  the setup step before manually running an unsigned payload that never went
+  through an installer. Scoped to user download/drop locations (not build temp
+  dirs) to keep developer and CI activity out.
+logsource:
+  product: macos
+  service: process
+detection:
+  chmod:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'chmod +x'
+      - 'chmod a+x'
+      - 'chmod u+x'
+      - 'chmod 755'
+      - 'chmod 0755'
+      - 'chmod 777'
+      - 'chmod 4755'
+  staging_path:
+    process.command_line|contains:
+      - '/Downloads/'
+      - '/Users/Shared/'
+  condition: chmod and staging_path
+falsepositives:
+  - A user marking a legitimately downloaded CLI tool or script executable
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1222.002

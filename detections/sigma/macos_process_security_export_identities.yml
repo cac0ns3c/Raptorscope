@@ -1,0 +1,29 @@
+title: macOS private key export via security export identities
+id: 00f1ffb6-18c8-43eb-b53f-ea944f87423f
+status: experimental
+description: >
+  Apple's `security export` invoked with an identities/private-key item type,
+  which serializes keychain identities including their private keys (typically to
+  a PKCS#12 blob). This is how an operator lifts code-signing or client-auth
+  private keys off the host. Exporting only public certs (`-t certs`) is not
+  matched.
+logsource:
+  product: macos
+  service: process
+detection:
+  tool:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'security '
+  action:
+    process.command_line|contains:
+      - 'export -t identities'
+      - 'export -t privKeys'
+      - '-t identities -f'
+  condition: tool and action
+falsepositives:
+  - A developer or CI job deliberately backing up a code-signing identity to a .p12 (occasional; usually a known, signed toolchain step)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1552.004

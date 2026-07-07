@@ -1,0 +1,27 @@
+title: macOS unsigned application impersonating an Apple bundle identifier
+id: 14f24c7a-ae4d-48fd-ac98-8a64f12c26e7
+status: experimental
+description: >
+  An installed application whose bundle identifier claims the reserved Apple
+  namespace (com.apple.*) but which carries no valid code signature and does not
+  live under /System. Genuine first-party Apple software is always signed and
+  ships inside the system volume, so an unsigned com.apple.* bundle elsewhere is
+  a masquerade — malware borrowing Apple's identity to blend into the inventory.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    raptorscope.app.signed: false
+    raptorscope.app.bundle_id|startswith: com.apple.
+  filter_system:
+    file.path|startswith: /System/
+  condition: selection and not filter_system
+falsepositives:
+  - A developer or researcher deliberately reusing a com.apple.* identifier in an
+    unsigned local test build
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1036.005

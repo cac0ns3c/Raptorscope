@@ -1,0 +1,32 @@
+title: macOS application bundle installed in a temporary or shared staging path
+id: 9263143e-0042-47cc-a581-764b1ea02a08
+status: experimental
+description: >
+  An installed application bundle whose path is a world-writable temporary or
+  shared staging location — /tmp, /private/var/tmp, /Users/Shared, a per-user
+  hidden dot-directory (e.g. ~/.local), or the Trash. Legitimate applications are
+  installed under /Applications or a Library tree, not run in place from scratch
+  space; a persisted .app in these locations is typical of dropped or
+  side-loaded malware regardless of signing state.
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    file.path|contains:
+      - /tmp/
+      - /private/var/tmp/
+      - /var/tmp/
+      - /Users/Shared/
+      - /.local/
+      - /.Trash/
+  condition: selection
+falsepositives:
+  - A developer running an app build directly from a scratch directory
+  - Installer or migration tooling that transiently stages an app bundle in a
+    shared location
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1036.005

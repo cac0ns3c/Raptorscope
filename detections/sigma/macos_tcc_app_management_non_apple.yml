@@ -1,0 +1,42 @@
+title: macOS App-Management TCC grant to a non-Apple client
+id: 0dbe5b7e-b21c-46b3-a212-2526ad26ac8a
+status: experimental
+description: >
+  A TCC authorization granting App Management
+  (kTCCServiceSystemPolicyAppBundles) to a client that is not an Apple binary and
+  not a known software-updater / management agent. This permission lets a process
+  modify other installed, signed applications on disk; adversaries abuse it to
+  trojanize legitimate apps for persistence or to tamper with security tooling. A
+  non-Apple client holding this grant is a defense-evasion / persistence signal.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service: kTCCServiceSystemPolicyAppBundles
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
+      - /Library/Apple/
+  filter_updater:
+    raptorscope.tcc.client|startswith:
+      - org.sparkle-project.
+      - com.jamf.
+      - com.microsoft.autoupdate
+      - com.google.Keystone
+      - com.crowdstrike.
+      - com.sentinelone.
+      - com.microsoft.wdav
+  condition: selection and not filter_apple and not filter_updater
+falsepositives:
+  - Software-update frameworks (Sparkle), MDM or EDR agents not present in the
+    allowlist that legitimately manage installed applications
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.persistence
+  - attack.t1554

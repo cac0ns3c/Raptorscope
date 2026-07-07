@@ -1,0 +1,45 @@
+title: macOS unsigned application impersonating a major vendor bundle identifier
+id: e75c034c-dfc8-475d-b824-73e026b4ea68
+status: experimental
+description: >
+  An installed application whose bundle identifier claims a major software
+  vendor's namespace (Google Chrome, Mozilla, Microsoft, Zoom, Slack, Brave,
+  1Password, Spotify, Adobe) but which carries no valid code signature. These
+  vendors always ship notarized, Developer-ID-signed builds, so an unsigned
+  bundle bearing their identifier is a masquerade — malware posing as a trusted
+  application in the inventory. (Apple's com.apple.* namespace is handled by the
+  sibling apple-impersonation rule.)
+logsource:
+  product: macos
+  service: inventory
+detection:
+  selection:
+    event.dataset: macos.inventory
+    raptorscope.app.signed: false
+    raptorscope.app.bundle_id|startswith:
+      - com.google.Chrome
+      - org.mozilla.firefox
+      - org.mozilla.thunderbird
+      - com.microsoft.Edge
+      - com.microsoft.edgemac
+      - com.microsoft.Word
+      - com.microsoft.Excel
+      - com.microsoft.teams
+      - com.microsoft.Outlook
+      - us.zoom.
+      - com.tinyspeck.slackmacgap
+      - com.brave.Browser
+      - com.1password.
+      - com.agilebits.onepassword
+      - com.spotify.client
+      - com.adobe.
+      - com.hnc.Discord
+      - net.whatsapp.WhatsApp
+  condition: selection
+falsepositives:
+  - A developer building an unsigned local variant of one of these applications
+    that reuses the production bundle identifier
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1036.005

@@ -1,0 +1,46 @@
+title: macOS SSH and cloud credential file harvest
+id: e1eba202-5c95-41f3-9931-82ac42c2650a
+status: experimental
+description: >
+  A read/copy/exfil utility (cat, cp, scp, rsync, tar, base64, xxd, openssl, nc,
+  curl) directed at a private SSH key or cloud/API credential file
+  (`.ssh/id_*`, `.aws/credentials`, `.netrc`). This argv shape is how operators
+  and infostealers pull unsecured on-disk secrets; the SSH client itself (`ssh`,
+  `ssh-add`, `ssh-keygen`) is intentionally not in the tool list. The `.pub`
+  filter avoids flagging harmless reads of a public key.
+logsource:
+  product: macos
+  service: process
+detection:
+  target:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - '.ssh/id_rsa'
+      - '.ssh/id_dsa'
+      - '.ssh/id_ecdsa'
+      - '.ssh/id_ed25519'
+      - '.aws/credentials'
+      - '.netrc'
+  tool:
+    process.command_line|contains:
+      - 'cat '
+      - 'cp '
+      - 'scp '
+      - 'rsync'
+      - 'tar '
+      - 'base64'
+      - 'xxd'
+      - 'openssl'
+      - 'nc '
+      - 'curl'
+  filter_pub:
+    process.command_line|contains:
+      - '.pub'
+  condition: target and tool and not filter_pub
+falsepositives:
+  - A backup/migration script that copies a private key or credential file by explicit path (rare; scope backups usually archive whole directories rather than naming a single secret)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1552.004
+  - attack.t1552.001

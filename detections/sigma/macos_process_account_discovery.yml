@@ -1,0 +1,29 @@
+title: macOS local account enumeration via dscl/dscacheutil
+id: c1f37d9f-e15f-4771-b66e-eb24931b9805
+status: experimental
+description: >
+  A process enumerating the local user or group database with Directory Service
+  tooling (`dscl . -list /Users`, `dscl . -list /Groups`, `dscacheutil -q user`).
+  This is standard early post-exploitation account discovery. Keyed to the
+  enumerating verbs (list/-q user) rather than single-record `-read` lookups that
+  legitimate login/credential tooling performs constantly.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'dscl . -list /Users'
+      - 'dscl . list /Users'
+      - 'dscl . -list /Groups'
+      - 'dscl . list /Groups'
+      - 'dscacheutil -q user'
+      - 'dscacheutil -q group'
+  condition: selection
+falsepositives:
+  - Provisioning or user-management scripts that legitimately enumerate local accounts
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1087.001

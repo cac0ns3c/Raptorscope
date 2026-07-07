@@ -1,0 +1,25 @@
+title: macOS host hardware/OS fingerprinting via system_profiler
+id: 79be4684-d900-4ed7-9aa6-9499ca1ff8e8
+status: experimental
+description: >
+  A process calling `system_profiler` for the Hardware or Software data types,
+  which returns the model, serial number, UUID and OS build — the fields malware
+  uses to build a victim fingerprint for tasking and dedup. Keyed to the specific
+  data-type arguments rather than a bare `system_profiler` so a generic report
+  does not fire.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'system_profiler SPHardwareDataType'
+      - 'system_profiler SPSoftwareDataType'
+  condition: selection
+falsepositives:
+  - MDM/asset-inventory agents (Jamf, osquery, Munki) collecting hardware and OS facts on a schedule
+level: medium
+tags:
+  - attack.discovery
+  - attack.t1082

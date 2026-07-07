@@ -1,0 +1,32 @@
+title: macOS quarantined download from a file-extension look-alike TLD (.zip/.mov)
+id: d7f417f8-d0e0-41c0-ba4b-dab2edcc0ff1
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose download (data) or referring (origin) URL
+  uses a host in the .zip or .mov top-level domain. Because these gTLDs collide
+  with common file extensions, a URL such as https://invoice.zip/setup.dmg reads
+  like a harmless attachment name while actually resolving to an attacker-owned
+  host — a well-documented phishing/delivery technique. Matching '.zip/' and
+  '.mov/' keys on the TLD boundary (host followed by a path), so ordinary
+  downloads of a file literally named foo.zip or clip.mov do NOT match.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  data_host:
+    event.dataset: macos.quarantine
+    url.full|contains: &tlds
+      - .zip/
+      - .mov/
+  origin_host:
+    event.dataset: macos.quarantine
+    url.original|contains: *tlds
+  condition: data_host or origin_host
+falsepositives:
+  - A legitimate website genuinely hosted on a .zip or .mov TLD that serves a
+    quarantine-aware download
+level: medium
+tags:
+  - attack.initial_access
+  - attack.t1566.002
+  - attack.t1105

@@ -1,0 +1,28 @@
+title: macOS data exfiltration via curl upload
+id: 9dba4c30-7ebc-480a-b074-cead482e6a9a
+status: experimental
+description: >
+  A process using curl's upload/POST-body flags (`-T`/`--upload-file`,
+  `--data-binary`, `--data @`, `-F`) to push local file contents to a remote
+  server. Unlike a plain download, these flags move data OUT of the host and are a
+  direct exfiltration-over-C2 indicator when paired with a file argument.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'curl -T '
+      - 'curl --upload-file'
+      - 'curl --data-binary'
+      - 'curl --data @'
+      - 'curl -F '
+      - 'curl --form'
+  condition: selection
+falsepositives:
+  - CI/CD or backup jobs uploading artifacts and legitimate file-sharing scripts
+level: medium
+tags:
+  - attack.exfiltration
+  - attack.t1041

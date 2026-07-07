@@ -1,0 +1,60 @@
+title: macOS protected-folder (Desktop/Documents/Downloads) TCC grant to a non-Apple client
+id: 2233df26-c8ed-40bb-8462-6e9fcda1dd6d
+status: experimental
+description: >
+  A TCC authorization granting access to a user's protected data folders
+  (Desktop, Documents, Downloads) or to network/removable volumes to a client
+  that is neither an Apple binary nor a known backup/sync/EDR agent. Info-stealers
+  request exactly these per-folder services to read user data without the broader
+  Full-Disk-Access prompt; a non-Apple, non-backup grant here is a strong local
+  data-collection signal. Distinct from the sensitive-grant rule, which covers
+  kTCCServiceSystemPolicyAllFiles rather than the individual folders.
+logsource:
+  product: macos
+  service: tcc
+detection:
+  selection:
+    event.dataset: macos.tcc
+    raptorscope.tcc.allowed: true
+    raptorscope.tcc.service:
+      - kTCCServiceSystemPolicyDesktopFolder
+      - kTCCServiceSystemPolicyDocumentsFolder
+      - kTCCServiceSystemPolicyDownloadsFolder
+      - kTCCServiceSystemPolicyNetworkVolumes
+      - kTCCServiceSystemPolicyRemovableVolumes
+  filter_apple:
+    raptorscope.tcc.client|startswith:
+      - com.apple.
+      - /System/
+      - /usr/libexec/
+      - /Library/Apple/
+  filter_backup_sync_edr:
+    raptorscope.tcc.client|startswith:
+      - com.getdropbox.
+      - com.dropbox.
+      - com.google.GoogleDrive
+      - com.google.drivefs
+      - com.microsoft.OneDrive
+      - com.box.desktop
+      - com.backblaze.
+      - com.bombich.ccc
+      - com.haystacksoftware.Arq
+      - com.code42.
+      - com.crashplan.
+      - com.acronis.
+      - com.carbonite.
+      - com.crowdstrike.
+      - com.sentinelone.
+      - com.jamf.
+      - com.microsoft.wdav
+      - com.eset.
+      - com.malwarebytes.
+      - com.f-secure.
+  condition: selection and not filter_apple and not filter_backup_sync_edr
+falsepositives:
+  - Backup, cloud-sync or endpoint-security agents not present in the allowlist
+    (any tool the user intentionally granted folder access to)
+level: medium
+tags:
+  - attack.collection
+  - attack.t1005

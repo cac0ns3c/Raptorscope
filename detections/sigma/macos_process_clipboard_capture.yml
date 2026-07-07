@@ -1,0 +1,31 @@
+title: macOS clipboard capture via pbpaste to file or network
+id: fdf0fb16-2658-471f-b7d7-20bfc8e6c1f5
+status: experimental
+description: >
+  A process reading the clipboard with `pbpaste` and redirecting it to a file or
+  piping it to a network/encoder utility. Clipboard scraping harvests passwords,
+  crypto-wallet addresses and 2FA codes copied by the user. Requires an exfil sink
+  alongside pbpaste so an interactive `pbpaste | pbcopy` reuse does not fire.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'pbpaste'
+  selection_sink:
+    process.command_line|contains:
+      - '> /tmp/'
+      - '>/tmp/'
+      - '>> /tmp/'
+      - '| nc '
+      - '| curl'
+      - '| base64'
+      - '| openssl'
+  condition: selection_tool and selection_sink
+falsepositives:
+  - Developer or automation scripts that snapshot clipboard contents to a working file
+level: medium
+tags:
+  - attack.collection
+  - attack.t1115

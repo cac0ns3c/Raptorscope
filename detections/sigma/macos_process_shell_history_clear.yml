@@ -1,0 +1,42 @@
+title: macOS shell history cleared or disabled
+id: 82f8675e-4e2a-4998-b987-f2b4a1245b06
+status: experimental
+description: >
+  A live process wiping or disabling the interactive shell history — clearing the
+  in-memory buffer (history -c), redirecting HISTFILE to /dev/null, or deleting the
+  .bash_history / .zsh_history files. Adversaries do this to remove the record of
+  the commands they ran. Distinguishes an explicit clear/disable verb, or a
+  deletion tool acting specifically on a history file, from ordinary shell use.
+logsource:
+  product: macos
+  service: process
+detection:
+  clear_cmd:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'history -c'
+      - 'history -p'
+      - 'unset HISTFILE'
+      - 'HISTFILE=/dev/null'
+      - 'HISTSIZE=0'
+      - 'set +o history'
+  delete_tool:
+    process.command_line|contains:
+      - 'rm '
+      - 'shred '
+      - 'truncate '
+      - 'cat /dev/null >'
+      - ': > '
+  hist_file:
+    process.command_line|contains:
+      - '.bash_history'
+      - '.zsh_history'
+      - '.sh_history'
+      - '.zhistory'
+  condition: clear_cmd or (delete_tool and hist_file)
+falsepositives:
+  - A user or dotfile-management tool intentionally resetting their own shell history
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1070.003

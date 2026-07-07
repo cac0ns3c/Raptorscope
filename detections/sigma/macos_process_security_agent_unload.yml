@@ -1,0 +1,54 @@
+title: macOS security agent unloaded or killed
+id: 47a5bc78-2923-406f-b62d-202aa0272b7d
+status: experimental
+description: >
+  A live process disabling built-in or third-party endpoint defenses — using
+  launchctl to unload/bootout/disable Apple's malware-protection daemons (MRT,
+  XProtect) or an EDR LaunchDaemon, or killing those agent processes outright.
+  Tearing down the protection daemon before acting is a hallmark defense-impair
+  step. Pairs the teardown verb with a specific security-agent identifier so
+  routine launchctl/kill use does not match.
+logsource:
+  product: macos
+  service: process
+detection:
+  unload_tool:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'launchctl unload'
+      - 'launchctl bootout'
+      - 'launchctl disable'
+      - 'launchctl remove'
+  unload_target:
+    process.command_line|contains:
+      - 'com.apple.MRT'
+      - 'com.apple.XProtect'
+      - 'com.apple.XprotectFramework'
+      - 'com.crowdstrike'
+      - 'com.sentinelone'
+      - 'com.jamf.management'
+      - 'com.google.santa'
+      - 'falcon'
+      - 'SentinelOne'
+  kill_tool:
+    process.command_line|contains:
+      - 'pkill '
+      - 'killall '
+      - 'kill -9 '
+  kill_target:
+    process.command_line|contains:
+      - 'XprotectService'
+      - 'XProtectRemediator'
+      - 'com.apple.MRT'
+      - 'falconctl'
+      - 'SentinelAgent'
+      - 'com.crowdstrike.falcon'
+      - 'santad'
+  condition: (unload_tool and unload_target) or (kill_tool and kill_target)
+falsepositives:
+  - IT administrator or vendor uninstaller cleanly removing an EDR agent
+  - Support troubleshooting that temporarily unloads a protection daemon
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

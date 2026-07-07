@@ -1,0 +1,24 @@
+title: macOS local password hash dump via dscl ShadowHashData
+id: 0b3fd131-8d1e-4769-b490-76a701e561ce
+status: experimental
+description: >
+  A process reading the Directory Services ShadowHashData attribute, which holds
+  the salted PBKDF2 hash of a local account's login password. Extracting it
+  (typically `dscl . -read /Users/<u> dsAttrTypeNative:ShadowHashData`) is the
+  on-host path to offline-crack a macOS account and is a strong OS credential
+  dumping signal.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'ShadowHashData'
+  condition: selection
+falsepositives:
+  - Directory administrators or migration tooling deliberately inspecting local password storage (rare, low-volume)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1003

@@ -1,0 +1,50 @@
+title: macOS quarantined download with a double-extension masquerade
+id: 0e9480e4-39cb-4992-a8da-466512700667
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose name or download URL carries a
+  document-looking extension immediately followed by an executable or
+  disk-image/app extension (e.g. Invoice.pdf.command, photo.jpg.app,
+  clip.mov.dmg). This double-extension trick makes a payload appear to be a
+  harmless document and is a classic macOS social-engineering delivery. Real
+  QuarantineEventsV2 has no filename column, so the URL (url.full) is matched too
+  — the only place the name appears on a real capture.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  ext_name:
+    event.dataset: macos.quarantine
+    file.name|contains: &masq
+      - .pdf.command
+      - .pdf.app
+      - .pdf.dmg
+      - .pdf.pkg
+      - .doc.command
+      - .doc.app
+      - .doc.dmg
+      - .docx.app
+      - .jpg.app
+      - .jpg.command
+      - .jpg.dmg
+      - .png.app
+      - .png.dmg
+      - .mov.dmg
+      - .mov.app
+      - .mp4.app
+      - .txt.command
+      - .txt.app
+      - .xls.app
+      - .xlsx.app
+  ext_url:
+    event.dataset: macos.quarantine
+    url.full|contains: *masq
+  condition: ext_name or ext_url
+falsepositives:
+  - Extremely unusual but conceivable legitimate archive/installer naming that
+    embeds one of these document-then-binary sequences
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1036.008
+  - attack.t1204.002

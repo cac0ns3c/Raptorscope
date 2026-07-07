@@ -1,0 +1,43 @@
+title: macOS quarantined download from a paste site or anonymous file host
+id: ddf0cd27-8f0c-433f-8ef9-d68bf02ea2dc
+status: experimental
+description: >
+  A file recorded in LSQuarantine whose download (data) or referring (origin) URL
+  points at a public paste site (pastebin, controlc, filebin) or an anonymous
+  one-shot file host (file.io, catbox/litterbox, uguu, temp.sh, mega, mediafire).
+  These services host attacker payloads and second-stage tooling; reputable macOS
+  software ships from named vendor domains, not a paste bin. Host set is distinct
+  from the chat-CDN, tunneling-host and url-shortener rules.
+logsource:
+  product: macos
+  service: quarantine
+detection:
+  data_host:
+    event.dataset: macos.quarantine
+    url.full|contains: &hosts
+      - //pastebin.com/
+      - //controlc.com/
+      - //filebin.net/
+      - //file.io/
+      - //catbox.moe/
+      - //litter.catbox.moe/
+      - //uguu.se/
+      - //temp.sh/
+      - //mega.nz/
+      - //mega.io/
+      - //mediafire.com/
+      - //www.mediafire.com/
+      - //dpaste.org/
+      - //hastebin.com/
+  origin_host:
+    event.dataset: macos.quarantine
+    url.original|contains: *hosts
+  condition: data_host or origin_host
+falsepositives:
+  - A user intentionally retrieving a benign file shared through one of these
+    hosts (rare on managed endpoints)
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1105
+  - attack.t1102

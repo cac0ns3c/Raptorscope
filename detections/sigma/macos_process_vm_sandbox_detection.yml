@@ -1,0 +1,32 @@
+title: macOS virtualization/sandbox detection via ioreg vendor grep
+id: ee8ca972-5ed2-4068-87e4-7634f97580e9
+status: experimental
+description: >
+  A process querying the I/O Registry (`ioreg`) and matching a hypervisor vendor
+  string (VMware, VirtualBox/VBox, Parallels, QEMU). Malware and packed samples
+  fingerprint the platform this way to abort inside analysis sandboxes/VMs before
+  detonating. Requiring both the ioreg tool AND a vendor token keeps a bare
+  `ioreg -l` inventory dump from firing.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection_tool:
+    event.dataset: macos.process
+    process.command_line|contains: 'ioreg'
+  selection_vendor:
+    process.command_line|contains:
+      - 'VMware'
+      - 'VirtualBox'
+      - 'VBox'
+      - 'Parallels'
+      - 'QEMU'
+      - 'innotek'
+      - 'Virtual Machine'
+  condition: selection_tool and selection_vendor
+falsepositives:
+  - Virtualization or asset-inventory tooling that legitimately probes the I/O Registry for hypervisor identity
+level: high
+tags:
+  - attack.discovery
+  - attack.t1497.001

@@ -1,0 +1,27 @@
+title: macOS Gatekeeper assessment rule disabled or allowlisted via spctl
+id: c03071b8-1cc0-4817-a09b-379955a5e64f
+status: experimental
+description: >
+  A live spctl process disabling a Gatekeeper assessment rule (spctl --disable) or
+  adding an allowlist entry (spctl --add) so a specific unsigned or ad-hoc-signed
+  binary launches without a Gatekeeper prompt. Unlike the system-wide
+  --master-disable / --global-disable switches, these operate on the assessment
+  rule database to carve out a targeted exception for a payload.
+logsource:
+  product: macos
+  service: process
+detection:
+  selection:
+    event.dataset: macos.process
+    process.command_line|contains:
+      - 'spctl --disable'
+      - 'spctl --add'
+      - 'spctl --remove'
+  condition: selection
+falsepositives:
+  - Developer allowlisting their own locally built, un-notarized app during testing
+  - Enterprise provisioning that pre-approves an in-house application
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001
