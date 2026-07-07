@@ -1,0 +1,33 @@
+title: macOS login item points directly at a shell or interpreter
+id: 73804e5c-91d4-4ebe-b635-6455fd8c063c
+status: experimental
+description: >
+  A per-user Login Item whose program is a raw shell or scripting interpreter
+  (bash/sh/zsh/dash, osascript, python, perl, ruby) rather than an application
+  bundle. Legitimate login items launch an .app helper; one wired straight to an
+  interpreter is a persistence/execution primitive.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: login_item
+    process.executable|contains:
+      - /bin/bash
+      - /bin/sh
+      - /bin/zsh
+      - /bin/dash
+      - /usr/bin/osascript
+      - /usr/bin/python
+      - /usr/bin/perl
+      - /usr/bin/ruby
+      - /python3
+  condition: selection
+falsepositives:
+  - Rare developer login items that launch a shell wrapper script
+level: high
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1547.015

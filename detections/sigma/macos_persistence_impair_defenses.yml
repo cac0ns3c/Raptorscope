@@ -1,0 +1,27 @@
+title: macOS persistence item disables system security controls
+id: 0d9a6e2f-cc35-4451-bb08-afd686301778
+status: experimental
+description: >
+  A persistence entry whose command line disables macOS security controls —
+  Gatekeeper (spctl --master-disable / GKAutoRearm), System Integrity Protection
+  (csrutil disable), or the firewall. A persistence mechanism that tears down
+  protections is a strong impair-defenses signal.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'spctl --master-disable'
+      - 'csrutil disable'
+      - 'GKAutoRearm'
+      - 'com.apple.alf globalstate -int 0'
+  condition: selection
+falsepositives:
+  - Developer or lab-provisioning scripts that intentionally relax Gatekeeper/SIP
+level: high
+tags:
+  - attack.persistence
+  - attack.defense_evasion
+  - attack.t1562.001

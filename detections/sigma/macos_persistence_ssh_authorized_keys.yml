@@ -1,0 +1,33 @@
+title: macOS persistence item writes to SSH authorized_keys
+id: 13b8c79e-3690-4303-b35c-e1ac0f553767
+status: experimental
+description: >
+  A persistence entry (launch agent/daemon, cron, login item, BTM) whose command
+  line both references an SSH authorized_keys file and writes/fetches into it
+  (append redirect, tee, echo/printf, or curl/wget). Planting an attacker public
+  key into authorized_keys is a durable remote-access backdoor that survives
+  password changes.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection_target:
+    event.dataset: macos.persistence
+    process.command_line|contains: 'authorized_keys'
+  selection_write:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - '>>'
+      - ' tee '
+      - 'echo '
+      - 'printf '
+      - 'curl '
+      - 'wget '
+  condition: selection_target and selection_write
+falsepositives:
+  - Configuration-management tooling (Ansible/Puppet) that manages SSH keys from
+    a scheduled job
+level: high
+tags:
+  - attack.persistence
+  - attack.t1098.004

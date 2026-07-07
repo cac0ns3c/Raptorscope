@@ -1,0 +1,36 @@
+title: macOS persistence item runs inline scripting-interpreter code
+id: 0ca2605f-eb3a-43aa-9ad0-4ceaf4b25781
+status: experimental
+description: >
+  A persistence entry (launch agent/daemon, login item, cron, or BTM) whose
+  command line invokes a scripting interpreter with an inline code flag
+  (python -c, perl -e, ruby -e, php -r, node -e). Inline-code execution from a
+  persistence mechanism is a canonical stager / in-memory payload pattern and is
+  disjoint from the network-fetch tokens (curl|bash, base64) and the
+  reverse-shell tokens (/dev/tcp, bash -i) already covered.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'python -c'
+      - 'python2 -c'
+      - 'python3 -c'
+      - 'perl -e'
+      - 'perl -E'
+      - 'ruby -e'
+      - 'ruby -rsocket'
+      - 'php -r'
+      - 'node -e'
+      - 'node --eval'
+  condition: selection
+falsepositives:
+  - Rare admin or developer persistence scripts that legitimately use an inline
+    interpreter one-liner
+level: high
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1059.006

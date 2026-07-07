@@ -1,0 +1,33 @@
+title: macOS BTM item claims Apple developer from a non-system path
+id: 2bb53847-0f78-45ae-b9a4-e3fd1345e337
+status: experimental
+description: >
+  A Background Task Management item whose developer attribution contains "Apple"
+  but whose executable lives outside the paths Apple actually ships from
+  (/System, /Library, /Applications, /usr). Malware sets an Apple-looking
+  developer/team string to blend into BTM listings; an Apple-claimed item running
+  from a user or temp path is masquerading. Keys on developer/executable, which
+  real `sfltool dumpbtm` emits.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: btm
+    raptorscope.persistence.developer|contains: Apple
+  filter_system:
+    process.executable|startswith:
+      - /System/
+      - /Library/
+      - /Applications/
+      - /usr/
+  condition: selection and not filter_system
+falsepositives:
+  - Rare Apple-authored helper staged outside the standard system directories
+level: high
+tags:
+  - attack.persistence
+  - attack.defense_evasion
+  - attack.t1036.005
+  - attack.t1543.004

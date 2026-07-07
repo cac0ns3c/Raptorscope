@@ -1,0 +1,26 @@
+title: macOS persistence item runs screencapture for surveillance
+id: d8792597-0e4b-488b-9eaa-bed413f90e71
+status: experimental
+description: >
+  A persistence entry (launch agent/daemon, cron, login item, BTM) whose command
+  line invokes the macOS `screencapture` CLI, typically in silent mode (-x) to a
+  file. A scheduled or at-login screenshot grabber is a classic surveillance /
+  collection persistence implant.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'screencapture -x'
+      - '/usr/sbin/screencapture'
+      - 'screencapture -C'
+  condition: selection
+falsepositives:
+  - Rare legitimate screenshot/monitoring utilities that schedule screencapture
+level: medium
+tags:
+  - attack.persistence
+  - attack.collection
+  - attack.t1113

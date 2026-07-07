@@ -1,0 +1,30 @@
+title: macOS cron/periodic job executes a binary from a world-writable path
+id: ad001e54-6163-414c-a440-75570c08a6cc
+status: experimental
+description: >
+  A crontab or periodic entry whose executable (the first command token) resides
+  in a world-writable or staging directory (/tmp, /private/tmp, /var/tmp,
+  /Users/Shared). Scheduled execution of a binary staged in a shared path is a
+  common macOS persistence + staging pattern. Keying on the executable token
+  (not a bare path substring) avoids the benign "cron writes a log to /tmp" case.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: cron
+    process.executable|startswith:
+      - /tmp/
+      - /private/tmp/
+      - /var/tmp/
+      - /private/var/tmp/
+      - /Users/Shared/
+  condition: selection
+falsepositives:
+  - Admin maintenance jobs that intentionally run a helper staged under
+    /Users/Shared
+level: high
+tags:
+  - attack.persistence
+  - attack.t1053.003

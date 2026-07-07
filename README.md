@@ -6,13 +6,13 @@ detection-enriched, AI-triaged incident evidence.**
 Raptorscope ingests a macOS Velociraptor collection **or raw evidence off a disk
 image** (Unified Logs, `TCC.db`, `QuarantineEventsV2`, a whole `sysdiagnose`),
 normalizes every artifact to Elastic
-Common Schema, runs 73 paired Sigma detections, and serves it through a FastAPI
+Common Schema, runs 89 paired Sigma detections, and serves it through a FastAPI
 backend to a purpose-built React/TypeScript investigation UI and Claude-powered
 triage. **Offline-first** — a bundled sample case runs with zero infrastructure —
 and **scale-ready** — Elasticsearch with native detection, aggregations, and deep
 pagination.
 
-`73 detections` · `418 tests` · `dual detection engines, 0-divergence parity` ·
+`89 detections` · `451 tests` · `dual detection engines, 0-divergence parity` ·
 `Claude-powered triage` · `RBAC + audit + metrics` · `CI: unit · live-ES · e2e ·
 supply-chain`
 
@@ -25,7 +25,7 @@ Architecture: below
 - **Dual detection engines, provably equivalent** — an in-process Sigma evaluator
   (offline/demo) and an ES-native Lucene path (scale), verified **0-divergence**
   against live Elasticsearch.
-- **73 paired detections, agent-reviewed** — every rule ships hit + benign
+- **89 paired detections, agent-reviewed** — every rule ships hit + benign
   fixtures and is drift-guarded; the rule set was designed and *adversarially
   reviewed* by orchestrated multi-agent workflows, then validated end-to-end.
 - **Claude-powered triage behind a testable seam** — per-alert triage, a
@@ -58,7 +58,7 @@ flowchart LR
   VR["Velociraptor<br/>macOS collection<br/>(zip / dir)"] --> N["normalizers → ECS<br/>10 mappers + custom VQL"]
   N -->|"raptorscope-*"| ES[("Elasticsearch")]
   N -.->|"offline demo"| MEM[("in-memory store")]
-  RULES["73 Sigma detections<br/>paired hit + benign"] --> DET
+  RULES["89 Sigma detections<br/>paired hit + benign"] --> DET
   ES --> DET{{"detection engine<br/>in-process · ES-native Lucene"}}
   MEM --> DET
   DET --> API["FastAPI API<br/>RBAC · audit · rate-limit · metrics"]
@@ -131,12 +131,12 @@ against drift by `detect/pairing.py`.
 
 | ECS dataset        | Velociraptor source(s)                                   | Triage question       | Detections |
 |--------------------|----------------------------------------------------------|-----------------------|:----------:|
-| `macos.persistence`| `MacOS.Detection.Autoruns` (launchd/login/cron/BTM) + config profiles (custom VQL) | who's persisting      | 10 |
+| `macos.persistence`| `MacOS.Detection.Autoruns` (launchd/login/cron/BTM) + config profiles (custom VQL) | who's persisting      | 20 |
 | `macos.process`    | `MacOS.Sys.Pslist` (+ signature-enrichment VQL)          | what ran              | 36 |
 | `macos.quarantine` | `MacOS.System.QuarantineEvents` (LSQuarantine)           | what got in           | 8  |
 | `macos.tcc`        | `MacOS.System.TCC`                                        | what got permission   | 9  |
 | `macos.inventory`  | `MacOS.System.Packages`                                  | what's installed      | 6  |
-| `macos.network`    | `netstat` (custom VQL) — listeners + connections         | what it talks to      | 2  |
+| `macos.network`    | `netstat` (custom VQL) — listeners + connections         | what it talks to      | 8  |
 
 Detections span the ATT&CK matrix (initial-access → execution → persistence →
 privilege-escalation → defense-evasion → credential-access → collection → C2)

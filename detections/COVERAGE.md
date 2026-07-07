@@ -3,9 +3,9 @@
 Paired Sigma detections shipped with Raptorscope, with their ECS dataset,
 severity, and mapped MITRE ATT&CK techniques. Generated from `detections/sigma/`.
 
-**73 rules** across 7 datasets, mapping to **53 unique ATT&CK techniques**. Every rule ships a paired hit + benign fixture and is drift-guarded by `detect/pairing.py`.
+**89 rules** across 7 datasets, mapping to **60 unique ATT&CK techniques**. Every rule ships a paired hit + benign fixture and is drift-guarded by `detect/pairing.py`.
 
-Per dataset: `macos.inventory` 6 · `macos.network` 2 · `macos.persistence` 10 · `macos.process` 36 · `macos.quarantine` 8 · `macos.tcc` 9 · `macos.unifiedlog` 2
+Per dataset: `macos.inventory` 6 · `macos.network` 8 · `macos.persistence` 20 · `macos.process` 36 · `macos.quarantine` 8 · `macos.tcc` 9 · `macos.unifiedlog` 2
 
 | Rule | Dataset | Level | MITRE |
 |------|---------|-------|-------|
@@ -15,15 +15,31 @@ Per dataset: `macos.inventory` 6 · `macos.network` 2 · `macos.persistence` 10 
 | macOS unsigned application impersonating an Apple bundle identifier | `macos.inventory` | high | T1036.005 |
 | macOS unsigned application installed directly in /Applications | `macos.inventory` | medium | T1553.001 |
 | macOS unsigned application installed outside /Applications | `macos.inventory` | medium | T1036, T1036.005 |
+| macOS UDP beacon to a backdoor/C2 remote port | `macos.network` | high | T1571 |
+| macOS established connection to a backdoor/C2 remote port | `macos.network` | high | T1571 |
+| macOS host listening on an RDP port | `macos.network` | high | T1021, T1021.001 |
+| macOS listener bound on a common backdoor/C2 port | `macos.network` | high | T1571 |
+| macOS outbound connection to a Tor or SOCKS anonymity port | `macos.network` | high | T1090, T1090.003 |
+| macOS outbound connection to an IRC C2 port | `macos.network` | medium | T1071 |
 | macOS shell or interpreter bound to a listening socket | `macos.network` | high | T1095, T1059.004 |
 | macOS shell or interpreter with an outbound network connection | `macos.network` | high | T1095, T1059.004 |
+| macOS BTM daemon registered by an unknown developer | `macos.persistence` | high | T1543.004 |
+| macOS BTM item claims Apple developer from a non-system path | `macos.persistence` | high | T1036.005, T1543.004 |
 | macOS BTM persistence item from suspicious path | `macos.persistence` | high | T1543.001, T1543.004, T1547.015 |
+| macOS cron/periodic job executes a binary from a world-writable path | `macos.persistence` | high | T1053.003 |
 | macOS cron/periodic job runs a suspicious command | `macos.persistence` | high | T1053.003 |
 | macOS hidden and unsigned login item | `macos.persistence` | high | T1547.015 |
 | macOS launch agent or daemon with an untrusted code signature | `macos.persistence` | high | T1543.001, T1543.004 |
 | macOS login item from suspicious path | `macos.persistence` | high | T1547.015 |
+| macOS login item points directly at a shell or interpreter | `macos.persistence` | high | T1547.015 |
+| macOS persistence item disables system security controls | `macos.persistence` | high | T1562.001 |
+| macOS persistence item dumps or queries the login keychain | `macos.persistence` | high | T1555.001 |
+| macOS persistence item runs AppleScript that shells out | `macos.persistence` | high | T1059.002 |
 | macOS persistence item runs a reverse or interactive shell | `macos.persistence` | high | T1059.004 |
 | macOS persistence item runs a shell download one-liner | `macos.persistence` | high | T1059.004 |
+| macOS persistence item runs inline scripting-interpreter code | `macos.persistence` | high | T1059.006 |
+| macOS persistence item runs screencapture for surveillance | `macos.persistence` | medium | T1113 |
+| macOS persistence item writes to SSH authorized_keys | `macos.persistence` | high | T1098.004 |
 | macOS persistence masquerading as an Apple label | `macos.persistence` | high | T1036.005, T1543.001, T1543.004 |
 | macOS persistence program in suspicious path | `macos.persistence` | high | T1543.001, T1543.004 |
 | macOS unsigned configuration profile installed | `macos.persistence` | medium | T1547, T1553 |

@@ -1,0 +1,26 @@
+title: macOS persistence item dumps or queries the login keychain
+id: bbea10f0-048a-4ad7-a28c-cacf4ba76ac1
+status: experimental
+description: >
+  A persistence entry whose command line invokes the `security` tool to dump the
+  keychain or extract stored credentials (dump-keychain, find-generic-password,
+  find-internet-password). A scheduled/at-login mechanism that harvests keychain
+  secrets is a durable credential-theft backdoor.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'security dump-keychain'
+      - 'find-generic-password'
+      - 'find-internet-password'
+  condition: selection
+falsepositives:
+  - Rare admin automation that reads a specific keychain item at login
+level: high
+tags:
+  - attack.persistence
+  - attack.credential_access
+  - attack.t1555.001

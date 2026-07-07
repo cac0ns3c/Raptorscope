@@ -1,0 +1,31 @@
+title: macOS UDP beacon to a backdoor/C2 remote port
+id: b166612f-3508-4740-821f-a0a1a647f3c6
+status: experimental
+description: >
+  A UDP socket has a remote peer set on a port associated with reverse-shell and
+  C2 frameworks (e.g. 4444, 1337, 31337). UDP has no connection state, so a
+  captured remote peer on these ports indicates active beaconing rather than a
+  transient DNS/NTP/mDNS exchange.
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    network.transport: udp
+    network.direction: egress
+    destination.port:
+      - 4444
+      - 1337
+      - 31337
+      - 5555
+      - 6666
+      - 9001
+  condition: selection
+falsepositives:
+  - Custom UDP services or games that reuse one of these ports.
+  - Penetration-testing tooling using a UDP transport.
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1571

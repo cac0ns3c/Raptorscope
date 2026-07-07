@@ -1,0 +1,33 @@
+title: macOS established connection to a backdoor/C2 remote port
+id: 3b065b2e-6401-4212-98ea-f5bc6dace27d
+status: experimental
+description: >
+  An established outbound TCP connection targets a remote port strongly tied to
+  reverse-shell handlers and commodity C2 frameworks (e.g. 4444, 1337, 31337).
+  Benign services reach 80/443/53; a session to these ports is a likely callback
+  to an operator listener.
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    raptorscope.network.state: ESTABLISHED
+    network.direction: egress
+    destination.port:
+      - 4444
+      - 1337
+      - 31337
+      - 5555
+      - 6666
+      - 9001
+      - 12345
+      - 54321
+  condition: selection
+falsepositives:
+  - Penetration-testing or red-team tooling connecting to an operator host.
+  - Bespoke internal services that reuse one of these ports.
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1571

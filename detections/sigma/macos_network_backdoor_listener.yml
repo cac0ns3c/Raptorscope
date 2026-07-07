@@ -1,0 +1,32 @@
+title: macOS listener bound on a common backdoor/C2 port
+id: 495a0ad3-3903-4f4c-9e54-1cd11ff0ec2a
+status: experimental
+description: >
+  A local TCP socket is in the LISTEN state on a port strongly associated with
+  reverse-shell handlers and off-the-shelf C2/backdoor frameworks (e.g. 4444,
+  1337, 31337). Legitimate macOS daemons do not bind these ports, so a listener
+  here is a likely implant awaiting an inbound operator connection.
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    raptorscope.network.state: LISTEN
+    source.port:
+      - 4444
+      - 1337
+      - 31337
+      - 5555
+      - 6666
+      - 9001
+      - 12345
+      - 54321
+  condition: selection
+falsepositives:
+  - Penetration-testing or red-team tooling run intentionally on the host.
+  - A developer test server deliberately bound to one of these ports.
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1571

@@ -1,0 +1,29 @@
+title: macOS persistence item runs AppleScript that shells out
+id: 252e9b8a-9453-46c7-8717-f785181a51dd
+status: experimental
+description: >
+  A persistence entry whose command line uses AppleScript / JXA to execute a
+  shell command (osascript "do shell script" or an -l JavaScript automation
+  payload). AppleScript is a common macOS living-off-the-land execution and
+  privilege-elevation vector; running it from a persistence mechanism is
+  high-signal. Notification helpers use "display notification", not
+  "do shell script", so this stays clear of that benign pattern.
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    process.command_line|contains:
+      - 'do shell script'
+      - '-l JavaScript'
+      - 'JavaScript for Automation'
+  condition: selection
+falsepositives:
+  - Privileged installers/updaters that legitimately call
+    "do shell script with administrator privileges"
+level: high
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1059.002

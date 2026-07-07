@@ -1,0 +1,26 @@
+title: macOS host listening on an RDP port
+id: 89955565-ae9c-4b84-affe-cb4adc58d86a
+status: experimental
+description: >
+  A local TCP socket is in the LISTEN state on a Remote Desktop Protocol port
+  (3389/3390). macOS has no native RDP server, so a listener here means a
+  third-party RDP service was installed to expose the host for remote access,
+  a common post-compromise persistence and lateral-movement exposure.
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    raptorscope.network.state: LISTEN
+    source.port:
+      - 3389
+      - 3390
+  condition: selection
+falsepositives:
+  - An administrator deliberately running xrdp or another cross-platform RDP server.
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021
+  - attack.t1021.001

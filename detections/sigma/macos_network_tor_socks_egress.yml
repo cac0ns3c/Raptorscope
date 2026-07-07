@@ -1,0 +1,30 @@
+title: macOS outbound connection to a Tor or SOCKS anonymity port
+id: 6fb6f56d-ff53-4eb7-a267-04c211a745e1
+status: experimental
+description: >
+  An outbound connection targets a remote port used by Tor (9050 SOCKS, 9051
+  control, 9150/9151 Tor Browser) or a generic SOCKS proxy (1080). Malware uses
+  these to tunnel C2 through an anonymity network or proxy to defeat egress
+  monitoring and hide the true destination.
+logsource:
+  product: macos
+  service: network
+detection:
+  selection:
+    event.dataset: macos.network
+    network.direction: egress
+    destination.port:
+      - 9050
+      - 9051
+      - 9150
+      - 9151
+      - 1080
+  condition: selection
+falsepositives:
+  - A user or app intentionally routing traffic through Tor or a local SOCKS proxy.
+  - Privacy tooling (Tor Browser, torsocks) run by the user.
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1090
+  - attack.t1090.003

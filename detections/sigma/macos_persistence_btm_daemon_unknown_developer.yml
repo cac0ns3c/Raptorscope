@@ -1,0 +1,26 @@
+title: macOS BTM daemon registered by an unknown developer
+id: ed9436d2-3c1a-43ad-be3b-1a1eb2f60951
+status: experimental
+description: >
+  A Background Task Management item of type daemon whose developer attribution is
+  Unknown. Daemons run at the system level; a legitimately distributed daemon
+  carries a recognizable developer/team name, so a daemon-class BTM entry with no
+  developer is a strong persistence signal. This keys on the developer/type fields
+  that real `sfltool dumpbtm` emits, so it is live on real captures (BTM VQL emits
+  no signature, so a signing gate is intentionally avoided).
+logsource:
+  product: macos
+  service: persistence
+detection:
+  selection:
+    event.dataset: macos.persistence
+    raptorscope.persistence.type: btm
+    raptorscope.persistence.btm_type: daemon
+    raptorscope.persistence.developer: Unknown
+  condition: selection
+falsepositives:
+  - Locally built or un-notarized daemons that report no developer attribution
+level: high
+tags:
+  - attack.persistence
+  - attack.t1543.004
