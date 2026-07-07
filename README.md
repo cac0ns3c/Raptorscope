@@ -3,14 +3,16 @@
 **macOS DFIR analytics — turn a Velociraptor host collection into ECS-normalized,
 detection-enriched, AI-triaged incident evidence.**
 
-Raptorscope ingests a macOS collection, normalizes every artifact to Elastic
-Common Schema, runs 38 paired Sigma detections, and serves it through a FastAPI
+Raptorscope ingests a macOS Velociraptor collection **or raw evidence off a disk
+image** (Unified Logs, `TCC.db`, `QuarantineEventsV2`, a whole `sysdiagnose`),
+normalizes every artifact to Elastic
+Common Schema, runs 40 paired Sigma detections, and serves it through a FastAPI
 backend to a purpose-built React/TypeScript investigation UI and Claude-powered
 triage. **Offline-first** — a bundled sample case runs with zero infrastructure —
 and **scale-ready** — Elasticsearch with native detection, aggregations, and deep
 pagination.
 
-`38 detections` · `318 tests` · `dual detection engines, 0-divergence parity` ·
+`40 detections` · `340 tests` · `dual detection engines, 0-divergence parity` ·
 `Claude-powered triage` · `RBAC + audit + metrics` · `CI: unit · live-ES · e2e ·
 supply-chain`
 
@@ -21,9 +23,9 @@ Architecture: below
 ## Highlights
 
 - **Dual detection engines, provably equivalent** — an in-process Sigma evaluator
-  (offline/demo) and an ES-native Lucene path (scale), verified **0/38 divergence**
+  (offline/demo) and an ES-native Lucene path (scale), verified **0-divergence**
   against live Elasticsearch.
-- **38 paired detections, agent-reviewed** — every rule ships hit + benign
+- **40 paired detections, agent-reviewed** — every rule ships hit + benign
   fixtures and is drift-guarded; the rule set was designed and *adversarially
   reviewed* by orchestrated multi-agent workflows, then validated end-to-end.
 - **Claude-powered triage behind a testable seam** — per-alert triage, a
@@ -36,11 +38,16 @@ Architecture: below
 - **Production hardening** — RBAC (viewer/analyst/admin) in signed tokens,
   append-only audit log, per-client rate limits, Prometheus `/metrics`,
   `X-Request-ID` correlation, and a TLS reverse-proxy overlay.
+- **Raw-evidence ingestion, no agent** — beyond Velociraptor collections, ingest
+  raw macOS evidence straight off a disk image: **Unified Logs** (`.logarchive`,
+  parsed offline via `macos-UnifiedLogs`), raw `TCC.db` / `QuarantineEventsV2` /
+  launch plists, or a whole **`sysdiagnose`** bundle — all normalized to ECS and run
+  through the same detections. `raptorscope ingest` sniffs the input type.
 - **Honest fidelity** — normalizers reconciled against real Velociraptor schemas,
   custom VQL where no built-in exists (config profiles, BTM, signature
   enrichment), timestamp provenance (mtime vs. event), and documented
   synthetic-vs-real gaps.
-- **Engineering rigor** — 268 Python + 60 web tests incl. property/fuzz tests; CI
+- **Engineering rigor** — 280 Python + 60 web tests incl. property/fuzz tests; CI
   runs unit, a **live-Elasticsearch integration** job, **Playwright e2e**, and
   **supply-chain scanning** (pip-audit · npm-audit · SBOM · Trivy).
 
@@ -51,7 +58,7 @@ flowchart LR
   VR["Velociraptor<br/>macOS collection<br/>(zip / dir)"] --> N["normalizers → ECS<br/>10 mappers + custom VQL"]
   N -->|"raptorscope-*"| ES[("Elasticsearch")]
   N -.->|"offline demo"| MEM[("in-memory store")]
-  RULES["38 Sigma detections<br/>paired hit + benign"] --> DET
+  RULES["40 Sigma detections<br/>paired hit + benign"] --> DET
   ES --> DET{{"detection engine<br/>in-process · ES-native Lucene"}}
   MEM --> DET
   DET --> API["FastAPI API<br/>RBAC · audit · rate-limit · metrics"]
@@ -139,6 +146,11 @@ artifacts lack a field (code-signature trust, config-profile/BTM enumeration),
 `profile/custom-vql/` ships the artifact that supplies it — so signature-based
 rules fire on real captures rather than only on fixtures.
 
+**Raw-evidence sources** (no Velociraptor) add the `macos.unifiedlog` dataset — TCC
+access decisions and authorization-right grants reconstructed from a `.logarchive`
+(2 detections) — and read raw `TCC.db` / `QuarantineEventsV2` / launch plists
+directly into the datasets above.
+
 ## Usage
 
 ```bash
@@ -153,6 +165,11 @@ PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir>
 
 # ...and index into Elasticsearch
 PYTHONPATH=src .venv/bin/python -m raptorscope ingest <collection-dir> --es http://localhost:9200
+
+# ...or ingest RAW macOS evidence (no Velociraptor) — the input type is auto-detected
+PYTHONPATH=src .venv/bin/python -m raptorscope ingest evidence.logarchive     # Unified Logs
+PYTHONPATH=src .venv/bin/python -m raptorscope ingest ./raw-artifacts/        # TCC.db, QuarantineEventsV2, launch plists
+PYTHONPATH=src .venv/bin/python -m raptorscope ingest sysdiagnose.tar.gz      # whole bundle
 
 # run detections and report per-rule fire counts (false-positive tuning) —
 # point it at a benign collection to see which rules fire on clean data

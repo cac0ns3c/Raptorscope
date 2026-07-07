@@ -143,10 +143,11 @@
       <a class="btn" href="#quickstart">Run it in one command</a>
     </div>
     <div class="pills">
-      <span class="pill"><b>38</b> paired detections</span>
-      <span class="pill"><b>0/38</b> engine divergence</span>
-      <span class="pill"><b>268</b> Python + <b>60</b> web tests</span>
+      <span class="pill"><b>40</b> paired detections</span>
+      <span class="pill"><b>0</b>-divergence engines</span>
+      <span class="pill"><b>280</b> Python + <b>60</b> web tests</span>
       <span class="pill">Velociraptor → ECS → Sigma</span>
+      <span class="pill">Raw evidence: <b>.logarchive</b> · sysdiagnose</span>
     </div>
   </section>
 
@@ -160,7 +161,7 @@
     <div class="eyebrow">The pipeline</div>
     <h2 class="title">Collection in, triage verdict out</h2>
     <div class="pipeline">
-      <div class="stage"><div class="k">Collect</div><div class="v">Velociraptor</div><div class="d">Built-in + custom VQL artifacts, dir or zip</div></div>
+      <div class="stage"><div class="k">Collect</div><div class="v">Velociraptor · raw evidence</div><div class="d">A collection, or raw .logarchive / TCC.db / sysdiagnose off a disk image</div></div>
       <span class="arrow">→</span>
       <div class="stage"><div class="k">Normalize</div><div class="v">ECS</div><div class="d">Per-artifact row→ECS, reconciled to real schemas</div></div>
       <span class="arrow">→</span>
@@ -178,7 +179,7 @@
       <div class="card"><h3><span class="dot" style="background:var(--process)"></span>Pivot to evidence</h3><p>Any alert, search hit, timeline event, or KPI tile jumps straight into the artifact with the row highlighted.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--tcc)"></span>Claude copilot</h3><p>Asks the case's own evidence and returns a grounded verdict — with its tool-call trace shown. Runs behind an injectable seam (no key = no problem).</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--quarantine)"></span>Cross-host IOC hunt</h3><p>Correlate an indicator across the whole fleet in one query, with a pivot from an AI-extracted IOC.</p></div>
-      <div class="card"><h3><span class="dot" style="background:var(--inventory)"></span>Dual detection engines</h3><p>An in-process Sigma evaluator (offline/demo) and an ES-native Lucene path (scale) — verified 0/38 divergence.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--inventory)"></span>Dual detection engines</h3><p>An in-process Sigma evaluator (offline/demo) and an ES-native Lucene path (scale) — verified 0-divergence.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--persistence)"></span>Accessible & themeable</h3><p>Keyboard-operable throughout — focus-trapped modals, skip link, aria-live, reduced-motion — light and dark.</p></div>
     </div>
   </section>

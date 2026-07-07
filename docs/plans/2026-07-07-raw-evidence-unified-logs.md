@@ -1,13 +1,23 @@
 # Plan: raw macOS evidence ingestion — Phase 1, Unified Logs
 
-**Status:** Phase 0 landed ✅ · **Date:** 2026-07-07
+**Status:** Phases 0–3 landed ✅ · **Date:** 2026-07-07
 
-> **Phase 0 done (vertical slice):** raw `.logarchive` → `macos-UnifiedLogs` parser →
-> `evidence.py` loader → `normalize_unifiedlog` (TCC AUTHREQ correlation by `msgID`) →
-> `macos.unifiedlog` ECS → paired Sigma rule → SPA columns. Proven end-to-end on a real
-> 198 MB archive: 446K log lines → 53 correlated TCC requests → the detection fired 3×
-> on non-Apple sensitive requests (authorized-dev-tool FP case), 0 on Apple clients.
-> 274 Python + 60 web tests green; pairing guard clean. Next: Phase 1 predicate fan-out.
+> **Done — all phases** (raw macOS evidence ingestion, no Velociraptor):
+> - **P0/P1 — Unified Logs:** `.logarchive` → `macos-UnifiedLogs` (baked into the Docker
+>   image, checksum-verified) → `normalize_unifiedlog`. Two validated predicates:
+>   **TCC** access decisions (AUTHREQ correlation by `msgID`) and **authd**
+>   authorization-right grants (correlated by `engine` id), each with a paired detection.
+> - **P2 — raw SQLite/plist:** `TCC.db`, `QuarantineEventsV2`, launch plists read straight
+>   off a directory into the *existing* normalizers/detections (validated on a real
+>   QuarantineEventsV2 → 135 events).
+> - **P3 — bundle:** `load_bundle` ingests a whole `sysdiagnose` (dir or `.tar.gz`),
+>   fanning out to every sub-loader (validated: logarchive + quarantine → 151 docs).
+>
+> `normalize_collection` sniffs input type: `.logarchive` → bundle → raw-artifact dir →
+> Velociraptor collection. 280 Python + 60 web tests green; pairing guard clean.
+> **Note:** non-TCC/authd Unified Log subsystems (sudo/ssh/su) are heavily
+> `<private>`-redacted, so predicates are added only where real data supports a low-FP
+> detection — quality over breadth.
 
 ## Context
 
